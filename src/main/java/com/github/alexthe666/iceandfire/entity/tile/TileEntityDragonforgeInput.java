@@ -1,24 +1,23 @@
 package com.github.alexthe666.iceandfire.entity.tile;
 
-import com.github.alexthe666.iceandfire.IceAndFire;
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.block.BlockDragonforgeInput;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
 import com.github.alexthe666.iceandfire.entity.DragonType;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
-import com.github.alexthe666.iceandfire.message.MessageUpdateDragonforge;
-import com.github.alexthe666.iceandfire.message.MessageUpdatePixieHouseModel;
+
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.texture.ITickable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
-
-import javax.annotation.Nullable;
 
 public class TileEntityDragonforgeInput extends TileEntity implements ITickableTileEntity {
     private static final int LURE_DISTANCE = 50;
@@ -31,9 +30,8 @@ public class TileEntityDragonforgeInput extends TileEntity implements ITickableT
     }
 
     public void onHitWithFlame() {
-        TileEntityDragonforge forge = getConnectedTileEntity();
-        if (forge != null) {
-            forge.transferPower(1);
+        if (core != null) {
+            core.transferPower(1);
         }
     }
 
@@ -64,7 +62,7 @@ public class TileEntityDragonforgeInput extends TileEntity implements ITickableT
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
-        func_230337_a_(this.getBlockState(), packet.getNbtCompound());
+        read(this.getBlockState(), packet.getNbtCompound());
     }
 
     public CompoundNBT getUpdateTag() {
@@ -72,20 +70,42 @@ public class TileEntityDragonforgeInput extends TileEntity implements ITickableT
     }
 
     protected void lureDragons() {
-        boolean flag = false;
-        if (core != null && core.canSmelt()) {
-            for (EntityDragonBase dragon : world.getEntitiesWithinAABB(EntityDragonBase.class, new AxisAlignedBB((double) pos.getX() - LURE_DISTANCE, (double) pos.getY() - LURE_DISTANCE, (double) pos.getZ() - LURE_DISTANCE, (double) pos.getX() + LURE_DISTANCE, (double) pos.getY() + LURE_DISTANCE, (double) pos.getZ() + LURE_DISTANCE))) {
-                if (getDragonType() == DragonType.getIntFromType(dragon.dragonType) && (dragon.isChained() || dragon.isTamed()) && canSeeInput(dragon, new Vector3d(this.getPos().getX() + 0.5F, this.getPos().getY() + 0.5F, this.getPos().getZ() + 0.5F))) {
-                    dragon.burningTarget = this.pos;
-                    flag = true;
-                }
-            }
-        } else {
-            for (EntityDragonBase dragon : world.getEntitiesWithinAABB(EntityDragonBase.class, new AxisAlignedBB((double) pos.getX() - LURE_DISTANCE, (double) pos.getY() - LURE_DISTANCE, (double) pos.getZ() - LURE_DISTANCE, (double) pos.getX() + LURE_DISTANCE, (double) pos.getY() + LURE_DISTANCE, (double) pos.getZ() + LURE_DISTANCE))) {
-                if (dragon.burningTarget == this.pos || flag) {
-                    dragon.burningTarget = null;
-                    dragon.setBreathingFire(false);
-                }
+        Vector3d targetPosition = new Vector3d(
+            this.getPos().getX() + 0.5F,
+            this.getPos().getY() + 0.5F,
+            this.getPos().getZ() + 0.5F
+        );
+
+        AxisAlignedBB searchArea = new AxisAlignedBB(
+            (double) pos.getX() - LURE_DISTANCE,
+            (double) pos.getY() - LURE_DISTANCE,
+            (double) pos.getZ() - LURE_DISTANCE,
+            (double) pos.getX() + LURE_DISTANCE,
+            (double) pos.getY() + LURE_DISTANCE,
+            (double) pos.getZ() + LURE_DISTANCE
+        );
+
+        boolean dragonSelected = false;
+        for (EntityDragonBase dragon : world.getEntitiesWithinAABB(EntityDragonBase.class, searchArea)) {
+            if (
+                !dragonSelected &&
+
+                // Forge Core Checks
+                core != null &&
+                core.assembled() &&
+                core.canSmelt() &&
+
+                // Dragon Checks
+                getDragonType() == DragonType.getIntFromType(dragon.dragonType) &&
+                (dragon.isChained() || dragon.isTamed()) &&
+                canSeeInput(dragon, targetPosition)
+            ) {
+                dragon.burningTarget = this.pos;
+                dragonSelected = true;
+
+            } else if(dragon.burningTarget == this.pos) {
+                dragon.burningTarget = null;
+                dragon.setBreathingFire(false);
             }
         }
     }
@@ -159,8 +179,8 @@ public class TileEntityDragonforgeInput extends TileEntity implements ITickableT
     @Override
     @javax.annotation.Nullable
     public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable Direction facing) {
-        if (getConnectedTileEntity() != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return getConnectedTileEntity().getCapability(capability, facing);
+        if (core != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return core.getCapability(capability, facing);
         }
         return super.getCapability(capability, facing);
     }

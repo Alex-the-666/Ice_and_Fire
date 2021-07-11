@@ -3,7 +3,7 @@ package com.github.alexthe666.iceandfire.entity;
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.AnimationHandler;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.api.FoodUtils;
@@ -13,7 +13,6 @@ import com.github.alexthe666.iceandfire.client.model.IFChainBuffer;
 import com.github.alexthe666.iceandfire.client.model.util.LegSolverQuadruped;
 import com.github.alexthe666.iceandfire.entity.ai.*;
 import com.github.alexthe666.iceandfire.entity.props.ChainEntityProperties;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityDragonforgeInput;
 import com.github.alexthe666.iceandfire.entity.util.*;
 import com.github.alexthe666.iceandfire.enums.EnumDragonEgg;
@@ -25,8 +24,8 @@ import com.github.alexthe666.iceandfire.message.MessageDragonControl;
 import com.github.alexthe666.iceandfire.message.MessageDragonSetBurnBlock;
 import com.github.alexthe666.iceandfire.message.MessageStartRidingMob;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
-import com.github.alexthe666.iceandfire.pathfinding.PathNavigateDragon;
-import com.github.alexthe666.iceandfire.pathfinding.PathNavigateFlyingCreature;
+import com.github.alexthe666.iceandfire.pathfinding.raycoms.AdvancedPathNavigate;
+import com.github.alexthe666.iceandfire.pathfinding.raycoms.IPassabilityNavigator;
 import com.github.alexthe666.iceandfire.world.DragonPosWorldData;
 import com.google.common.base.Predicate;
 import net.minecraft.block.BlockState;
@@ -64,6 +63,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.BlockParticleData;
 import net.minecraft.particles.ItemParticleData;
 import net.minecraft.particles.ParticleTypes;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
@@ -71,12 +71,12 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -84,9 +84,9 @@ import net.minecraftforge.common.MinecraftForge;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
-public abstract class EntityDragonBase extends TameableEntity implements ISyncMount, IFlyingMount, IMultipartEntity, IAnimatedEntity, IDragonFlute, IDeadMob, IVillagerFear, IAnimalFear, IDropArmor {
+public abstract class EntityDragonBase extends TameableEntity implements IPassabilityNavigator, ISyncMount, IFlyingMount, IMultipartEntity, IAnimatedEntity, IDragonFlute, IDeadMob, IVillagerFear, IAnimalFear, IDropArmor {
 
     public static final int FLIGHT_CHANCE_PER_TICK = 1500;
     private static final DataParameter<Integer> HUNGER = EntityDataManager.createKey(EntityDragonBase.class, DataSerializers.VARINT);
@@ -133,8 +133,19 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     public int fireStopTicks;
     public int flyTicks;
     public float modelDeadProgress;
+    public float prevModelDeadProgress;
     public float ridingProgress;
     public float tackleProgress;
+    /*
+    0 = sit
+    1 = sleep
+    2 = hover
+    3 = fly
+    4 = fireBreath
+    5 = riding
+    6 = tackle
+     */
+    public float[] prevAnimationProgresses = new float[10];
     public boolean isDaytime;
     public int flightCycle;
     public BlockPos homePos;
@@ -176,17 +187,12 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     public String prevArmorResLoc = "0|0|0|0";
     public String armorResLoc = "0|0|0|0";
     public IafDragonFlightManager flightManager;
+    public boolean lookingForRoostAIFlag = false;
     protected int flyHovering;
     protected boolean hasHadHornUse = false;
     protected int fireTicks;
     protected int blockBreakCounter;
     private int prevFlightCycle;
-    private boolean isSleeping;
-    private boolean isSitting;
-    private boolean isHovering;
-    private boolean isFlying;
-    private boolean isBreathingFire;
-    private boolean isTackling;
     private boolean isModelDead;
     private int animationTick;
     private Animation currentAnimation;
@@ -233,17 +239,36 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         resetParts(1);
     }
 
+    public static AttributeModifierMap.MutableAttribute bakeAttributes() {
+        return MobEntity.func_233666_p_()
+                //HEALTH
+                .createMutableAttribute(Attributes.MAX_HEALTH, 20.0D)
+                //SPEED
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.3D)
+                //ATTACK
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, 1)
+                //FOLLOW RANGE
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, Math.min(2048, IafConfig.dragonTargetSearchLength))
+                //ARMOR
+                .createMutableAttribute(Attributes.ARMOR, 4);
+    }
+
+    public BlockPos getHomePosition() {
+        return this.homePos == null ? super.getHomePosition() : homePos;
+    }
+
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new DragonAIRide<>(this));
         this.goalSelector.addGoal(1, new SitGoal(this));
         this.goalSelector.addGoal(2, new DragonAIMate(this, 1.0D));
-        this.goalSelector.addGoal(3, new DragonAIEscort(this, 1.0D));
-        this.goalSelector.addGoal(4, new DragonAIAttackMelee(this, 1.5D, false));
-        this.goalSelector.addGoal(5, new AquaticAITempt(this, 1.0D, IafItemRegistry.FIRE_STEW, false));
-        this.goalSelector.addGoal(6, new DragonAIWander(this, 1.0D));
-        this.goalSelector.addGoal(7, new DragonAIWatchClosest(this, LivingEntity.class, 6.0F));
-        this.goalSelector.addGoal(7, new DragonAILookIdle(this));
+        this.goalSelector.addGoal(3, new DragonAIReturnToRoost(this, 1.0D));
+        this.goalSelector.addGoal(4, new DragonAIEscort(this, 1.0D));
+        this.goalSelector.addGoal(5, new DragonAIAttackMelee(this, 1.5D, false));
+        this.goalSelector.addGoal(6, new AquaticAITempt(this, 1.0D, IafItemRegistry.FIRE_STEW, false));
+        this.goalSelector.addGoal(7, new DragonAIWander(this, 1.0D));
+        this.goalSelector.addGoal(8, new DragonAIWatchClosest(this, LivingEntity.class, 6.0F));
+        this.goalSelector.addGoal(8, new DragonAILookIdle(this));
         this.targetSelector.addGoal(1, new OwnerHurtTargetGoal(this));
         this.targetSelector.addGoal(2, new OwnerHurtByTargetGoal(this));
         this.targetSelector.addGoal(3, new HurtByTargetGoal(this));
@@ -341,7 +366,6 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         }
     }
 
-
     public void updateParts() {
         if (headPart != null) {
             if (!headPart.shouldContinuePersisting()) {
@@ -425,23 +449,42 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     protected abstract void breathFireAtPos(BlockPos burningTarget);
 
     protected PathNavigator createNavigator(World worldIn) {
-        return new PathNavigateDragon(this, world);
+        return createNavigator(worldIn, AdvancedPathNavigate.MovementType.WALKING);
+    }
+
+    protected PathNavigator createNavigator(World worldIn, AdvancedPathNavigate.MovementType type) {
+        return createNavigator(worldIn, type, 4f, 4f);
+    }
+
+    protected PathNavigator createNavigator(World worldIn, AdvancedPathNavigate.MovementType type, float width, float height) {
+        AdvancedPathNavigate newNavigator = new AdvancedPathNavigate(this, world, type, width, height);
+        this.navigator = newNavigator;
+        newNavigator.setCanSwim(true);
+        newNavigator.getNodeProcessor().setCanOpenDoors(true);
+        return newNavigator;
     }
 
     protected void switchNavigator(int navigatorType) {
         if (navigatorType == 0) {
             this.moveController = new IafDragonFlightManager.GroundMoveHelper(this);
-            this.navigator = createNavigator(world);
+            this.navigator = createNavigator(world, AdvancedPathNavigate.MovementType.WALKING);
             this.navigatorType = 0;
+            this.setFlying(false);
+            this.setHovering(false);
         } else if (navigatorType == 1) {
             this.moveController = new IafDragonFlightManager.FlightMoveHelper(this);
-            this.navigator = new PathNavigateFlyingCreature(this, world);
+            this.navigator = createNavigator(world, AdvancedPathNavigate.MovementType.FLYING);
             this.navigatorType = 1;
         } else {
             this.moveController = new IafDragonFlightManager.PlayerFlightMoveHelper(this);
-            this.navigator = new PathNavigateFlyingCreature(this, world);
+            this.navigator = createNavigator(world, AdvancedPathNavigate.MovementType.FLYING);
             this.navigatorType = 2;
         }
+    }
+
+    @Override
+    public boolean canBeRiddenInWater(Entity rider) {
+        return true;
     }
 
     protected void updateAITasks() {
@@ -449,8 +492,8 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         breakBlock();
     }
 
-    public boolean canDestroyBlock(BlockPos pos) {
-        return world.getBlockState(pos).getBlock().canEntityDestroy(world.getBlockState(pos), world, pos, this);
+    public boolean canDestroyBlock(BlockPos pos, BlockState state) {
+        return state.getBlock().canEntityDestroy(state, world, pos, this);
     }
 
     public boolean isMobDead() {
@@ -547,8 +590,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
 
     @Override
     public boolean isAIDisabled() {
-        StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this, StoneEntityProperties.class);
-        return this.isModelDead() || properties != null && properties.isStone() || super.isAIDisabled();
+        return this.isModelDead() || super.isAIDisabled();
     }
 
     @Override
@@ -572,43 +614,43 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         this.dataManager.register(CRYSTAL_BOUND, Boolean.valueOf(false));
     }
 
-    public boolean up() {
+    public boolean isGoingUp() {
         return (dataManager.get(CONTROL_STATE).byteValue() & 1) == 1;
     }
 
-    public boolean down() {
+    public boolean isGoingDown() {
         return (dataManager.get(CONTROL_STATE).byteValue() >> 1 & 1) == 1;
     }
 
-    public boolean attack() {
+    public boolean isAttacking() {
         return (dataManager.get(CONTROL_STATE).byteValue() >> 2 & 1) == 1;
     }
 
-    public boolean strike() {
+    public boolean isStriking() {
         return (dataManager.get(CONTROL_STATE).byteValue() >> 3 & 1) == 1;
     }
 
-    public boolean dismount() {
+    public boolean isDismounting() {
         return (dataManager.get(CONTROL_STATE).byteValue() >> 4 & 1) == 1;
     }
 
-    public void up(boolean up) {
+    public void goUp(boolean up) {
         setStateField(0, up);
     }
 
-    public void down(boolean down) {
+    public void goDown(boolean down) {
         setStateField(1, down);
     }
 
-    public void attack(boolean attack) {
+    public void goAttack(boolean attack) {
         setStateField(2, attack);
     }
 
-    public void strike(boolean strike) {
+    public void goStrike(boolean strike) {
         setStateField(3, strike);
     }
 
-    public void dismount(boolean dismount) {
+    public void goDismount(boolean dismount) {
         setStateField(4, dismount);
     }
 
@@ -709,7 +751,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         this.setAgeInTicks(compound.getInt("AgeTicks"));
         this.setGender(compound.getBoolean("Gender"));
         this.setVariant(compound.getInt("Variant"));
-        this.setSleeping(compound.getBoolean("Sleeping"));
+        this.setQueuedToSit(compound.getBoolean("Sleeping"));
         this.setTamed(compound.getBoolean("TamedDragon"));
         this.setBreathingFire(compound.getBoolean("FireBreathing"));
         this.usingGroundAttack = compound.getBoolean("AttackDecision");
@@ -746,7 +788,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         }
         this.setCrystalBound(compound.getBoolean("CrystalBound"));
         if (compound.contains("CustomName", 8) && !compound.getString("CustomName").startsWith("TextComponent")) {
-            this.setCustomName(ITextComponent.Serializer.func_240643_a_(compound.getString("CustomName")));
+            this.setCustomName(ITextComponent.Serializer.getComponentFromJson(compound.getString("CustomName")));
         }
     }
 
@@ -787,20 +829,6 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         return null;
     }
 
-    public static AttributeModifierMap.MutableAttribute bakeAttributes() {
-        return MobEntity.func_233666_p_()
-                //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 20.0D)
-                //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.3D)
-                //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, 1)
-                //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, Math.min(2048, IafConfig.dragonTargetSearchLength))
-                //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 4);
-    }
-
     protected void updateAttributes() {
         prevArmorResLoc = armorResLoc;
         int armorHead = this.getArmorOrdinal(this.getItemStackFromSlot(EquipmentSlotType.HEAD));
@@ -814,12 +842,12 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         double speedStep = (maximumSpeed - minimumSpeed) / 125F;
         double armorStep = (maximumArmor - minimumArmor) / 125F;
         if (this.getAgeInDays() <= 125) {
-            this.getAttribute(Attributes.field_233818_a_).setBaseValue(Math.round(minimumHealth + (healthStep * this.getAgeInDays())));
-            this.getAttribute(Attributes.field_233823_f_).setBaseValue(Math.round(minimumDamage + (attackStep * this.getAgeInDays())));
-            this.getAttribute(Attributes.field_233821_d_).setBaseValue(minimumSpeed + (speedStep * this.getAgeInDays()));
+            this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(Math.round(minimumHealth + (healthStep * this.getAgeInDays())));
+            this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(Math.round(minimumDamage + (attackStep * this.getAgeInDays())));
+            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(minimumSpeed + (speedStep * this.getAgeInDays()));
             double oldValue = minimumArmor + (armorStep * this.getAgeInDays());
-            this.getAttribute(Attributes.field_233826_i_).setBaseValue(oldValue + calculateArmorModifier());
-            this.getAttribute(Attributes.field_233819_b_).setBaseValue(Math.min(2048, IafConfig.dragonTargetSearchLength));
+            this.getAttribute(Attributes.ARMOR).setBaseValue(oldValue + calculateArmorModifier());
+            this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(Math.min(2048, IafConfig.dragonTargetSearchLength));
         }
     }
 
@@ -882,31 +910,19 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean isHovering() {
-        if (world.isRemote) {
-            return this.isHovering = this.dataManager.get(HOVERING).booleanValue();
-        }
-        return isHovering;
+        return this.dataManager.get(HOVERING).booleanValue();
     }
 
     public void setHovering(boolean hovering) {
         this.dataManager.set(HOVERING, hovering);
-        if (!world.isRemote) {
-            this.isHovering = hovering;
-        }
     }
 
     public boolean isFlying() {
-        if (world.isRemote) {
-            return this.isFlying = this.dataManager.get(FLYING).booleanValue();
-        }
-        return isFlying;
+        return this.dataManager.get(FLYING).booleanValue();
     }
 
     public void setFlying(boolean flying) {
         this.dataManager.set(FLYING, flying);
-        if (!world.isRemote) {
-            this.isFlying = flying;
-        }
     }
 
     public boolean useFlyingPathFinder() {
@@ -918,19 +934,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean isSleeping() {
-        if (world.isRemote) {
-            boolean isSleeping = this.dataManager.get(SLEEPING).booleanValue();
-            this.isSleeping = isSleeping;
-            return isSleeping;
-        }
-        return isSleeping;
-    }
-
-    public void setSleeping(boolean sleeping) {
-        this.dataManager.set(SLEEPING, sleeping);
-        if (!world.isRemote) {
-            this.isSleeping = sleeping;
-        }
+        return this.dataManager.get(SLEEPING).booleanValue();
     }
 
     public boolean isBlinking() {
@@ -938,38 +942,26 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean isBreathingFire() {
-        if (world.isRemote) {
-            boolean breathing = this.dataManager.get(FIREBREATHING).booleanValue();
-            this.isBreathingFire = breathing;
-            return breathing;
-        }
-        return isBreathingFire;
+        return this.dataManager.get(FIREBREATHING).booleanValue();
     }
 
     public void setBreathingFire(boolean breathing) {
         this.dataManager.set(FIREBREATHING, breathing);
-        if (!world.isRemote) {
-            this.isBreathingFire = breathing;
-        }
     }
 
     protected boolean canFitPassenger(Entity passenger) {
         return this.getPassengers().size() < 2;
     }
 
-    public boolean isSitting() {
-        if (world.isRemote) {
-            boolean isSitting = (this.dataManager.get(TAMED).byteValue() & 1) != 0;
-            this.isSitting = isSitting;
-            return isSitting;
-        }
-        return isSitting;
+    public boolean isQueuedToSit() {
+        return (this.dataManager.get(TAMED).byteValue() & 1) != 0;
+    }
+
+    public void setQueuedToSit(boolean sleeping) {
+        this.dataManager.set(SLEEPING, sleeping);
     }
 
     public void setSitting(boolean sitting) {
-        if (!world.isRemote) {
-            this.isSitting = sitting;
-        }
         byte b0 = this.dataManager.get(TAMED).byteValue();
         if (sitting) {
             this.dataManager.set(TAMED, Byte.valueOf((byte) (b0 | 1)));
@@ -982,8 +974,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     @Override
-    public void onKillEntity(LivingEntity entity) {
-        super.onKillEntity(entity);
+    public void onKillEntity(ServerWorld world, LivingEntity entity) {
         this.setHunger(this.getHunger() + FoodUtils.getFoodPoints(entity));
     }
 
@@ -1022,22 +1013,15 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean canMove() {
-        StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this, StoneEntityProperties.class);
-        if (properties != null && properties.isStone()) {
-            return false;
-        }
-        return !this.isSitting() && !this.isSleeping() && this.getControllingPassenger() == null && !this.isModelDead() && sleepProgress == 0 && this.getAnimation() != ANIMATION_SHAKEPREY;
+        return !this.isQueuedToSit() && !this.isSleeping() && this.getControllingPassenger() == null && !this.isModelDead() && sleepProgress == 0 && this.getAnimation() != ANIMATION_SHAKEPREY;
     }
 
     public boolean isAlive() {
-        if (isModelDead()) {
-            return true;
-        }
-        return !this.removed && this.getHealth() > 0.0F;
+        return super.isAlive();
     }
 
     @Override
-    public ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
+    public ActionResultType applyPlayerInteraction(PlayerEntity player, Vector3d vec, Hand hand) {
         ItemStack stack = player.getHeldItem(hand);
         int lastDeathStage = this.getAgeInDays() / 5;
         if (stack.getItem() == IafItemRegistry.DRAGON_DEBUG_STICK) {
@@ -1084,6 +1068,17 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
             }
             return ActionResultType.SUCCESS;
         }
+        return super.applyPlayerInteraction(player, vec, hand);
+    }
+
+    @Override
+    public ActionResultType getEntityInteractionResult(PlayerEntity player, Hand hand) {
+        ItemStack stack = player.getHeldItem(hand);
+        int lastDeathStage = this.getAgeInDays() / 5;
+        if (stack.getItem() == IafItemRegistry.DRAGON_DEBUG_STICK) {
+            logic.debug();
+            return ActionResultType.SUCCESS;
+        }
         if (!this.isModelDead()) {
             if (stack.getItem() == IafItemRegistry.CREATIVE_DRAGON_MEAL) {
                 this.setTamed(true);
@@ -1125,9 +1120,8 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                     return ActionResultType.SUCCESS;
                 }
                 this.setTamedBy(player);
-                StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this, StoneEntityProperties.class);
-                if (stack.getItem() == IafItemRegistry.DRAGON_HORN && (properties == null || !properties.isStone())) {
-                    return super.func_230254_b_(player, hand);
+                if (stack.getItem() == IafItemRegistry.DRAGON_HORN) {
+                    return super.getEntityInteractionResult(player, hand);
                 }
                 if (stack.isEmpty() && !player.isSneaking()) {
                     if (!world.isRemote) {
@@ -1140,8 +1134,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                             player.setSneaking(false);
                             player.startRiding(this, true);
                             IceAndFire.sendMSGToAll(new MessageStartRidingMob(this.getEntityId(), true, false));
-
-                            this.setSleeping(false);
+                            this.setQueuedToSit(false);
                         }
                     }
                     return ActionResultType.SUCCESS;
@@ -1199,7 +1192,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                                 player.sendStatusMessage(new TranslationTextComponent("dragon.command.remove_home"), true);
                                 return ActionResultType.SUCCESS;
                             } else {
-                                BlockPos pos = this.func_233580_cy_();
+                                BlockPos pos = this.getPosition();
                                 this.homePos = pos;
                                 this.hasHomePosition = true;
                                 player.sendStatusMessage(new TranslationTextComponent("dragon.command.new_home", homePos.getX(), homePos.getY(), homePos.getZ()), true);
@@ -1207,7 +1200,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                             }
                         } else {
                             this.playSound(SoundEvents.ENTITY_ZOMBIE_INFECT, this.getSoundVolume(), this.getSoundPitch());
-                            if(!world.isRemote){
+                            if (!world.isRemote) {
                                 this.setCommand(this.getCommand() + 1);
                                 if (this.getCommand() > 2) {
                                     this.setCommand(0);
@@ -1227,7 +1220,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                 }
             }
         }
-        return super.func_230254_b_(player, hand);
+        return super.getEntityInteractionResult(player, hand);
 
     }
 
@@ -1297,7 +1290,10 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                     this.world.addParticle(ParticleTypes.HAPPY_VILLAGER, f, f1, f2, motionX, motionY, motionZ);
                 }
             }
+
         }
+        if (this.getDragonStage() >= 2)
+            this.dismount();
         this.updateAttributes();
     }
 
@@ -1314,7 +1310,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean isTimeToWake() {
-        return this.world.isDaytime();
+        return this.world.isDaytime() || this.getCommand() == 2;
     }
 
     private boolean isStuck() {
@@ -1340,34 +1336,70 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         return this.getPosY() > IafConfig.maxDragonFlight;
     }
 
+    private int calculateDownY() {
+        if (this.getNavigator().getPath() != null) {
+            Path path = this.getNavigator().getPath();
+            Vector3d p = path.getVectorFromIndex(this, Math.min(path.getCurrentPathLength() - 1, path.getCurrentPathIndex() + 1));
+            if (p.y < this.getPosY() - 1) {
+                return -1;
+            }
+        }
+        return 1;
+    }
+
     public void breakBlock() {
         if (this.blockBreakCounter > 0 || IafConfig.dragonBreakBlockCooldown == 0) {
             --this.blockBreakCounter;
             int bounds = 1;//(int)Math.ceil(this.getRenderSize() * 0.1);
             int flightModifier = isFlying() && this.getAttackTarget() != null ? -1 : 1;
-            if ((this.blockBreakCounter == 0 || IafConfig.dragonBreakBlockCooldown == 0) && net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.world, this)) {
+            int yMinus = calculateDownY();
+            if (!this.isIceInWater() && (this.blockBreakCounter == 0 || IafConfig.dragonBreakBlockCooldown == 0) && net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.world, this)) {
                 if (IafConfig.dragonGriefing != 2 && (!this.isTamed() || IafConfig.tamedDragonGriefing)) {
                     float hardness = IafConfig.dragonGriefing == 1 || this.getDragonStage() <= 3 ? 2.0F : 5.0F;
                     if (!isModelDead() && this.getDragonStage() >= 3 && (this.canMove() || this.getControllingPassenger() != null)) {
-                        for (BlockPos pos : BlockPos.getAllInBox((int) Math.floor(this.getBoundingBox().minX) - bounds, (int) Math.floor(this.getBoundingBox().minY) + 1, (int) Math.floor(this.getBoundingBox().minZ) - bounds, (int) Math.floor(this.getBoundingBox().maxX) + bounds, (int) Math.floor(this.getBoundingBox().maxY) + bounds + flightModifier, (int) Math.floor(this.getBoundingBox().maxZ) + bounds).map(BlockPos::toImmutable).collect(Collectors.toSet())) {
+                        BlockPos.getAllInBox(
+                                (int) Math.floor(this.getBoundingBox().minX) - bounds,
+                                (int) Math.floor(this.getBoundingBox().minY) + yMinus,
+                                (int) Math.floor(this.getBoundingBox().minZ) - bounds,
+                                (int) Math.floor(this.getBoundingBox().maxX) + bounds,
+                                (int) Math.floor(this.getBoundingBox().maxY) + bounds + flightModifier,
+                                (int) Math.floor(this.getBoundingBox().maxZ) + bounds
+                        ).forEach(pos -> {
                             if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, pos.getX(), pos.getY(), pos.getZ())))
-                                continue;
+                                return;
                             BlockState state = world.getBlockState(pos);
-                            if (state.getMaterial().blocksMovement() && !state.isAir() && !state.getShape(world, pos).isEmpty() && state.getBlockHardness(world, pos) >= 0F && state.getBlockHardness(world, pos) <= hardness && DragonUtils.canDragonBreak(state.getBlock()) && this.canDestroyBlock(pos)) {
+                            if (isBreakable(pos, state, hardness)) {
                                 this.setMotion(this.getMotion().mul(0.6F, 1, 0.6F));
                                 if (!world.isRemote) {
-                                    if(rand.nextFloat() <= IafConfig.dragonBlockBreakingDropChance && DragonUtils.canDropFromDragonBlockBreak(state)){
+                                    if (rand.nextFloat() <= IafConfig.dragonBlockBreakingDropChance && DragonUtils.canDropFromDragonBlockBreak(state)) {
                                         world.destroyBlock(pos, true);
-                                    }else{
+                                    } else {
                                         world.setBlockState(pos, Blocks.AIR.getDefaultState());
                                     }
                                 }
                             }
-                        }
+                        });
                     }
                 }
             }
         }
+    }
+
+    protected boolean isBreakable(BlockPos pos, BlockState state, float hardness) {
+        return state.getMaterial().blocksMovement() && !state.isAir() && state.getFluidState().isEmpty() && !state.getShape(world, pos).isEmpty() && state.getBlockHardness(world, pos) >= 0F && state.getBlockHardness(world, pos) <= hardness && DragonUtils.canDragonBreak(state.getBlock()) && this.canDestroyBlock(pos, state);
+    }
+
+    public boolean isBlockPassable(BlockState state, BlockPos pos, BlockPos entityPos) {
+        if (!isModelDead() && this.getDragonStage() >= 3) {
+            if (IafConfig.dragonGriefing != 2 && (!this.isTamed() || IafConfig.tamedDragonGriefing) && pos.getY() >= this.getPosY()) {
+                return isBreakable(pos, state, IafConfig.dragonGriefing == 1 || this.getDragonStage() <= 3 ? 2.0F : 5.0F);
+            }
+        }
+        return false;
+    }
+
+    protected boolean isIceInWater() {
+        return false;
     }
 
     public void spawnGroundEffects() {
@@ -1408,8 +1440,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean doesWantToLand() {
-        StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this, StoneEntityProperties.class);
-        return this.flyTicks > 6000 || down() || flyTicks > 40 && this.flyProgress == 0 || properties != null && properties.isStone() || this.isChained() && flyTicks > 100 || this.airAttack == IafDragonAttacks.Air.TACKLE && this.getAttackTarget() != null;
+        return this.flyTicks > 6000 || isGoingDown() || flyTicks > 40 && this.flyProgress == 0 || this.isChained() && flyTicks > 100;
     }
 
     public abstract String getVariantName(int variant);
@@ -1431,7 +1462,6 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
                 this.rotationYaw = passenger.rotationYaw;
                 Vector3d riderPos = this.getRiderPosition();
                 passenger.setPosition(riderPos.x, riderPos.y + passenger.getHeight(), riderPos.z);
-                this.stepHeight = 1;
             }
         }
     }
@@ -1445,9 +1475,11 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     protected void updatePreyInMouth(Entity prey) {
+        if (this.getAnimation() != ANIMATION_SHAKEPREY){
         this.setAnimation(ANIMATION_SHAKEPREY);
+        }
         if (this.getAnimation() == ANIMATION_SHAKEPREY && this.getAnimationTick() > 55 && prey != null) {
-            prey.attackEntityFrom(DamageSource.causeMobDamage(this), prey instanceof PlayerEntity ? 17F : (float) this.getAttribute(Attributes.field_233823_f_).getValue() * 4);
+            prey.attackEntityFrom(DamageSource.causeMobDamage(this), prey instanceof PlayerEntity ? 17F : (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue() * 4);
             prey.stopRiding();
         }
         renderYawOffset = rotationYaw;
@@ -1491,13 +1523,13 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
 
     @Override
     @Nullable
-    public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         spawnDataIn = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.setGender(this.getRNG().nextBoolean());
         int age = this.getRNG().nextInt(80) + 1;
         this.growDragon(age);
         this.setVariant(new Random().nextInt(4));
-        this.setSleeping(false);
+        this.setQueuedToSit(false);
         this.updateAttributes();
         double healthStep = (maximumHealth - minimumHealth) / (125);
         this.heal((Math.round(minimumHealth + (healthStep * age))));
@@ -1519,16 +1551,15 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
             return false;
         }
 
-        if (dmg == DamageSource.IN_WALL || dmg == DamageSource.FALLING_BLOCK) {
+        if (dmg == DamageSource.IN_WALL || dmg == DamageSource.FALLING_BLOCK || dmg == DamageSource.CRAMMING) {
             return false;
         }
-
         if (!world.isRemote && dmg.getTrueSource() != null && this.getRNG().nextInt(4) == 0) {
             this.roar();
         }
         if (i > 0) {
             if (this.isSleeping()) {
-                this.setSleeping(false);
+                this.setQueuedToSit(false);
                 if (!this.isTamed()) {
                     if (dmg.getTrueSource() instanceof PlayerEntity) {
                         this.setAttackTarget((PlayerEntity) dmg.getTrueSource());
@@ -1565,8 +1596,8 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         if (world.isRemote) {
             this.updateClientControls();
         }
-
         world.getProfiler().startSection("dragonLogic");
+        this.stepHeight = 1.2F;
         isOverAir = isOverAirLogic();
         logic.updateDragonCommon();
         if (this.isModelDead()) {
@@ -1593,7 +1624,15 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     @Override
     public void livingTick() {
         super.livingTick();
-        this.stepHeight = this.getDragonStage() > 1 ? 1.5F : 1F;
+        this.prevModelDeadProgress = this.modelDeadProgress;
+        this.prevDiveProgress = this.diveProgress;
+        prevAnimationProgresses[0] = this.sitProgress;
+        prevAnimationProgresses[1] = this.sleepProgress;
+        prevAnimationProgresses[2] = this.hoverProgress;
+        prevAnimationProgresses[3] = this.flyProgress;
+        prevAnimationProgresses[4] = this.fireBreathProgress;
+        prevAnimationProgresses[5] = this.ridingProgress;
+        prevAnimationProgresses[6] = this.tackleProgress;
         if (world.getDifficulty() == Difficulty.PEACEFUL && this.getAttackTarget() instanceof PlayerEntity) {
             this.setAttackTarget(null);
         }
@@ -1628,9 +1667,9 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         int stage = this.getDragonStage() - 1;
         float step = (growth_stages[stage][1] - growth_stages[stage][0]) / 25;
         if (this.getAgeInDays() > 125) {
-            return growth_stages[stage][0] + ((step * 25));
+            return growth_stages[stage][0] + (step * 25);
         }
-        return growth_stages[stage][0] + ((step * this.getAgeFactor()));
+        return growth_stages[stage][0] + (step * this.getAgeFactor());
     }
 
     private int getAgeFactor() {
@@ -1646,7 +1685,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         if (this.isModelDead()) {
             return false;
         }
-        boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue()));
+        boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue()));
 
         if (flag) {
             this.applyEnchantments(this, entityIn);
@@ -1740,7 +1779,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     @Override
-    public AgeableEntity createChild(AgeableEntity ageable) {
+    public AgeableEntity createChild(ServerWorld serverWorld, AgeableEntity ageable) {
         return null;
     }
 
@@ -1759,7 +1798,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         int k = MathHelper.floor(this.getPosZ());
         BlockPos pos = new BlockPos(i, j, k);
         EntityDragonEgg dragon = new EntityDragonEgg(IafEntityRegistry.DRAGON_EGG, this.world);
-        dragon.setEggType(EnumDragonEgg.byMetadata(new Random().nextInt(3) + getStartMetaForType()));
+        dragon.setEggType(EnumDragonEgg.byMetadata(new Random().nextInt(4) + getStartMetaForType()));
         dragon.setPosition(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
         return dragon;
     }
@@ -1790,19 +1829,11 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean isTackling() {
-        if (world.isRemote) {
-            boolean tackling = this.dataManager.get(TACKLE).booleanValue();
-            this.isTackling = tackling;
-            return tackling;
-        }
-        return isTackling;
+        return this.dataManager.get(TACKLE).booleanValue();
     }
 
     public void setTackling(boolean tackling) {
         this.dataManager.set(TACKLE, tackling);
-        if (!world.isRemote) {
-            this.isTackling = tackling;
-        }
     }
 
     public boolean isAgingDisabled() {
@@ -1841,11 +1872,11 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         Minecraft mc = Minecraft.getInstance();
         if (this.isRidingPlayer(mc.player)) {
             byte previousState = getControlState();
-            up(mc.gameSettings.keyBindJump.isKeyDown());
-            down(IafKeybindRegistry.dragon_down.isKeyDown());
-            attack(IafKeybindRegistry.dragon_fireAttack.isKeyDown());
-            strike(IafKeybindRegistry.dragon_strike.isKeyDown());
-            dismount(mc.gameSettings.keyBindSneak.isKeyDown());
+            goUp(mc.gameSettings.keyBindJump.isKeyDown());
+            goDown(IafKeybindRegistry.dragon_down.isKeyDown());
+            goAttack(IafKeybindRegistry.dragon_fireAttack.isKeyDown());
+            goStrike(IafKeybindRegistry.dragon_strike.isKeyDown());
+            goDismount(mc.gameSettings.keyBindSneak.isKeyDown());
             byte controlState = getControlState();
             if (controlState != previousState) {
                 IceAndFire.NETWORK_WRAPPER.sendToServer(new MessageDragonControl(this.getEntityId(), controlState, getPosX(), getPosY(), getPosZ()));
@@ -1853,7 +1884,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         }
         if (this.getRidingEntity() != null && this.getRidingEntity() == mc.player) {
             byte previousState = getControlState();
-            dismount(mc.gameSettings.keyBindSneak.isKeyDown());
+            goDismount(mc.gameSettings.keyBindSneak.isKeyDown());
             byte controlState = getControlState();
             if (controlState != previousState) {
                 IceAndFire.NETWORK_WRAPPER.sendToServer(new MessageDragonControl(this.getEntityId(), controlState, getPosX(), getPosY(), getPosZ()));
@@ -1873,12 +1904,12 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
 
     @Override
     public boolean isMovementBlocked() {
-        return this.getHealth() <= 0.0F || isSitting() && !this.isBeingRidden() || this.isModelDead();
+        return this.getHealth() <= 0.0F || isQueuedToSit() && !this.isBeingRidden() || this.isModelDead();
     }
 
     @Override
     public void travel(Vector3d Vector3d) {
-        if (this.getAnimation() == ANIMATION_SHAKEPREY || !this.canMove() && !this.isBeingRidden() || this.isSitting()) {
+        if (this.getAnimation() == ANIMATION_SHAKEPREY || !this.canMove() && !this.isBeingRidden() || this.isQueuedToSit()) {
             if (this.getNavigator().getPath() != null) {
                 this.getNavigator().clearPath();
             }
@@ -1889,19 +1920,19 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
 
     @Override
     public void move(MoverType typeIn, Vector3d pos) {
-        if(this.isSitting() && !this.isBeingRidden()){
+        if (this.isQueuedToSit() && !this.isBeingRidden()) {
             pos = new Vector3d(0, pos.getY(), 0);
         }
         super.move(typeIn, pos);
 
     }
 
-        public void updateCheckPlayer() {
+    public void updateCheckPlayer() {
         double checklength = this.getBoundingBox().getAverageEdgeLength() * 3;
         PlayerEntity player = world.getClosestPlayer(this, checklength);
         if (this.isSleeping()) {
             if (player != null && !this.isOwner(player) && !player.isCreative()) {
-                this.setSleeping(false);
+                this.setQueuedToSit(false);
                 this.setSitting(false);
                 this.setAttackTarget(player);
             }
@@ -2054,7 +2085,7 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         float hoverProg = this.hoverProgress * 0.03F;
         float flyProg = this.flyProgress * 0.01F;
         float sleepProg = this.sleepProgress * -0.025F;
-        float extraAgeScale = (Math.max(0, this.getAgeInDays() - 75) / 75F) * 1.65F;
+        float extraAgeScale = this.getRenderScale()*0.2F;
         float pitchX = 0;
         float pitchY = 0;
         float dragonPitch = getDragonPitch();
@@ -2155,6 +2186,18 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
         this.flightManager.onSetAttackTarget(LivingEntityIn);
     }
 
+    @Override
+    public boolean shouldAttackEntity(LivingEntity target, LivingEntity owner) {
+        if (this.isTamed() && target instanceof TameableEntity) {
+            TameableEntity tamableTarget = (TameableEntity) target;
+            UUID targetOwner = tamableTarget.getOwnerId();
+            if (targetOwner != null && targetOwner.equals(this.getOwnerId())) {
+                return false;
+            }
+        }
+        return super.shouldAttackEntity(target, owner);
+    }
+
     public boolean canAttack(LivingEntity target) {
         return super.canAttack(target) && DragonUtils.isAlive(target);
     }
@@ -2172,11 +2215,11 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
     }
 
     public boolean isAllowedToTriggerFlight() {
-        return this.hasFlightClearance() && !this.isSitting() && this.getPassengers().isEmpty() && !this.isChild() && !this.isSleeping() && this.canMove() && this.onGround;
+        return (this.hasFlightClearance() && this.onGround || this.isInWater()) && !this.isQueuedToSit() && this.getPassengers().isEmpty() && !this.isChild() && !this.isSleeping() && this.canMove();
     }
 
     public BlockPos getEscortPosition() {
-        return this.getOwner() != null ? new BlockPos(this.getOwner().getPositionVec()) : this.func_233580_cy_();
+        return this.getOwner() != null ? new BlockPos(this.getOwner().getPositionVec()) : this.getPosition();
     }
 
     public boolean shouldTPtoOwner() {
@@ -2280,10 +2323,14 @@ public abstract class EntityDragonBase extends TameableEntity implements ISyncMo
             if (this.isBoundToCrystal()) {
                 DragonPosWorldData data = DragonPosWorldData.get(world);
                 if (data != null) {
-                    data.addDragon(this.getUniqueID(), this.func_233580_cy_());
+                    data.addDragon(this.getUniqueID(), this.getPosition());
                 }
             }
         }
         super.onRemovedFromWorld();
+    }
+
+    public int maxSearchNodes() {
+        return 50;
     }
 }

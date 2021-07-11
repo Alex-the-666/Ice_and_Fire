@@ -1,7 +1,11 @@
 package com.github.alexthe666.iceandfire.compat.jei.firedragonforge;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.compat.jei.IceAndFireJEIPlugin;
 import com.github.alexthe666.iceandfire.recipe.DragonForgeRecipe;
+
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -10,10 +14,8 @@ import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class FireDragonForgeCatagory implements IRecipeCategory<DragonForgeRecipe> {
 
@@ -52,10 +54,10 @@ public class FireDragonForgeCatagory implements IRecipeCategory<DragonForgeRecip
 
     @Override
     public void setIngredients(DragonForgeRecipe dragonForgeRecipe, IIngredients iIngredients) {
-        List<ItemStack> ingredientsList = new ArrayList<>();
+        List<Ingredient> ingredientsList = new ArrayList<>();
         ingredientsList.add(dragonForgeRecipe.getInput());
         ingredientsList.add(dragonForgeRecipe.getBlood());
-        iIngredients.setInputs(VanillaTypes.ITEM, ingredientsList);
+        iIngredients.setInputIngredients(ingredientsList);
         iIngredients.setOutput(VanillaTypes.ITEM, dragonForgeRecipe.getOutput());
 
     }

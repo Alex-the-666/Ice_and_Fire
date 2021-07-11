@@ -3,7 +3,12 @@ package com.github.alexthe666.iceandfire.block;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityPodium;
 import com.github.alexthe666.iceandfire.item.ICustomRendered;
-import net.minecraft.block.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ContainerBlock;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
@@ -18,12 +23,22 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class BlockPodium extends ContainerBlock implements ICustomRendered {
 
     protected static final VoxelShape AABB = Block.makeCuboidShape(2, 0, 2, 14, 23, 14);
 
     public BlockPodium(String type) {
-        super(Properties.create(Material.WOOD).notSolid().variableOpacity().hardnessAndResistance(2.0F).sound(SoundType.WOOD));
+        super(
+    		Properties
+    			.create(Material.WOOD)
+    			.notSolid()
+    			.variableOpacity()
+    			.hardnessAndResistance(2.0F)
+    			.sound(SoundType.WOOD)
+		);
+
         this.setRegistryName(IceAndFire.MODID, "podium_" + type);
     }
 

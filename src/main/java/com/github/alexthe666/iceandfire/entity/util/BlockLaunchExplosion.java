@@ -1,9 +1,15 @@
 package com.github.alexthe666.iceandfire.entity.util;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -27,10 +33,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import net.minecraft.world.Explosion.Mode;
 
 public class BlockLaunchExplosion extends Explosion {
     private final World world;
@@ -57,22 +60,22 @@ public class BlockLaunchExplosion extends Explosion {
         this.position = new Vector3d(x, y, z);
     }
 
-    private static void func_229976_a_(ObjectArrayList<Pair<ItemStack, BlockPos>> p_229976_0_, ItemStack p_229976_1_, BlockPos p_229976_2_) {
-        int i = p_229976_0_.size();
+    private static void handleExplosionDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> dropPositionArray, ItemStack stack, BlockPos pos) {
+        int i = dropPositionArray.size();
 
         for (int j = 0; j < i; ++j) {
-            Pair<ItemStack, BlockPos> pair = p_229976_0_.get(j);
+            Pair<ItemStack, BlockPos> pair = dropPositionArray.get(j);
             ItemStack itemstack = pair.getFirst();
-            if (ItemEntity.func_226532_a_(itemstack, p_229976_1_)) {
-                ItemStack itemstack1 = ItemEntity.func_226533_a_(itemstack, p_229976_1_, 16);
-                p_229976_0_.set(j, Pair.of(itemstack1, pair.getSecond()));
-                if (p_229976_1_.isEmpty()) {
+            if (ItemEntity.canMergeStacks(itemstack, stack)) {
+                ItemStack itemstack1 = ItemEntity.mergeStacks(itemstack, stack, 16);
+                dropPositionArray.set(j, Pair.of(itemstack1, pair.getSecond()));
+                if (stack.isEmpty()) {
                     return;
                 }
             }
         }
 
-        p_229976_0_.add(Pair.of(p_229976_1_, p_229976_2_));
+        dropPositionArray.add(Pair.of(stack, pos));
     }
 
     @Override
@@ -136,7 +139,7 @@ public class BlockLaunchExplosion extends Explosion {
 
         for (int k2 = 0; k2 < list.size(); ++k2) {
             Entity entity = list.get(k2);
-            if (!entity.isImmuneToExplosions()) {
+            if (!entity.isImmuneToExplosions() &&(exploder == null || !entity.isEntityEqual(exploder))) {
                 double d12 = MathHelper.sqrt(entity.getDistanceSq(Vector3d)) / f3;
                 if (d12 <= 1.0D) {
                     double d5 = entity.getPosX() - this.x;
@@ -233,7 +236,7 @@ public class BlockLaunchExplosion extends Explosion {
         return exploder;
     }
 
-    public void func_180342_d() {
+    public void clearAffectedBlockPositions() {
         this.affectedBlockPositions.clear();
     }
 

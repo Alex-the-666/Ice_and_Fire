@@ -1,15 +1,18 @@
 package com.github.alexthe666.iceandfire.item;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
-import com.github.alexthe666.iceandfire.entity.*;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
+import com.github.alexthe666.iceandfire.entity.EntityStoneStatue;
+import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.entity.util.IBlacklistedFromStatues;
-import com.github.alexthe666.iceandfire.entity.util.IDropArmor;
-import com.github.alexthe666.iceandfire.message.MessageStoneStatue;
 import com.github.alexthe666.iceandfire.misc.IafDamageRegistry;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
 import com.google.common.base.Predicate;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -28,10 +31,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 public class ItemGorgonHead extends Item implements IUsesTEISR, ICustomRendered {
 
@@ -67,7 +66,7 @@ public class ItemGorgonHead extends Item implements IUsesTEISR, ICustomRendered 
         List<Entity> list = worldIn.getEntitiesInAABBexcluding(entity, entity.getBoundingBox().expand(Vector3d1.x * dist, Vector3d1.y * dist, Vector3d1.z * dist).grow(1.0D, 1.0D, 1.0D), new Predicate<Entity>() {
             public boolean apply(@Nullable Entity entity) {
                 boolean blindness = entity instanceof LivingEntity && ((LivingEntity) entity).isPotionActive(Effects.BLINDNESS) || (entity instanceof IBlacklistedFromStatues && !((IBlacklistedFromStatues) entity).canBeTurnedToStone());
-                return entity != null && entity.canBeCollidedWith() && !blindness && (entity instanceof PlayerEntity || (entity instanceof LivingEntity && EntityPropertiesHandler.INSTANCE.getProperties(entity, StoneEntityProperties.class) != null && !EntityPropertiesHandler.INSTANCE.getProperties(entity, StoneEntityProperties.class).isStone()));
+                return entity != null && entity.canBeCollidedWith() && !blindness && (entity instanceof PlayerEntity || (entity instanceof LivingEntity && DragonUtils.isAlive((LivingEntity)entity)));
             }
         });
         double d2 = d1;
@@ -78,7 +77,7 @@ public class ItemGorgonHead extends Item implements IUsesTEISR, ICustomRendered 
 
             if (axisalignedbb.contains(Vector3d)) {
                 if (d2 >= 0.0D) {
-                    pointedEntity = entity1;
+                    //pointedEntity = entity1;
                     d2 = 0.0D;
                 }
             } else if (optional.isPresent()) {
@@ -97,46 +96,23 @@ public class ItemGorgonHead extends Item implements IUsesTEISR, ICustomRendered 
             }
         }
         if (pointedEntity != null) {
-            if (pointedEntity instanceof LivingEntity || pointedEntity instanceof PlayerEntity) {
-                if (pointedEntity instanceof PlayerEntity) {
-                    pointedEntity.playSound(IafSoundRegistry.GORGON_TURN_STONE, 1, 1);
+            if (pointedEntity instanceof LivingEntity) {
+                pointedEntity.playSound(IafSoundRegistry.TURN_STONE, 1, 1);
+                EntityStoneStatue statue = EntityStoneStatue.buildStatueEntity((LivingEntity) pointedEntity);
+                if(pointedEntity instanceof PlayerEntity){
                     pointedEntity.attackEntityFrom(IafDamageRegistry.GORGON_DMG, Integer.MAX_VALUE);
-                    EntityStoneStatue statue = new EntityStoneStatue(IafEntityRegistry.STONE_STATUE, worldIn);
-                    statue.setPositionAndRotation(pointedEntity.getPosX(), pointedEntity.getPosY(), pointedEntity.getPosZ(), pointedEntity.rotationYaw, pointedEntity.rotationPitch);
-                    statue.smallArms = true;
-                    if (!worldIn.isRemote) {
-                        worldIn.addEntity(statue);
-                    }
-                } else {
-                    StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(pointedEntity, StoneEntityProperties.class);
-                    if (properties != null) {
-                        properties.setStone(true);
-                    }
-                    IceAndFire.NETWORK_WRAPPER.sendToServer(new MessageStoneStatue(pointedEntity.getEntityId(), true));
-                    if (pointedEntity instanceof EntityDragonBase) {
-                        EntityDragonBase dragon = (EntityDragonBase) pointedEntity;
-                        dragon.setFlying(false);
-                        dragon.setHovering(false);
-                    }
-                    if (pointedEntity instanceof EntityHippogryph) {
-                        EntityHippogryph dragon = (EntityHippogryph) pointedEntity;
-                        dragon.setFlying(false);
-                        dragon.setHovering(false);
-                        dragon.airTarget = null;
-                    }
-                    if (pointedEntity instanceof IDropArmor) {
-                        ((IDropArmor) pointedEntity).dropArmor();
-                    }
+                }else{
+                    pointedEntity.remove();
                 }
-
-                if (pointedEntity instanceof EntityGorgon) {
-                    entity.playSound(IafSoundRegistry.GORGON_PETRIFY, 1, 1);
-                } else {
-                    entity.playSound(IafSoundRegistry.GORGON_TURN_STONE, 1, 1);
+                statue.setPositionAndRotation(pointedEntity.getPosX(), pointedEntity.getPosY(), pointedEntity.getPosZ(), pointedEntity.rotationYaw, pointedEntity.rotationPitch);
+                statue.renderYawOffset = pointedEntity.rotationYaw;
+                if (!worldIn.isRemote) {
+                    worldIn.addEntity(statue);
                 }
-                if (!(entity instanceof PlayerEntity && ((PlayerEntity) entity).isCreative())) {
+                if (entity instanceof PlayerEntity && !((PlayerEntity) entity).isCreative()) {
                     stack.shrink(1);
                 }
+
             }
         }
         stack.getTag().putBoolean("Active", false);
@@ -156,6 +132,6 @@ public class ItemGorgonHead extends Item implements IUsesTEISR, ICustomRendered 
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").mergeStyle(TextFormatting.GRAY));
     }
 }

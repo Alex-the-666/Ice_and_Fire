@@ -1,13 +1,16 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.function.Predicate;
+
 import com.github.alexthe666.iceandfire.entity.EntityCockatrice;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.Difficulty;
 
-import java.util.EnumSet;
-import java.util.function.Predicate;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class CockatriceAITarget<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
     private EntityCockatrice cockatrice;

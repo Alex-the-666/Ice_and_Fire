@@ -1,13 +1,14 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import com.github.alexthe666.iceandfire.block.BlockGoldPile;
+
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.gen.Heightmap;
-
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class WorldGenRoostGoldPile {
     private Block block;

@@ -1,11 +1,18 @@
 package com.github.alexthe666.iceandfire.item;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.props.MiscEntityProperties;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
+import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.entity.util.IBlacklistedFromStatues;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -24,11 +31,6 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-
 public class ItemSirenFlute extends Item {
 
     public ItemSirenFlute() {
@@ -41,19 +43,22 @@ public class ItemSirenFlute extends Item {
         ItemStack itemStackIn = player.getHeldItem(hand);
         player.setActiveHand(hand);
         player.getCooldownTracker().setCooldown(this, 900);
+
         double dist = 32;
         Vector3d Vector3d = player.getEyePosition(1.0F);
         Vector3d Vector3d1 = player.getLook(1.0F);
         Vector3d Vector3d2 = Vector3d.add(Vector3d1.x * dist, Vector3d1.y * dist, Vector3d1.z * dist);
+
         double d1 = dist;
         Entity pointedEntity = null;
         List<Entity> list = player.world.getEntitiesInAABBexcluding(player, player.getBoundingBox().expand(Vector3d1.x * dist, Vector3d1.y * dist, Vector3d1.z * dist).grow(1.0D, 1.0D, 1.0D), new Predicate<Entity>() {
             @Override
             public boolean test(Entity entity) {
                 boolean blindness = entity instanceof LivingEntity && ((LivingEntity) entity).isPotionActive(Effects.BLINDNESS) || (entity instanceof IBlacklistedFromStatues && !((IBlacklistedFromStatues) entity).canBeTurnedToStone());
-                return entity != null && entity.canBeCollidedWith() && !blindness && (entity instanceof PlayerEntity || (entity instanceof LivingEntity && EntityPropertiesHandler.INSTANCE.getProperties(entity, StoneEntityProperties.class) != null && !EntityPropertiesHandler.INSTANCE.getProperties(entity, StoneEntityProperties.class).isStone()));
+                return entity != null && entity.canBeCollidedWith() && !blindness && (entity instanceof PlayerEntity || (entity instanceof LivingEntity && DragonUtils.isAlive((LivingEntity)entity)));
             }
         });
+
         double d2 = d1;
         for (int j = 0; j < list.size(); ++j) {
             Entity entity1 = list.get(j);
@@ -85,8 +90,8 @@ public class ItemSirenFlute extends Item {
                 if (theirProperties != null) {
                     theirProperties.inLoveTicks = 600;
                 }
-                itemStackIn.damageItem(2, player, (p_220046_0_) -> {
-                    p_220046_0_.sendBreakAnimation(EquipmentSlotType.MAINHAND);
+                itemStackIn.damageItem(2, player, (entity) -> {
+                    entity.sendBreakAnimation(EquipmentSlotType.MAINHAND);
                 });
             }
         }
@@ -97,8 +102,8 @@ public class ItemSirenFlute extends Item {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.siren_flute.desc_0").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.siren_flute.desc_1").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.siren_flute.desc_0").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.siren_flute.desc_1").mergeStyle(TextFormatting.GRAY));
     }
 }

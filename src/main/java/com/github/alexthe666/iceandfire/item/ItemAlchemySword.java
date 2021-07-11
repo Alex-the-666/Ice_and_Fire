@@ -1,10 +1,16 @@
 package com.github.alexthe666.iceandfire.item;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
+import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityFireDragon;
 import com.github.alexthe666.iceandfire.entity.EntityIceDragon;
 import com.github.alexthe666.iceandfire.entity.props.FrozenEntityProperties;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -21,10 +27,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemAlchemySword extends SwordItem {
 
@@ -35,14 +37,14 @@ public class ItemAlchemySword extends SwordItem {
 
     @Override
     public boolean hitEntity(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (this == IafItemRegistry.DRAGONBONE_SWORD_FIRE) {
+        if (this == IafItemRegistry.DRAGONBONE_SWORD_FIRE && IafConfig.dragonWeaponFireAbility) {
             if (target instanceof EntityIceDragon) {
                 target.attackEntityFrom(DamageSource.IN_FIRE, 13.5F);
             }
             target.setFire(5);
-            target.func_233627_a_( 1F, attacker.getPosX() - target.getPosX(), attacker.getPosZ() - target.getPosZ());
+            target.applyKnockback( 1F, attacker.getPosX() - target.getPosX(), attacker.getPosZ() - target.getPosZ());
         }
-        if (this == IafItemRegistry.DRAGONBONE_SWORD_ICE) {
+        if (this == IafItemRegistry.DRAGONBONE_SWORD_ICE && IafConfig.dragonWeaponIceAbility) {
             if (target instanceof EntityFireDragon) {
                 target.attackEntityFrom(DamageSource.DROWN, 13.5F);
             }
@@ -50,9 +52,9 @@ public class ItemAlchemySword extends SwordItem {
             frozenProps.setFrozenFor(200);
             target.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 100, 2));
             target.addPotionEffect(new EffectInstance(Effects.MINING_FATIGUE, 100, 2));
-            target.func_233627_a_(1F, attacker.getPosX() - target.getPosX(), attacker.getPosZ() - target.getPosZ());
+            target.applyKnockback(1F, attacker.getPosX() - target.getPosX(), attacker.getPosZ() - target.getPosZ());
         }
-        if (this == IafItemRegistry.DRAGONBONE_SWORD_LIGHTNING) {
+        if (this == IafItemRegistry.DRAGONBONE_SWORD_LIGHTNING && IafConfig.dragonWeaponLightningAbility) {
             boolean flag = true;
             if(attacker instanceof PlayerEntity){
                 if(((PlayerEntity)attacker).swingProgress > 0.2){
@@ -61,7 +63,7 @@ public class ItemAlchemySword extends SwordItem {
             }
             if(!attacker.world.isRemote && flag){
                 LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(target.world);
-                lightningboltentity.func_233576_c_(target.getPositionVec());
+                lightningboltentity.moveForced(target.getPositionVec());
                 if(!target.world.isRemote){
                     target.world.addEntity(lightningboltentity);
                 }
@@ -69,25 +71,25 @@ public class ItemAlchemySword extends SwordItem {
             if (target instanceof EntityFireDragon || target instanceof EntityIceDragon) {
                 target.attackEntityFrom(DamageSource.LIGHTNING_BOLT, 9.5F);
             }
-            target.func_233627_a_(1F, attacker.getPosX() - target.getPosX(), attacker.getPosZ() - target.getPosZ());
+            target.applyKnockback(1F, attacker.getPosX() - target.getPosX(), attacker.getPosZ() - target.getPosZ());
         }
         return super.hitEntity(stack, target, attacker);
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").mergeStyle(TextFormatting.GRAY));
         if (this == IafItemRegistry.DRAGONBONE_SWORD_FIRE) {
-            tooltip.add(new TranslationTextComponent("dragon_sword_fire.hurt1").func_240699_a_(TextFormatting.GREEN));
-            tooltip.add(new TranslationTextComponent("dragon_sword_fire.hurt2").func_240699_a_(TextFormatting.DARK_RED));
+            tooltip.add(new TranslationTextComponent("dragon_sword_fire.hurt1").mergeStyle(TextFormatting.GREEN));
+            tooltip.add(new TranslationTextComponent("dragon_sword_fire.hurt2").mergeStyle(TextFormatting.DARK_RED));
         }
         if (this == IafItemRegistry.DRAGONBONE_SWORD_ICE) {
-            tooltip.add(new TranslationTextComponent("dragon_sword_ice.hurt1").func_240699_a_(TextFormatting.GREEN));
-            tooltip.add(new TranslationTextComponent("dragon_sword_ice.hurt2").func_240699_a_(TextFormatting.AQUA));
+            tooltip.add(new TranslationTextComponent("dragon_sword_ice.hurt1").mergeStyle(TextFormatting.GREEN));
+            tooltip.add(new TranslationTextComponent("dragon_sword_ice.hurt2").mergeStyle(TextFormatting.AQUA));
         }
         if (this == IafItemRegistry.DRAGONBONE_SWORD_LIGHTNING) {
-            tooltip.add(new TranslationTextComponent("dragon_sword_lightning.hurt1").func_240699_a_(TextFormatting.GREEN));
-            tooltip.add(new TranslationTextComponent("dragon_sword_lightning.hurt2").func_240699_a_(TextFormatting.DARK_PURPLE));
+            tooltip.add(new TranslationTextComponent("dragon_sword_lightning.hurt1").mergeStyle(TextFormatting.GREEN));
+            tooltip.add(new TranslationTextComponent("dragon_sword_lightning.hurt2").mergeStyle(TextFormatting.DARK_PURPLE));
         }
     }
 

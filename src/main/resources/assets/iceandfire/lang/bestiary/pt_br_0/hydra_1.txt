@@ -1,0 +1,42 @@
+Depois que sua única cabeça receber
+danos significativos, ela será
+cortada e um jato de sangue irá
+aparecer em seu lugar.
+
+<image><drawings_2.png 40 70 0 210 114 44 1>
+
+
+
+
+
+No entanto, se a criatura não estiver 
+sendo incendiada nos próximos 
+segundos, o cotoco irá ser 
+substitituído por duas novas cabeças.
+<image><drawings_2.png 40 160 0 255 114 48 1>
+
+
+
+
+
+
+A única maneira de ferir esta
+cobra sem que ela aumente seu
+poder é certificar que ela 
+esteja sobre chamas. Incendiada,
+a Hidra não poderá regenerar suas
+cabeças. Ela também perderá seus
+efeitos gerais de regeneração.
+
+
+A Hidra só verdadeiramente morrerá
+quando possuir somente um cabeça. 
+Caso contrário, continuará 
+sobrevivendo.
+
+Quando morta, você poderá acessar
+livremente os despojos de viajantes
+desafortunados no covil da Hidra.
+A Hidra ainda conta com dois itens
+únicos: suas presas e raramente,
+seu coração.

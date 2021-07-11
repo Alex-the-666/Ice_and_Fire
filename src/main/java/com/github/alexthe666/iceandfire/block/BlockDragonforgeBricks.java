@@ -1,10 +1,19 @@
 package com.github.alexthe666.iceandfire.block;
 
+import java.util.Random;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.DragonType;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityDragonforge;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityDragonforgeBrick;
-import net.minecraft.block.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ContainerBlock;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.player.PlayerEntity;
@@ -20,8 +29,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.Random;
+import net.minecraft.block.AbstractBlock.Properties;
 
 public class BlockDragonforgeBricks extends ContainerBlock implements IDragonProof {
 
@@ -29,7 +37,14 @@ public class BlockDragonforgeBricks extends ContainerBlock implements IDragonPro
     private final int isFire;
 
     public BlockDragonforgeBricks(int isFire) {
-        super(Properties.create(Material.ROCK).variableOpacity().hardnessAndResistance(40, 500).sound(SoundType.METAL));
+        super(
+    		Properties
+    			.create(Material.ROCK)
+    			.variableOpacity()
+    			.hardnessAndResistance(40, 500)
+    			.sound(SoundType.METAL)
+		);
+
         this.setRegistryName(IceAndFire.MODID, "dragonforge_" + DragonType.getNameFromInt(isFire) + "_brick");
         this.isFire = isFire;
         this.setDefaultState(this.getStateContainer().getBaseState().with(GRILL, Boolean.valueOf(false)));
@@ -43,7 +58,7 @@ public class BlockDragonforgeBricks extends ContainerBlock implements IDragonPro
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult resultIn) {
         if (this.getConnectedTileEntity(worldIn, resultIn.getPos()) != null) {
             TileEntityDragonforge forge = this.getConnectedTileEntity(worldIn, resultIn.getPos());
-            if (forge.isFire == isFire) {
+            if (forge != null && forge.isFire == isFire) {
                 if (worldIn.isRemote) {
                     IceAndFire.PROXY.setRefrencedTE(worldIn.getTileEntity(forge.getPos()));
                 } else {

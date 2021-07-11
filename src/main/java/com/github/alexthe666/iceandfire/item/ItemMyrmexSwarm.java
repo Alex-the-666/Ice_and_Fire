@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityMyrmexSwarmer;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -14,9 +19,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemMyrmexSwarm extends Item {
     private boolean jungle;
@@ -56,8 +58,8 @@ public class ItemMyrmexSwarm extends Item {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.myrmex_swarm.desc_0").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.myrmex_swarm.desc_1").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.myrmex_swarm.desc_0").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.myrmex_swarm.desc_1").mergeStyle(TextFormatting.GRAY));
     }
 }

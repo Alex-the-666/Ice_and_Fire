@@ -1,25 +1,40 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.AnimationHandler;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.entity.ai.StymphalianBirdAIAirTarget;
 import com.github.alexthe666.iceandfire.entity.ai.StymphalianBirdAIFlee;
 import com.github.alexthe666.iceandfire.entity.ai.StymphalianBirdAITarget;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
 import com.github.alexthe666.iceandfire.entity.util.IAnimalFear;
 import com.github.alexthe666.iceandfire.entity.util.IVillagerFear;
 import com.github.alexthe666.iceandfire.entity.util.StymphalianBirdFlock;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
 import com.google.common.base.Predicate;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -31,16 +46,15 @@ import net.minecraft.server.management.PreYggdrasilConverter;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
-import java.util.UUID;
 
 public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEntity, IMob, IVillagerFear, IAnimalFear {
 
@@ -90,15 +104,15 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 24.0D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 24.0D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.3D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.3D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, IafConfig.myrmexBaseAttackStrength * 2D)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, IafConfig.myrmexBaseAttackStrength * 2D)
                 //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, Math.min(2048, IafConfig.stymphalianBirdTargetSearchLength))
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, Math.min(2048, IafConfig.stymphalianBirdTargetSearchLength))
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 4.0D);
+                .createMutableAttribute(Attributes.ARMOR, 4.0D);
     }
 
     @Override
@@ -246,7 +260,7 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
                     this.airTarget = null;
                     this.aiFlightLaunch = false;
                 }
-                if (this.func_233570_aj_() && dist < 40 && this.getAnimation() != ANIMATION_SHOOT_ARROWS) {
+                if (this.isOnGround() && dist < 40 && this.getAnimation() != ANIMATION_SHOOT_ARROWS) {
                     this.setFlying(false);
                 }
             }
@@ -256,7 +270,7 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
             double dist = this.getDistanceSq(this.getAttackTarget());
             if (this.getAnimation() == ANIMATION_PECK && this.getAnimationTick() == 7) {
                 if (dist < 1.5F) {
-                    this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue()));
+                    this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue()));
                 }
                 if (onGround) {
                     this.setFlying(false);
@@ -292,14 +306,13 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
                 }
             }
         }
-        StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this, StoneEntityProperties.class);
-        boolean flying = this.isFlying() && !this.func_233570_aj_() || airBorneCounter > 10 || this.getAnimation() == ANIMATION_SHOOT_ARROWS;
+        boolean flying = this.isFlying() && !this.isOnGround() || airBorneCounter > 10 || this.getAnimation() == ANIMATION_SHOOT_ARROWS;
         if (flying && flyProgress < 20.0F) {
             flyProgress += 1F;
         } else if (!flying && flyProgress > 0.0F) {
             flyProgress -= 1F;
         }
-        if (!this.isFlying() && this.airTarget != null && this.func_233570_aj_() && !world.isRemote) {
+        if (!this.isFlying() && this.airTarget != null && this.isOnGround() && !world.isRemote) {
             this.airTarget = null;
         }
         if (this.isFlying() && getAttackTarget() == null) {
@@ -317,11 +330,11 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
             this.flyTicks = 0;
             this.aiFlightLaunch = true;
         }
-        if (!world.isRemote && this.func_233570_aj_() && this.isFlying() && !aiFlightLaunch && this.getAnimation() != ANIMATION_SHOOT_ARROWS) {
+        if (!world.isRemote && this.isOnGround() && this.isFlying() && !aiFlightLaunch && this.getAnimation() != ANIMATION_SHOOT_ARROWS) {
             this.setFlying(false);
             this.airTarget = null;
         }
-        if ((properties == null || properties != null && !properties.isStone()) && !world.isRemote && (this.flock == null || this.flock != null && this.flock.isLeader(this)) && this.getRNG().nextInt(FLIGHT_CHANCE_PER_TICK) == 0 && !this.isFlying() && this.getPassengers().isEmpty() && !this.isChild() && this.onGround) {
+        if (!world.isRemote && (this.flock == null || this.flock != null && this.flock.isLeader(this)) && this.getRNG().nextInt(FLIGHT_CHANCE_PER_TICK) == 0 && !this.isFlying() && this.getPassengers().isEmpty() && !this.isChild() && this.onGround) {
             this.setFlying(true);
             this.launchTicks = 0;
             this.flyTicks = 0;
@@ -350,9 +363,6 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
             aiFlightLaunch = true;
         }
         AnimationHandler.INSTANCE.updateAnimations(this);
-        if (this.getPosY() > IafConfig.stymphalianBirdFlightHeight) {
-            this.setPosition(this.getPosX(), IafConfig.stymphalianBirdFlightHeight, this.getPosZ());
-        }
     }
 
     public boolean isDirectPathBetweenPoints(Entity entity, Vector3d vec1, Vector3d vec2) {
@@ -442,9 +452,9 @@ public class EntityStymphalianBird extends MonsterEntity implements IAnimatedEnt
 
     @Override
     @Nullable
-    public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         spawnDataIn = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
-        this.getAttribute(Attributes.field_233819_b_).setBaseValue(IafConfig.stymphalianBirdTargetSearchLength);
+        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(IafConfig.stymphalianBirdTargetSearchLength);
         return spawnDataIn;
     }
 

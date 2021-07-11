@@ -1,6 +1,11 @@
 package com.github.alexthe666.iceandfire.world;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.math.BlockPos;
@@ -8,10 +13,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class DragonPosWorldData extends WorldSavedData {
 
@@ -32,7 +33,7 @@ public class DragonPosWorldData extends WorldSavedData {
 
     public static DragonPosWorldData get(World world) {
         if (world instanceof ServerWorld) {
-            ServerWorld overworld = world.getServer().getWorld(world.func_234923_W_());
+            ServerWorld overworld = world.getServer().getWorld(world.getDimensionKey());
 
             DimensionSavedDataManager storage = overworld.getSavedData();
             DragonPosWorldData data = storage.getOrCreate(DragonPosWorldData::new, IDENTIFIER);

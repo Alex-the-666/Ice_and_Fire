@@ -1,13 +1,14 @@
 package com.github.alexthe666.iceandfire.client.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.alexthe666.citadel.client.model.AdvancedEntityModel;
 import com.github.alexthe666.citadel.client.model.AdvancedModelBox;
 import com.github.alexthe666.citadel.client.model.ModelAnimator;
+
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class ModelDragonBase<T extends Entity> extends AdvancedEntityModel<T> implements ICustomStatueModel {
 

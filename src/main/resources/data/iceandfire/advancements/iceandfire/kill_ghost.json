@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "item": "iceandfire:ectoplasm"
+    },
+    "title": {
+      "translate": "advancements.iceandfire.kill_ghost.title"
+    },
+    "description": {
+      "translate": "advancements.iceandfire.kill_ghost.description"
+    }
+  },
+  "parent": "iceandfire:iceandfire/bestiary",
+  "criteria": {
+    "killed_fire_dragon": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "iceandfire:ghost"
+        }
+      }
+    }
+  }
+}

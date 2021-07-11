@@ -1,10 +1,13 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntityMyrmexRoyal;
+
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class MyrmexAIMoveToMate extends Goal {
     private final EntityMyrmexRoyal myrmex;

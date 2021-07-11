@@ -1,10 +1,15 @@
 package com.github.alexthe666.iceandfire.client.render.tile;
 
+import java.util.List;
+import java.util.Random;
+import java.util.stream.IntStream;
+
 import com.github.alexthe666.iceandfire.client.render.IafRenderType;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityDreadPortal;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
@@ -12,10 +17,6 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
-
-import java.util.List;
-import java.util.Random;
-import java.util.stream.IntStream;
 
 public class RenderDreadPortal<T extends TileEntityDreadPortal> extends TileEntityRenderer<T> {
     public static final ResourceLocation END_SKY_TEXTURE = new ResourceLocation("iceandfire:textures/environment/dread_portal_background.png");

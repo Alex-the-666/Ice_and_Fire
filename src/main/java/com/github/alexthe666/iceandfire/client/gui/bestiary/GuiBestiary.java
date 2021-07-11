@@ -1,5 +1,12 @@
 package com.github.alexthe666.iceandfire.client.gui.bestiary;
 
+import java.io.IOException;
+import java.util.*;
+
+import org.apache.commons.io.IOUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
@@ -14,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
@@ -32,19 +40,9 @@ import net.minecraft.item.Items;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.io.IOUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class GuiBestiary extends Screen {
@@ -92,15 +90,11 @@ public class GuiBestiary extends Screen {
         return font;
     }
 
-    public boolean func_231177_au__() {
-        return false;
-    }
-
-    protected void func_231160_c_() {
-        super.func_231160_c_();
-        int centerX = (field_230708_k_ - X) / 2;
-        int centerY = (field_230709_l_ - Y) / 2;
-        this.func_230480_a_(this.previousPage = new ChangePageButton(centerX + 15, centerY + 215, false, bookPages, 0, (p_214132_1_) -> {
+    protected void init() {
+        super.init();
+        int centerX = (width - X) / 2;
+        int centerY = (height - Y) / 2;
+        this.addButton(this.previousPage = new ChangePageButton(centerX + 15, centerY + 215, false, bookPages, 0, (p_214132_1_) -> {
             if ((this.index ? this.indexPages > 0 : this.pageType != null)) {
                 if (this.index) {
                     this.indexPages--;
@@ -115,7 +109,7 @@ public class GuiBestiary extends Screen {
                 }
             }
         }));
-        this.func_230480_a_(this.nextPage = new ChangePageButton(centerX + 357, centerY + 215, true, bookPages, 0, (p_214132_1_) -> {
+        this.addButton(this.nextPage = new ChangePageButton(centerX + 357, centerY + 215, true, bookPages, 0, (p_214132_1_) -> {
             if ((this.index ? this.indexPages < this.indexPagesTotal - 1 : this.pageType != null && this.bookPages < this.pageType.pages)) {
                 if (this.index) {
                     this.indexPages++;
@@ -140,34 +134,34 @@ public class GuiBestiary extends Screen {
                     }
                 });
                 this.indexButtons.add(button);
-                this.func_230480_a_(button);
+                this.addButton(button);
             }
         }
     }
 
     @Override
-    public void func_230430_a_(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
-        this.func_230446_a_(ms);
-        for (Widget button : this.field_230710_m_) {
+    public void render(MatrixStack ms, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(ms);
+        for (Widget button : this.buttons) {
             if (button instanceof IndexPageButton) {
-                button.field_230693_o_ = index;
-                button.field_230694_p_ = index;
+                button.active = index;
+                button.visible = index;
             }
         }
         for (int i = 0; i < this.indexButtons.size(); i++) {
-            this.indexButtons.get(i).field_230693_o_ = i < 10 * (this.indexPages + 1) && i >= 10 * (this.indexPages) && this.index;
+            this.indexButtons.get(i).active = i < 10 * (this.indexPages + 1) && i >= 10 * (this.indexPages) && this.index;
         }
-        this.func_230446_a_(ms);
+        this.renderBackground(ms);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.getMinecraft().getTextureManager().bindTexture(TEXTURE);
-        int cornerX = (field_230708_k_ - X) / 2;
-        int cornerY = (field_230709_l_ - Y) / 2;
-        func_238463_a_(ms, cornerX, cornerY, 0, 0, X, Y, 390, 390);
+        int cornerX = (width - X) / 2;
+        int cornerY = (height - Y) / 2;
+        blit(ms, cornerX, cornerY, 0, 0, X, Y, 390, 390);
         GL11.glDisable(GL12.GL_RESCALE_NORMAL);
         RenderHelper.disableStandardItemLighting();
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
-        super.func_230430_a_(ms, mouseX, mouseY, partialTicks);
+        super.render(ms, mouseX, mouseY, partialTicks);
         RenderHelper.enableStandardItemLighting();
         ms.push();
         ms.translate(cornerX, cornerY, 0.0F);
@@ -175,14 +169,14 @@ public class GuiBestiary extends Screen {
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glDisable(GL11.GL_LIGHTING);
-        int centerX = (field_230708_k_ - X) / 2;
-        int centerY = (field_230709_l_ - Y) / 2;
+        int centerX = (width - X) / 2;
+        int centerY = (height - Y) / 2;
         if (!index) {
             drawPerPage(ms, bookPages);
             int pageLeft = bookPages * 2 + 1;
             int pageRight = pageLeft + 1;
-            font.func_238421_b_(ms, "" + pageLeft, centerX, centerY - (int) (Y * 0.13), 0X303030);
-            font.func_238421_b_(ms, "" + pageRight, centerX, centerY - (int) (Y * 0.13), 0X303030);
+            font.drawString(ms, "" + pageLeft, centerX, centerY - (int) (Y * 0.13), 0X303030);
+            font.drawString(ms, "" + pageRight, centerX, centerY - (int) (Y * 0.13), 0X303030);
         }
         GL11.glEnable(GL11.GL_LIGHTING);
         ms.pop();
@@ -440,8 +434,6 @@ public class GuiBestiary extends Screen {
                     ms.pop();
 
                     drawItemStack(ms, new ItemStack(IafItemRegistry.PIXIE_DUST), 180, 131, 1.35F);
-                    drawItemStack(ms, new ItemStack(Items.GOLDEN_CARROT), 160, 131, 1.35F);
-                    drawItemStack(ms, new ItemStack(Items.GLISTERING_MELON_SLICE), 199, 131, 1.35F);
                     drawItemStack(ms, new ItemStack(Items.BOWL), 180, 150, 1.35F);
                     drawItemStack(ms, new ItemStack(IafItemRegistry.AMBROSIA), 171, 85, 2F);
                 }
@@ -792,7 +784,7 @@ public class GuiBestiary extends Screen {
     }
 
     public void imageFromTxt(MatrixStack ms) {
-        String fileName = this.pageType.toString().toLowerCase() + "_" + this.bookPages + ".txt";
+        String fileName = this.pageType.toString().toLowerCase(Locale.ROOT) + "_" + this.bookPages + ".txt";
         ResourceLocation fileLoc = new ResourceLocation("iceandfire:lang/bestiary/" + Minecraft.getInstance().gameSettings.language + "_0/" + fileName);
         ResourceLocation backupLoc = new ResourceLocation("iceandfire:lang/bestiary/en_us_0/" + fileName);
         IResource resource = null;
@@ -890,7 +882,7 @@ public class GuiBestiary extends Screen {
     }
 
     public void writeFromTxt(MatrixStack ms) {
-        String fileName = this.pageType.toString().toLowerCase() + "_" + this.bookPages + ".txt";
+        String fileName = this.pageType.toString().toLowerCase(Locale.ROOT) + "_" + this.bookPages + ".txt";
         ResourceLocation fileLoc = new ResourceLocation("iceandfire:lang/bestiary/" + Minecraft.getInstance().gameSettings.language + "_0/" + fileName);
         ResourceLocation backupLoc = new ResourceLocation("iceandfire:lang/bestiary/en_us_0/" + fileName);
         IResource resource = null;
@@ -919,9 +911,9 @@ public class GuiBestiary extends Screen {
                     ms.translate(0, 5.5F, 0);
                 }
                 if (linenumber <= 19) {
-                    font.func_238421_b_(ms, line, 15, 20 + linenumber * 10, 0X303030);
+                    font.drawString(ms, line, 15, 20 + linenumber * 10, 0X303030);
                 } else {
-                    font.func_238421_b_(ms, line, 220, (linenumber - 19) * 10, 0X303030);
+                    font.drawString(ms, line, 220, (linenumber - 19) * 10, 0X303030);
                 }
                 linenumber++;
                 ms.pop();
@@ -930,10 +922,10 @@ public class GuiBestiary extends Screen {
             e.printStackTrace();
         }
         ms.push();
-        String s = StatCollector.translateToLocal("bestiary." + this.pageType.toString().toLowerCase());
+        String s = StatCollector.translateToLocal("bestiary." + this.pageType.toString().toLowerCase(Locale.ROOT));
         float scale = font.getStringWidth(s) <= 100 ? 2 : font.getStringWidth(s) * 0.0125F;
         ms.scale(scale, scale, scale);
-        font.func_238421_b_(ms, s, 10, 2, 0X7A756A);
+        font.drawString(ms, s, 10, 2, 0X7A756A);
         ms.pop();
     }
 
@@ -945,31 +937,32 @@ public class GuiBestiary extends Screen {
         ms.push();
         this.getMinecraft().getTextureManager().bindTexture(texture);
         ms.scale(scale / 512F, scale / 512F, scale / 512F);
-        func_238463_a_(ms, x, y, u, v, width, height, 512, 512);
+        blit(ms, x, y, u, v, width, height, 512, 512);
         ms.pop();
     }
 
     private void drawItemStack(MatrixStack ms, ItemStack stack, int x, int y, float scale) {
-        int cornerX = (field_230708_k_ - X) / 2;
-        int cornerY = (field_230709_l_ - Y) / 2;
+        int cornerX = (width - X) / 2;
+        int cornerY = (height - Y) / 2;
         RenderSystem.pushMatrix();
         RenderSystem.translatef(cornerX, cornerY, 32.0F);
         float zLevel = 200.0F;
-        this.field_230707_j_.zLevel = 200.0F;
+        this.itemRenderer.zLevel = 200.0F;
         net.minecraft.client.gui.FontRenderer font = null;
         if (!stack.isEmpty()) font = stack.getItem().getFontRenderer(stack);
         if (font == null) font = getFont();
         RenderSystem.scalef(scale, scale, scale);
-        this.field_230707_j_.zLevel = -100;
-        this.field_230707_j_.renderItemAndEffectIntoGUI(stack, x, y);
+        this.itemRenderer.zLevel = -100;
+        RenderSystem.depthMask(true);
+        this.itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
         zLevel = 0.0F;
-        this.field_230707_j_.zLevel = 0.0F;
+        this.itemRenderer.zLevel = 0.0F;
         RenderSystem.popMatrix();
     }
 
     protected void renderItemModelIntoGUI(MatrixStack ms, ItemStack stack, int x, int y, IBakedModel bakedmodel, float scale) {
-        int i = (this.field_230708_k_ - X) / 2;
-        int j = (this.field_230709_l_ - Y) / 2;
+        int i = (this.width - X) / 2;
+        int j = (this.height - Y) / 2;
         RenderSystem.pushMatrix();
         this.getMinecraft().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
         this.getMinecraft().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).setBlurMipmapDirect(false, false);
@@ -980,16 +973,16 @@ public class GuiBestiary extends Screen {
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.scalef(16.0F * scale, 16.0F * scale, 16.0F * scale);
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.translatef((float)x, (float)y , 100.0F + field_230707_j_.zLevel);
+        RenderSystem.translatef((float)x, (float)y , 100.0F + itemRenderer.zLevel);
         RenderSystem.scalef(1.0F, -1.0F, 1.0F);
         MatrixStack matrixstack = new MatrixStack();
         IRenderTypeBuffer.Impl irendertypebuffer$impl = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
-        boolean flag = !bakedmodel.func_230044_c_();
+        boolean flag = !bakedmodel.isSideLit();
         if (flag) {
             RenderHelper.setupGuiFlatDiffuseLighting();
         }
 
-        this.field_230707_j_.renderItem(stack, ItemCameraTransforms.TransformType.GUI, false, matrixstack, irendertypebuffer$impl, 15728880, OverlayTexture.NO_OVERLAY, bakedmodel);
+        this.itemRenderer.renderItem(stack, ItemCameraTransforms.TransformType.GUI, false, matrixstack, irendertypebuffer$impl, 15728880, OverlayTexture.NO_OVERLAY, bakedmodel);
         irendertypebuffer$impl.finish();
         RenderSystem.enableDepthTest();
         if (flag) {
@@ -1003,20 +996,20 @@ public class GuiBestiary extends Screen {
 
 
     private void drawBlockStack(MatrixStack ms, ItemStack stack, int x, int y, float scale, int zScale) {
-        int cornerX = (field_230708_k_ - X) / 2;
-        int cornerY = (field_230709_l_ - Y) / 2;
+        int cornerX = (width - X) / 2;
+        int cornerY = (height - Y) / 2;
         RenderSystem.pushMatrix();
         RenderSystem.translatef(cornerX, cornerY, 32.0F);
         float zLevel = 200.0F;
-        this.field_230707_j_.zLevel = 200.0F;
+        this.itemRenderer.zLevel = 200.0F;
         net.minecraft.client.gui.FontRenderer font = null;
         if (!stack.isEmpty()) font = stack.getItem().getFontRenderer(stack);
         if (font == null) font = getFont();
         GL11.glScalef(scale, scale, scale);
-        this.field_230707_j_.zLevel = -100 + zScale * 10;
-        this.field_230707_j_.renderItemAndEffectIntoGUI(stack, x, y);
+        this.itemRenderer.zLevel = -100 + zScale * 10;
+        this.itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
         zLevel = 0.0F;
-        this.field_230707_j_.zLevel = 0.0F;
+        this.itemRenderer.zLevel = 0.0F;
         RenderSystem.popMatrix();
 
     }

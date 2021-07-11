@@ -9,6 +9,7 @@ import com.github.alexthe666.iceandfire.entity.EntityDreadThrall;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.entity.model.IHasArm;
 import net.minecraft.client.renderer.model.ModelRenderer;
@@ -290,7 +291,6 @@ public class ModelDreadThrall extends ModelDragonBase<EntityDreadThrall> impleme
 
     @Override
     public void renderStatue(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, Entity living) {
-        this.resetToDefaultPose();
         this.render(matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 }

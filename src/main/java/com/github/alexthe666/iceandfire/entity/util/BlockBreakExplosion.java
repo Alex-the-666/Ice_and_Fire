@@ -1,9 +1,15 @@
 package com.github.alexthe666.iceandfire.entity.util;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -29,10 +35,7 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import net.minecraft.world.Explosion.Mode;
 
 public class BlockBreakExplosion extends Explosion {
     private final World world;
@@ -59,22 +62,22 @@ public class BlockBreakExplosion extends Explosion {
         this.position = new Vector3d(x, y, z);
     }
 
-    private static void func_229976_a_(ObjectArrayList<Pair<ItemStack, BlockPos>> p_229976_0_, ItemStack p_229976_1_, BlockPos p_229976_2_) {
-        int i = p_229976_0_.size();
+    private static void handleExplosionDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> dropPositionArray, ItemStack stack, BlockPos pos) {
+        int i = dropPositionArray.size();
 
         for (int j = 0; j < i; ++j) {
-            Pair<ItemStack, BlockPos> pair = p_229976_0_.get(j);
+            Pair<ItemStack, BlockPos> pair = dropPositionArray.get(j);
             ItemStack itemstack = pair.getFirst();
-            if (ItemEntity.func_226532_a_(itemstack, p_229976_1_)) {
-                ItemStack itemstack1 = ItemEntity.func_226533_a_(itemstack, p_229976_1_, 16);
-                p_229976_0_.set(j, Pair.of(itemstack1, pair.getSecond()));
-                if (p_229976_1_.isEmpty()) {
+            if (ItemEntity.canMergeStacks(itemstack, stack)) {
+                ItemStack itemstack1 = ItemEntity.mergeStacks(itemstack, stack, 16);
+                dropPositionArray.set(j, Pair.of(itemstack1, pair.getSecond()));
+                if (stack.isEmpty()) {
                     return;
                 }
             }
         }
 
-        p_229976_0_.add(Pair.of(p_229976_1_, p_229976_2_));
+        dropPositionArray.add(Pair.of(stack, pos));
     }
 
     @Override
@@ -200,13 +203,13 @@ public class BlockBreakExplosion extends Explosion {
                     this.world.getProfiler().startSection("explosion_blocks");
                     if (blockstate.canDropFromExplosion(this.world, blockpos, this) && this.world instanceof ServerWorld) {
                         TileEntity tileentity = blockstate.hasTileEntity() ? this.world.getTileEntity(blockpos) : null;
-                        LootContext.Builder lootcontext$builder = (new LootContext.Builder((ServerWorld) this.world)).withRandom(this.world.rand).withParameter(LootParameters.POSITION, blockpos).withParameter(LootParameters.TOOL, ItemStack.EMPTY).withNullableParameter(LootParameters.BLOCK_ENTITY, tileentity).withNullableParameter(LootParameters.THIS_ENTITY, this.exploder);
+                        LootContext.Builder lootcontext$builder = (new LootContext.Builder((ServerWorld) this.world)).withRandom(this.world.rand).withParameter(LootParameters.ORIGIN,  Vector3d.copyCentered(blockpos)).withParameter(LootParameters.TOOL, ItemStack.EMPTY).withNullableParameter(LootParameters.BLOCK_ENTITY, tileentity).withNullableParameter(LootParameters.THIS_ENTITY, this.exploder);
                         if (this.mode == Explosion.Mode.DESTROY) {
                             lootcontext$builder.withParameter(LootParameters.EXPLOSION_RADIUS, this.size);
                         }
 
-                        blockstate.getDrops(lootcontext$builder).forEach((p_229977_2_) -> {
-                            func_229976_a_(objectarraylist, p_229977_2_, blockpos1);
+                        blockstate.getDrops(lootcontext$builder).forEach((stack) -> {
+                            handleExplosionDrops(objectarraylist, stack, blockpos1);
                         });
                     }
 
@@ -231,7 +234,7 @@ public class BlockBreakExplosion extends Explosion {
         return exploder;
     }
 
-    public void func_180342_d() {
+    public void clearAffectedBlockPositions() {
         this.affectedBlockPositions.clear();
     }
 

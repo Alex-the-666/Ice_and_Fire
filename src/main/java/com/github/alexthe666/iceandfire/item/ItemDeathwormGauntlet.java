@@ -1,9 +1,14 @@
 package com.github.alexthe666.iceandfire.item;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.props.MiscEntityProperties;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -23,9 +28,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemDeathwormGauntlet extends Item implements ICustomRendered {
 
@@ -75,8 +77,8 @@ public class ItemDeathwormGauntlet extends Item implements ICustomRendered {
     public void onPlayerStoppedUsing(ItemStack stack, World worldIn, LivingEntity LivingEntity, int timeLeft) {
         MiscEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(LivingEntity, MiscEntityProperties.class);
         if (properties != null && properties.specialWeaponDmg > 0) {
-            stack.damageItem(properties.specialWeaponDmg, LivingEntity, (p_219999_1_) -> {
-                p_219999_1_.sendBreakAnimation(LivingEntity.getActiveHand());
+            stack.damageItem(properties.specialWeaponDmg, LivingEntity, (player) -> {
+                player.sendBreakAnimation(LivingEntity.getActiveHand());
             });
             properties.specialWeaponDmg = 0;
         }
@@ -127,7 +129,7 @@ public class ItemDeathwormGauntlet extends Item implements ICustomRendered {
                             if (canSee) {
                                 properties.specialWeaponDmg++;
                                 LivingEntity.attackEntityFrom(DamageSource.causePlayerDamage((PlayerEntity) entity), 3F);
-                                LivingEntity.func_233627_a_( 0.5F, LivingEntity.getPosX() - player.getPosX(), LivingEntity.getPosZ() - player.getPosZ());
+                                LivingEntity.applyKnockback( 0.5F, LivingEntity.getPosX() - player.getPosX(), LivingEntity.getPosZ() - player.getPosZ());
                             }
                         }
                     }
@@ -139,8 +141,8 @@ public class ItemDeathwormGauntlet extends Item implements ICustomRendered {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.deathworm_gauntlet.desc_0").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.deathworm_gauntlet.desc_1").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.deathworm_gauntlet.desc_0").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.deathworm_gauntlet.desc_1").mergeStyle(TextFormatting.GRAY));
     }
 }

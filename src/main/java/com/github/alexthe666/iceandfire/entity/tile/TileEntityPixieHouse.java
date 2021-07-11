@@ -1,14 +1,17 @@
 package com.github.alexthe666.iceandfire.entity.tile;
 
+import java.util.Random;
+import java.util.UUID;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
 import com.github.alexthe666.iceandfire.entity.EntityPixie;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
 import com.github.alexthe666.iceandfire.message.MessageUpdatePixieHouse;
 import com.github.alexthe666.iceandfire.message.MessageUpdatePixieHouseModel;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.texture.ITickable;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -18,9 +21,6 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
-
-import java.util.Random;
-import java.util.UUID;
 
 public class TileEntityPixieHouse extends TileEntity implements ITickableTileEntity {
 
@@ -82,7 +82,7 @@ public class TileEntityPixieHouse extends TileEntity implements ITickableTileEnt
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
-        func_230337_a_(this.getBlockState(), packet.getNbtCompound());
+        read(this.getBlockState(), packet.getNbtCompound());
         if (!world.isRemote) {
             IceAndFire.sendMSGToAll(new MessageUpdatePixieHouseModel(pos.toLong(), packet.getNbtCompound().getInt("HouseType")));
         }
@@ -92,15 +92,17 @@ public class TileEntityPixieHouse extends TileEntity implements ITickableTileEnt
         return this.write(new CompoundNBT());
     }
 
-    public void func_230337_a_(BlockState state, CompoundNBT compound) {
+    public void read(BlockState state, CompoundNBT compound) {
         houseType = compound.getInt("HouseType");
         hasPixie = compound.getBoolean("HasPixie");
         pixieType = compound.getInt("PixieType");
         tamedPixie = compound.getBoolean("TamedPixie");
-        pixieOwnerUUID = compound.getUniqueId("TicksExisted");
+        if(compound.hasUniqueId("PixieOwnerUUID")){
+            pixieOwnerUUID = compound.getUniqueId("PixieOwnerUUID");
+        }
         this.pixieItems = NonNullList.withSize(1, ItemStack.EMPTY);
         ItemStackHelper.loadAllItems(compound, pixieItems);
-        super.func_230337_a_(state, compound);
+        super.read(state, compound);
     }
 
     @Override

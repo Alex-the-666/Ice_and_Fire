@@ -1,9 +1,12 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
+
 import net.minecraft.entity.ai.goal.Goal;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class DragonAILookIdle extends Goal {
     private EntityDragonBase dragon;
@@ -39,7 +42,9 @@ public class DragonAILookIdle extends Goal {
 
     @Override
     public void tick() {
-        --this.idleTime;
+    	if (this.idleTime > 0) {
+    		--this.idleTime;
+    	}
         this.dragon.getLookController().setLookPosition(this.dragon.getPosX() + this.lookX, this.dragon.getPosY() + this.dragon.getEyeHeight(), this.dragon.getPosZ() + this.lookZ, this.dragon.getHorizontalFaceSpeed(), this.dragon.getVerticalFaceSpeed());
     }
 }

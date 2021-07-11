@@ -2,7 +2,7 @@
 
 
 
-
+<image><drawings_2.png 45 40 157 0 106 68 1>
 
 
 
@@ -21,12 +21,12 @@ nenhuma diferença no ovo.
 
 Pensei então em removê-lo e procurar 
 outro método para fazê-lo eclodir, 
-mas então lembrei que os dragões são 
-seres grandes que demandam de uma 
-enorme quantidade de tempo para se
-desenvolverem. Decidi então não me 
-apressar, deixei o ovo parado no 
-lago congelado por três dias. 
+mas então lembrei que os dragões 
+são seres grandes que demandam de 
+uma enorme quantidade de tempo 
+para se desenvolverem. Decidi então 
+não me apressar, deixei o ovo parado 
+no lago congelado por três dias. 
 
 
 Minha decisão resultou em um sucesso!

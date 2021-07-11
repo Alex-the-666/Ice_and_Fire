@@ -5,6 +5,8 @@ instantânea. No entanto, o dragão
 tem um raro ataque corpo a corpo: 
 sacudir apresa até a morte.
 
+<image><drawings_icedragon_attacks.png 40 120 290 124 186 69 0.7>
+
 
 
 
@@ -14,6 +16,7 @@ rapidamente com o intuito de
 de provocar graves ferimentos.
 
 
+<image><drawings_icedragon_attacks.png 80 240 330 20 130 77 0.7>
 
 
 

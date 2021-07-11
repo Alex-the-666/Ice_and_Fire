@@ -1,0 +1,43 @@
+A habilidade mais notável dos
+dragões elétricos é a expelição
+de raios crepitantes de suas
+bocas. No entanto, eles também 
+possuem uma série de ataques 
+diferentes.
+
+
+<image><drawings_lightningdragon_attacks.png 20 130 0 101 270 77 0.65>
+
+
+
+
+O ataque de explosão de relâmpagos
+do dragão dispara raios diretamente 
+de sua boca. Esse ataque não 
+incendeia ou congela o alvo, no 
+entanto, inflige um dano direto 
+bem maior que as explosões 
+causadas por dragões de fogo 
+ou gelo.
+
+<image><drawings_lightningdragon_attacks.png 280 10 0 0 220 90 0.75>
+
+
+
+
+A explosão de relâmpagos não
+é o único ataque elemental.
+Dragões Elétricos mais velhos
+podem lançar esferas de raios
+concentrados em seu alvos,
+destruindo terrenos e causando
+danos devastadores.
+
+
+<image><drawings_lightningdragon_attacks.png 360 220 262 212 230 78 0.6>
+
+
+
+Um dos ataques mais comuns dos 
+dragões elétricos é a mordida 
+do dragão.

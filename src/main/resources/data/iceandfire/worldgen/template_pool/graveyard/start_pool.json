@@ -1,0 +1,15 @@
+{
+  "name": "iceandfire:graveyard/start_pool",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "iceandfire:graveyard/graveyard_1",
+        "processors": "iceandfire:graveyard_processors",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}

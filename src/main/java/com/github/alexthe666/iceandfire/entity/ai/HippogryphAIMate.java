@@ -1,7 +1,12 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.entity.EntityHippogryph;
 import com.github.alexthe666.iceandfire.item.ItemHippogryphEgg;
+
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.entity.item.ItemEntity;
@@ -11,9 +16,7 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class HippogryphAIMate extends Goal {
     private final EntityHippogryph hippo;
@@ -36,7 +39,7 @@ public class HippogryphAIMate extends Goal {
     }
 
     public boolean shouldExecute() {
-        if (!this.hippo.isInLove() || this.hippo.func_233684_eK_()) {
+        if (!this.hippo.isInLove() || this.hippo.isQueuedToSit()) {
             return false;
         } else {
             this.targetMate = this.getNearbyMate();
@@ -45,7 +48,7 @@ public class HippogryphAIMate extends Goal {
     }
 
     public boolean shouldContinueExecuting() {
-        return !this.targetMate.isAlive() && this.targetMate.isInLove() && this.spawnBabyDelay < 60;
+        return this.targetMate.isAlive() && this.targetMate.isInLove() && this.spawnBabyDelay < 60;
     }
 
     public void resetTask() {

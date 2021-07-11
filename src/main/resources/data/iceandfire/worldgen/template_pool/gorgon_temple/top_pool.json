@@ -1,0 +1,15 @@
+{
+  "name": "iceandfire:gorgon_temple/top_pool",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "iceandfire:gorgon_temple/building",
+        "processors": "iceandfire:gorgon_temple_processors",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}

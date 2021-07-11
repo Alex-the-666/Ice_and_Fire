@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.AnimationHandler;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
@@ -13,14 +15,32 @@ import com.github.alexthe666.iceandfire.entity.util.IHumanoid;
 import com.github.alexthe666.iceandfire.entity.util.IVillagerFear;
 import com.github.alexthe666.iceandfire.event.ServerEvents;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+import com.github.alexthe666.iceandfire.misc.IafTagRegistry;
 import com.github.alexthe666.iceandfire.pathfinding.PathNavigateCyclops;
 import com.google.common.base.Predicate;
-import net.minecraft.block.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.BushBlock;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.FleeSunGoal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.RestrictSunGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
 import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.passive.AnimalEntity;
@@ -37,6 +57,7 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -44,12 +65,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import org.w3c.dom.Attr;
-
-import javax.annotation.Nullable;
 
 public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBlacklistedFromStatues, IVillagerFear, IHumanoid {
 
@@ -68,10 +86,6 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
         this.stepHeight = 2.5F;
         this.setPathPriority(PathNodeType.WATER, -1.0F);
         this.setPathPriority(PathNodeType.FENCE, 0.0F);
-
-        eyeEntity = new EntityCyclopsEye(this, 0.2F, 0, 7.4F, 1.2F, 0.5F, 1);
-        eyeEntity.copyLocationAndAnglesFrom(this);
-        eyeEntity.setParent(this);
         ANIMATION_STOMP = Animation.create(27);
         ANIMATION_EATPLAYER = Animation.create(40);
         ANIMATION_KICK = Animation.create(20);
@@ -126,7 +140,7 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
             this.setAnimation(ANIMATION_STOMP);
             return true;
         } else if (attackDescision == 1) {
-            if (!entityIn.isPassenger(this) && entityIn.getWidth() < 1.95F && !(entityIn instanceof EntityDragonBase)) {
+            if (!entityIn.isPassenger(this) && entityIn.getWidth() < 1.95F && !(entityIn instanceof EntityDragonBase) && !EntityTypeTags.getCollection().get(IafTagRegistry.CYCLOPS_UNLIFTABLES).contains(entityIn.getType())) {
                 this.setAnimation(ANIMATION_EATPLAYER);
                 entityIn.stopRiding();
                 entityIn.startRiding(this, true);
@@ -143,15 +157,15 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, IafConfig.cyclopsMaxHealth)
+                .createMutableAttribute(Attributes.MAX_HEALTH, IafConfig.cyclopsMaxHealth)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.35D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.35D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, IafConfig.cyclopsAttackStrength)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, IafConfig.cyclopsAttackStrength)
                 //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, 32D)
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 32D)
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 20.0D);
+                .createMutableAttribute(Attributes.ARMOR, 20.0D);
     }
 
     @Override
@@ -238,6 +252,10 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
 
     public void livingTick() {
         super.livingTick();
+        if (eyeEntity == null){
+            eyeEntity = new EntityCyclopsEye(this, 0.2F, 0, 7.4F, 1.2F, 0.6F, 1);
+            eyeEntity.copyLocationAndAnglesFrom(this);
+        }
         if (world.getDifficulty() == Difficulty.PEACEFUL && this.getAttackTarget() instanceof PlayerEntity) {
             this.setAttackTarget(null);
         }
@@ -251,11 +269,11 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
             this.playSound(IafSoundRegistry.CYCLOPS_BITE, 1, 1);
         }
         if (this.getAnimation() == ANIMATION_STOMP && this.getAttackTarget() != null && this.getDistanceSq(this.getAttackTarget()) < 12D && this.getAnimationTick() == 14) {
-            this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), (float) this.getAttribute(Attributes.field_233823_f_).getValue());
+            this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
         }
         if (this.getAnimation() == ANIMATION_KICK && this.getAttackTarget() != null && this.getDistanceSq(this.getAttackTarget()) < 14D && this.getAnimationTick() == 12) {
-            this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), (float) this.getAttribute(Attributes.field_233823_f_).getValue());
-            this.getAttackTarget().func_233627_a_(2, this.getPosX() - this.getAttackTarget().getPosX(), this.getPosZ() - this.getAttackTarget().getPosZ());
+            this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
+            this.getAttackTarget().applyKnockback(2, this.getPosX() - this.getAttackTarget().getPosX(), this.getPosZ() - this.getAttackTarget().getPosZ());
 
         }
         if (this.getAnimation() != ANIMATION_EATPLAYER && this.getAttackTarget() != null && !this.getPassengers().isEmpty() && this.getPassengers().contains(this.getAttackTarget())) {
@@ -284,16 +302,22 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
             }
         }
         AnimationHandler.INSTANCE.updateAnimations(this);
-        eyeEntity.setParent(this);
+        if(eyeEntity == null){
+            eyeEntity = new EntityCyclopsEye(this, 0.2F, 0, 7.4F, 1.2F, 0.5F, 1);
+            eyeEntity.copyLocationAndAnglesFrom(this);
+            eyeEntity.setParent(this);
+
+        }
         if(!eyeEntity.shouldContinuePersisting()){
             world.addEntity(eyeEntity);
         }
+        eyeEntity.setParent(this);
         breakBlock();
     }
 
     @Override
     @Nullable
-    public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         spawnDataIn = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.setVariant(this.getRNG().nextInt(4));
         return spawnDataIn;
@@ -307,7 +331,7 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
                         BlockPos pos = new BlockPos(a, b, c);
                         BlockState state = world.getBlockState(pos);
                         Block block = state.getBlock();
-                        if (!state.isAir() && !state.getShape(world, pos).isEmpty() && !(block instanceof BushBlock) && block != Blocks.BEDROCK && (state.getBlock() instanceof LeavesBlock || BlockTags.LOGS.func_230235_a_(state.getBlock()))) {
+                        if (!state.isAir() && !state.getShape(world, pos).isEmpty() && !(block instanceof BushBlock) && block != Blocks.BEDROCK && (state.getBlock() instanceof LeavesBlock || BlockTags.LOGS.contains(state.getBlock()))) {
                             this.getMotion().scale(0.6D);
                             if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, a, b, c))) continue;
                             if (block != Blocks.AIR) {
@@ -362,8 +386,8 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
     public void onHitEye(DamageSource source, float damage) {
         if (!this.isBlinded()) {
             this.setBlinded(true);
-            this.getAttribute(Attributes.field_233819_b_).setBaseValue(6F);
-            this.getAttribute(Attributes.field_233821_d_).setBaseValue(0.35D);
+            this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(6F);
+            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.35D);
             this.setAnimation(ANIMATION_ROAR);
             this.attackEntityFrom(source, damage * 3);
         }
@@ -375,7 +399,7 @@ public class EntityCyclops extends MonsterEntity implements IAnimatedEntity, IBl
     }
 
     @Nullable
-    protected SoundEvent getHurtSound(DamageSource p_184601_1_) {
+    protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
         return IafSoundRegistry.CYCLOPS_HURT;
     }
 

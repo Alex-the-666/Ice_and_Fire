@@ -1,14 +1,15 @@
 package com.github.alexthe666.iceandfire.entity.tile;
 
+import java.lang.reflect.Field;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
+
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.lang.reflect.Field;
 
 @Mod.EventBusSubscriber(modid = IceAndFire.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class IafTileEntityRegistry {
@@ -20,9 +21,10 @@ public class IafTileEntityRegistry {
     public static final TileEntityType<TileEntityMyrmexCocoon> MYRMEX_COCOON = registerTileEntity(TileEntityType.Builder.create(TileEntityMyrmexCocoon::new, IafBlockRegistry.DESERT_MYRMEX_COCOON, IafBlockRegistry.JUNGLE_MYRMEX_COCOON), "myrmex_cocoon");
     public static final TileEntityType<TileEntityDragonforge> DRAGONFORGE_CORE = registerTileEntity(TileEntityType.Builder.create(TileEntityDragonforge::new, IafBlockRegistry.DRAGONFORGE_FIRE_CORE, IafBlockRegistry.DRAGONFORGE_ICE_CORE, IafBlockRegistry.DRAGONFORGE_FIRE_CORE_DISABLED, IafBlockRegistry.DRAGONFORGE_ICE_CORE_DISABLED, IafBlockRegistry.DRAGONFORGE_LIGHTNING_CORE, IafBlockRegistry.DRAGONFORGE_LIGHTNING_CORE_DISABLED), "dragonforge_core");
     public static final TileEntityType<TileEntityDragonforgeBrick> DRAGONFORGE_BRICK = registerTileEntity(TileEntityType.Builder.create(TileEntityDragonforgeBrick::new, IafBlockRegistry.DRAGONFORGE_FIRE_BRICK, IafBlockRegistry.DRAGONFORGE_ICE_BRICK, IafBlockRegistry.DRAGONFORGE_LIGHTNING_BRICK), "dragonforge_brick");
-    public static final TileEntityType<TileEntityDragonforgeInput> DRAGONFORGE_INPUT = registerTileEntity(TileEntityType.Builder.create(TileEntityDragonforgeBrick::new, IafBlockRegistry.DRAGONFORGE_FIRE_INPUT, IafBlockRegistry.DRAGONFORGE_ICE_INPUT, IafBlockRegistry.DRAGONFORGE_LIGHTNING_INPUT), "dragonforge_input");
+    public static final TileEntityType<TileEntityDragonforgeInput> DRAGONFORGE_INPUT = registerTileEntity(TileEntityType.Builder.create(TileEntityDragonforgeInput::new, IafBlockRegistry.DRAGONFORGE_FIRE_INPUT, IafBlockRegistry.DRAGONFORGE_ICE_INPUT, IafBlockRegistry.DRAGONFORGE_LIGHTNING_INPUT), "dragonforge_input");
     public static final TileEntityType<TileEntityDreadPortal> DREAD_PORTAL = registerTileEntity(TileEntityType.Builder.create(TileEntityDreadPortal::new, IafBlockRegistry.DREAD_PORTAL), "dread_portal");
     public static final TileEntityType<TileEntityDreadSpawner> DREAD_SPAWNER = registerTileEntity(TileEntityType.Builder.create(TileEntityDreadSpawner::new, IafBlockRegistry.DREAD_SPAWNER), "dread_spawner");
+    public static final TileEntityType<TileEntityGhostChest> GHOST_CHEST = registerTileEntity(TileEntityType.Builder.create(TileEntityGhostChest::new, IafBlockRegistry.GHOST_CHEST), "ghost_chest");
 
 
     public static TileEntityType registerTileEntity(TileEntityType.Builder builder, String entityName) {

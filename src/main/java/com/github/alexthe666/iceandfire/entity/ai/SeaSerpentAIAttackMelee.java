@@ -1,15 +1,17 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntitySeaSerpent;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class SeaSerpentAIAttackMelee extends Goal {
     protected final int attackInterval = 20;
@@ -52,21 +54,21 @@ public class SeaSerpentAIAttackMelee extends Goal {
     public boolean shouldExecute() {
         LivingEntity LivingEntity = this.attacker.getAttackTarget();
 
-        if (LivingEntity == null || !this.attacker.func_233570_aj_()) {
+        if (LivingEntity == null || this.attacker.shouldUseJumpAttack(LivingEntity) && this.attacker.jumpCooldown <= 0) {
             return false;
         } else if (!LivingEntity.isAlive()) {
             return false;
         } else {
             if (canPenalize) {
                 if (--this.delayCounter <= 0) {
-                    this.path = this.attacker.getNavigator().getPathToEntity(LivingEntity, 0);
+                    this.path = this.attacker.getNavigator().pathfind(LivingEntity, 0);
                     this.delayCounter = 4 + this.attacker.getRNG().nextInt(7);
                     return this.path != null;
                 } else {
                     return true;
                 }
             }
-            this.path = this.attacker.getNavigator().getPathToEntity(LivingEntity, 0);
+            this.path = this.attacker.getNavigator().pathfind(LivingEntity, 0);
 
             if (this.path != null) {
                 return true;
@@ -88,16 +90,13 @@ public class SeaSerpentAIAttackMelee extends Goal {
             return false;
         } else if (!this.longMemory) {
             return !this.attacker.getNavigator().noPath();
-        } else if (!this.attacker.isWithinHomeDistanceFromPosition(LivingEntity.func_233580_cy_())) {
+        } else if (!this.attacker.isWithinHomeDistanceFromPosition(LivingEntity.getPosition())) {
             return false;
         } else {
             return !(LivingEntity instanceof PlayerEntity) || !LivingEntity.isSpectator() && !((PlayerEntity) LivingEntity).isCreative();
         }
     }
 
-    /**
-     * Execute a one shot task or start executing a continuous task
-     */
     public void startExecuting() {
         if (attacker.isInWater()) {
             this.attacker.getMoveHelper().setMoveTo(this.targetX, this.targetY, this.targetZ, 0.1F);
@@ -166,7 +165,7 @@ public class SeaSerpentAIAttackMelee extends Goal {
 
     protected void checkAndPerformAttack(LivingEntity enemy, double distToEnemySqr) {
         double d0 = this.getAttackReachSqr(enemy);
-        if (distToEnemySqr <= d0) {
+        if (this.attacker.isTouchingMob(enemy)) {
             this.attackTick = 20;
             this.attacker.swingArm(Hand.MAIN_HAND);
             this.attacker.attackEntityAsMob(enemy);

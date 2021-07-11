@@ -1,0 +1,43 @@
+<recipe><iceandfire:chain 0 minecraft:air 0 iceandfire:chain_link 0 iceandfire:chain_link 0 minecraft:air 0 iceandfire:chain_link 0 minecraft:air 0 iceandfire:chain_link 0 iceandfire:chain_link 0 minecraft:air 0 4 10 1>
+
+
+
+
+
+
+
+
+Correntes podem ser criadas para
+capturar dragões selvagens ou qualquer.
+monstro. Elas pode ser fixadas em muros.
+Dragões destruirão a maioria dos muros,
+como os de pedregulho, por exemplo, então
+se quiser energizar sua forja dracônica
+precisará de muros de ossos de dragão.
+<recipe><iceandfire:dragon_bone_wall 0 minecraft:air 0 minecraft:air 0 minecraft:air 0 iceandfire:dragonbone 0 iceandfire:dragonbone 0 iceandfire:dragonbone 0 iceandfire:dragonbone 0 iceandfire:dragonbone 0 iceandfire:dragonbone 0 25 145 0.75>
+
+
+
+
+
+Para energizar adequadamente sua
+forja coloque o dragão domesticado
+ou acorrentado em frente à abertura.
+Fazendo isso o dragão comecará a 
+expelir chamas ou gelo dentro da forja
+enquanto houver itens válidos dentro dela.
+
+
+A maioria dos itens colocados na forja,
+se tornarão cinzas ou gelo de dragão,
+respectivamente. Entretanto, colocando
+uma barra de ferro e sangue de dragão
+(sangue de fogo para forjas de fogo e 
+sangue de gelo para forjas de gelo) 
+resultará num poderoso metal alquímico.
+<item><minecraft:iron_ingot 0 110 78 1>
+<item><iceandfire:fire_dragon_blood 0 130 78 1>
+<item><iceandfire:dragonsteel_fire_ingot 0 170 78 1>
+<item><minecraft:iron_ingot 0 110 92 1>
+<item><iceandfire:ice_dragon_blood 0 130 92 1>
+<item><iceandfire:dragonsteel_ice_ingot 0 170 92 1>

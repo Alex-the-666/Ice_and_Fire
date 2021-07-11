@@ -1,7 +1,18 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.util.IDreadMob;
-import net.minecraft.entity.*;
+
+import net.minecraft.entity.CreatureAttribute;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.passive.horse.SkeletonHorseEntity;
@@ -11,12 +22,8 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.server.management.PreYggdrasilConverter;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
-import java.util.UUID;
 
 public class EntityDreadHorse extends SkeletonHorseEntity implements IDreadMob {
 
@@ -28,19 +35,20 @@ public class EntityDreadHorse extends SkeletonHorseEntity implements IDreadMob {
 
 
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
-        return MobEntity.func_233666_p_()
+        return func_234237_fg_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 25.0D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 25.0D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.3D)
-                .func_233815_a_(Attributes.field_233826_i_, 4.0D);
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.3D)
+                //ARMOR
+                .createMutableAttribute(Attributes.ARMOR, 4.0D);
     }
 
 
     @Override
     protected void registerData() {
         super.registerData();
-        this.dataManager.register(COMMANDER_UNIQUE_ID, null);
+        this.dataManager.register(COMMANDER_UNIQUE_ID, Optional.empty());
     }
 
     @Override
@@ -72,7 +80,7 @@ public class EntityDreadHorse extends SkeletonHorseEntity implements IDreadMob {
     }
 
     @Nullable
-    public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         ILivingEntityData data = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.setGrowingAge(24000);
         return data;

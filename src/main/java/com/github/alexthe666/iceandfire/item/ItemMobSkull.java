@@ -4,6 +4,7 @@ import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityMobSkull;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
 import com.github.alexthe666.iceandfire.enums.EnumSkullType;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -25,7 +26,6 @@ public class ItemMobSkull extends Item implements ICustomRendered {
     @Override
     public ActionResultType onItemUse(ItemUseContext context) {
         PlayerEntity player = context.getPlayer();
-
         EntityMobSkull skull = new EntityMobSkull(IafEntityRegistry.MOB_SKULL, context.getWorld());
         ItemStack stack = player.getHeldItem(context.getHand());
         BlockPos offset = context.getPos().offset(context.getFace(), 1);
@@ -38,6 +38,9 @@ public class ItemMobSkull extends Item implements ICustomRendered {
         skull.setSkullType(this.skull);
         if (!context.getWorld().isRemote) {
             context.getWorld().addEntity(skull);
+        }
+        if (stack.hasDisplayName()) {
+            skull.setCustomName(stack.getDisplayName());
         }
         if (!player.isCreative()) {
             stack.shrink(1);

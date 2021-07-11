@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.world;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.google.common.collect.Lists;
+
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.math.BlockPos;
@@ -10,10 +15,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
 
 public class MyrmexWorldData extends WorldSavedData {
 
@@ -35,7 +36,7 @@ public class MyrmexWorldData extends WorldSavedData {
 
     public static MyrmexWorldData get(World world) {
         if (world instanceof ServerWorld) {
-            ServerWorld overworld = world.getServer().getWorld(world.func_234923_W_());
+            ServerWorld overworld = world.getServer().getWorld(world.getDimensionKey());
 
             DimensionSavedDataManager storage = overworld.getSavedData();
             MyrmexWorldData data = storage.getOrCreate(MyrmexWorldData::new, IDENTIFIER);
@@ -45,7 +46,8 @@ public class MyrmexWorldData extends WorldSavedData {
             }
             return data;
         }
-        return null;
+        //If the world is ClientLevel just return empty non significant data object
+        return new MyrmexWorldData();
     }
 
     public static void addHive(World world, MyrmexHive hive) {

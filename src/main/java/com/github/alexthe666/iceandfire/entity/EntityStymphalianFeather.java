@@ -2,6 +2,7 @@ package com.github.alexthe666.iceandfire.entity;
 
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -56,7 +57,7 @@ public class EntityStymphalianFeather extends AbstractArrowEntity {
     }
 
     protected void onEntityHit(EntityRayTraceResult entityHit) {
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         if (shootingEntity instanceof EntityStymphalianBird && entityHit.getEntity() != null && entityHit.getEntity() instanceof EntityStymphalianBird) {
             return;
         } else {
@@ -78,8 +79,8 @@ public class EntityStymphalianFeather extends AbstractArrowEntity {
             ItemStack copyBeforeUse = entity.getActiveItemStack().copy();
             int i = 1 + MathHelper.floor(damage);
             Hand Hand = entity.getActiveHand();
-            copyBeforeUse.damageItem(i, entity, (p_220287_1_) -> {
-                p_220287_1_.sendBreakAnimation(Hand);
+            copyBeforeUse.damageItem(i, entity, (player1) -> {
+                player1.sendBreakAnimation(Hand);
             });
             if (entity.getActiveItemStack().isEmpty()) {
                 if (entity instanceof PlayerEntity) {

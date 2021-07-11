@@ -1,9 +1,12 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.entity.util.IFlyingMount;
 import com.github.alexthe666.iceandfire.util.IAFMath;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.MoverType;
@@ -16,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 
-import javax.annotation.Nullable;
+import net.minecraft.entity.ai.controller.MovementController.Action;
 
 public class IafDragonFlightManager {
     private EntityDragonBase dragon;
@@ -46,7 +49,8 @@ public class IafDragonFlightManager {
     }
 
     public void update() {
-        if (dragon.getAttackTarget() != null && dragon.getAttackTarget().isAlive()) {
+
+        if (dragon.getAttackTarget() != null && dragon.getAttackTarget().isAlive() ) {
             if (dragon instanceof EntityIceDragon && dragon.isInWater()) {
                 if (dragon.getAttackTarget() == null) {
                     dragon.airAttack = IafDragonAttacks.Air.SCORCH_STREAM;
@@ -79,12 +83,25 @@ public class IafDragonFlightManager {
             }
 
         } else if (target == null || dragon.getDistanceSq(target.x, target.y, target.z) < 4 || !dragon.world.isAirBlock(new BlockPos(target)) && (dragon.isHovering() || dragon.isFlying()) || dragon.getCommand() == 2 && dragon.shouldTPtoOwner()) {
-            BlockPos viewBlock = DragonUtils.getBlockInView(dragon);
-            if (dragon instanceof EntityIceDragon && !(dragon.isHovering() || dragon.isFlying())) {
+            BlockPos viewBlock = null;
+
+            if (dragon instanceof EntityIceDragon && dragon.isInWater()) {
                 viewBlock = DragonUtils.getWaterBlockInView(dragon);
             }
             if (dragon.getCommand() == 2 && dragon.isFlying()) {
                 viewBlock = DragonUtils.getBlockInViewEscort(dragon);
+            }else if(dragon.lookingForRoostAIFlag){
+                double xDist = Math.abs(dragon.getPosX() - dragon.getHomePosition().getX() - 0.5F);
+                double zDist = Math.abs(dragon.getPosZ() - dragon.getHomePosition().getZ() - 0.5F);
+                double xzDist = Math.sqrt(xDist * xDist + zDist * zDist);
+                BlockPos upPos = dragon.getHomePosition();
+                if(dragon.getDistanceSquared(Vector3d.copyCentered(dragon.getHomePosition())) > 200){
+                    upPos = upPos.up(30);
+                }
+                viewBlock = upPos;
+
+            }else if(viewBlock == null){
+                viewBlock = DragonUtils.getBlockInView(dragon);
             }
             if (viewBlock != null) {
                 target = new Vector3d(viewBlock.getX() + 0.5, viewBlock.getY() + 0.5, viewBlock.getZ() + 0.5);
@@ -105,6 +122,10 @@ public class IafDragonFlightManager {
 
     public Vector3d getFlightTarget() {
         return target == null ? Vector3d.ZERO : target;
+    }
+
+    public void setFlightTarget(Vector3d target){
+        this.target = target;
     }
 
     private float getDistanceXZ(double x, double z) {
@@ -136,7 +157,7 @@ public class IafDragonFlightManager {
 
         public void tick() {
             if (this.action == Action.STRAFE) {
-                float f = (float) this.mob.getAttribute(Attributes.field_233821_d_).getValue();
+                float f = (float) this.mob.getAttribute(Attributes.MOVEMENT_SPEED).getValue();
                 float f1 = (float) this.speed * f;
                 float f2 = this.moveForward;
                 float f3 = this.moveStrafe;
@@ -156,7 +177,7 @@ public class IafDragonFlightManager {
                 PathNavigator pathnavigate = this.mob.getNavigator();
                 if (pathnavigate != null) {
                     NodeProcessor nodeprocessor = pathnavigate.getNodeProcessor();
-                    if (nodeprocessor != null && nodeprocessor.getPathNodeType(this.mob.world, MathHelper.floor(this.mob.getPosX() + (double) f7), MathHelper.floor(this.mob.getPosY()), MathHelper.floor(this.mob.getPosZ() + (double) f8)) != PathNodeType.WALKABLE) {
+                    if (nodeprocessor != null && nodeprocessor.getFloorNodeType(this.mob.world, MathHelper.floor(this.mob.getPosX() + (double) f7), MathHelper.floor(this.mob.getPosY()), MathHelper.floor(this.mob.getPosZ() + (double) f8)) != PathNodeType.WALKABLE) {
                         this.moveForward = 1.0F;
                         this.moveStrafe = 0.0F;
                         f1 = f;
@@ -180,20 +201,20 @@ public class IafDragonFlightManager {
                 }
                 float targetDegree = (float) (MathHelper.atan2(d1, d0) * (180D / Math.PI)) - 90.0F;
                 float changeRange = 70F;
-                if (dragonBase.getWidth() > 2F) {
+                if (Math.ceil(dragonBase.getWidth()) > 2F) {
                     float ageMod = 1F - Math.min(dragonBase.getAgeInDays(), 125) / 125F;
                     changeRange = 5 + ageMod * 10;
                 }
                 this.mob.rotationYaw = this.limitAngle(this.mob.rotationYaw, targetDegree, changeRange);
-                this.mob.setAIMoveSpeed((float) (this.speed * this.mob.getAttribute(Attributes.field_233821_d_).getValue()));
-                if (d2 > (double) this.mob.stepHeight && d0 * d0 + d1 * d1 < (double) Math.max(1.0F, this.mob.getWidth())) {
+                this.mob.setAIMoveSpeed((float) (this.speed * this.mob.getAttribute(Attributes.MOVEMENT_SPEED).getValue()));
+                if (d2 > (double) this.mob.stepHeight && d0 * d0 + d1 * d1 < (double) Math.max(1.0F, this.mob.getWidth() / 2)) {
                     this.mob.getJumpController().setJumping();
                     this.action = Action.JUMPING;
                 }
             } else if (this.action == Action.JUMPING) {
-                this.mob.setAIMoveSpeed((float) (this.speed * this.mob.getAttribute(Attributes.field_233821_d_).getValue()));
+                this.mob.setAIMoveSpeed((float) (this.speed * this.mob.getAttribute(Attributes.MOVEMENT_SPEED).getValue()));
 
-                if (this.mob.func_233570_aj_()) {
+                if (this.mob.isOnGround()) {
                     this.action = Action.WAIT;
                 }
             } else {
@@ -247,6 +268,7 @@ public class IafDragonFlightManager {
                 dragon.rotationPitch = finPitch;
                 float yawTurnHead = dragon.rotationYaw + 90.0F;
                 speed *= dragon.getFlightSpeedModifier();
+                speed *= Math.min(1,dist/50+ 0.3);//Make the dragon fly slower when close to target
                 double lvt_16_1_ = speed * MathHelper.cos(yawTurnHead * 0.017453292F) * Math.abs((double) distX / dist);
                 double lvt_18_1_ = speed * MathHelper.sin(yawTurnHead * 0.017453292F) * Math.abs((double) distZ / dist);
                 double lvt_20_1_ = speed * MathHelper.sin(finPitch * 0.017453292F) * Math.abs((double) distY / dist);

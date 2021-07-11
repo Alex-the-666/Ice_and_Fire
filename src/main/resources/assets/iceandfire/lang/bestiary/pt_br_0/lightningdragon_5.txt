@@ -1,0 +1,50 @@
+Nas savanas, o lírio relâmpago
+raramente cresce no solo. Essa 
+flor pode ser usada para criar 
+uma mistura reprodutiva para 
+dragões, da mesma forma que os
+dragões de fogo ou gelo.
+<item><iceandfire:lightning_lily 100 20 40 1>
+<item><iceandfire:lightning_stew 100 60 40 1>
+
+
+
+
+Os itens liberados por dragões 
+elétricos são: escamas, ossos, 
+sangue, seu crânio e muito mais, 
+assim como seus primos de fogo e 
+gelo. Esses itens podem ser usados 
+da mesma forma. No geral, qualquer
+item variante de dragão de fogo ou
+gelo, também podem ser feitos 
+utilizando os itens do dragão 
+elétrico.
+
+Tais como: Armadura de escamas de 
+dragão elétrico, garrafas de sangue, 
+aço dracônico, blocos escamosos e 
+mais.
+
+<item><iceandfire:dragonscale_amythest 100 120 40 1>
+<item><iceandfire:armor_amythest_helmet 100 140 30 1>
+<item><iceandfire:dragonsteel_lightning_ingot 100 160 40 1>
+
+<item><iceandfire:dragonforge_lightning_core 100 140 50 1>
+
+<item><iceandfire:summoning_crystal_lightning 100 120 60 1>
+<item><iceandfire:lightning_dragon_blood 100 140 70 1>
+<item><iceandfire:dragonbone_sword_lightning 100 160 60 1>
+
+
+
+
+
+
+
+
+
+Armamentos do dragão elétrico
+causam dano extra a ambos dragões,
+de fogo ou gelo, além de atingir
+seus inimigos com raios poderosos.

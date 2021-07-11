@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.item;
 
 import com.github.alexthe666.citadel.server.item.CustomArmorMaterial;
+
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.util.SoundEvent;
 
@@ -18,4 +19,7 @@ public class IafArmorMaterial extends CustomArmorMaterial {
         return MAX_DAMAGE_ARRAY[slotIn.getIndex()] * this.maxDamageFactor;
     }
 
+    public float getKnockbackResistance(){
+        return 0;
+    }
 }

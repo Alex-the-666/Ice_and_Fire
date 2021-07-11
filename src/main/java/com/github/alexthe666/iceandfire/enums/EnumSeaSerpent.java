@@ -5,11 +5,14 @@ import com.github.alexthe666.iceandfire.block.BlockSeaSerpentScales;
 import com.github.alexthe666.iceandfire.item.IafArmorMaterial;
 import com.github.alexthe666.iceandfire.item.ItemSeaSerpentArmor;
 import com.github.alexthe666.iceandfire.item.ItemSeaSerpentScales;
+
 import net.minecraft.block.Block;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.TextFormatting;
+
+import java.util.Locale;
 
 public enum EnumSeaSerpent {
     BLUE(TextFormatting.BLUE),
@@ -31,7 +34,7 @@ public enum EnumSeaSerpent {
     public Block scaleBlock;
 
     EnumSeaSerpent(TextFormatting color) {
-        this.resourceName = this.name().toLowerCase();
+        this.resourceName = this.name().toLowerCase(Locale.ROOT);
         this.color = color;
         this.scaleBlock = new BlockSeaSerpentScales(this.resourceName, this.color);
     }

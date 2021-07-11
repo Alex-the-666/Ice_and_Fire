@@ -1,9 +1,14 @@
 package com.github.alexthe666.iceandfire.entity.props;
 
-import com.github.alexthe666.citadel.server.entity.EntityProperties;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityProperties;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.message.MessageAddChainedEntity;
 import com.github.alexthe666.iceandfire.message.MessageRemoveChainedEntity;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -11,10 +16,6 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class ChainEntityProperties extends EntityProperties<LivingEntity> {
 
@@ -119,7 +120,7 @@ public class ChainEntityProperties extends EntityProperties<LivingEntity> {
                 minimizeLists();
                 for (UUID uuid : connectedEntityUUID) {
                     if (world.getServer() != null) {
-                        Entity entity = world.getServer().getWorld(world.func_234923_W_()).getEntityByUuid(uuid);
+                        Entity entity = world.getServer().getWorld(world.getDimensionKey()).getEntityByUuid(uuid);
                         if (entity != null) {
                             if (!addedUUIDs.contains(entity.getUniqueID())) {
                                 addedUUIDs.add(entity.getUniqueID());

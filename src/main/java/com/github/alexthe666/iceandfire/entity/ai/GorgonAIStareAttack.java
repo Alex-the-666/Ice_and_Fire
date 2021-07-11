@@ -1,10 +1,11 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntityGorgon;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
-
-import java.util.EnumSet;
 
 public class GorgonAIStareAttack extends Goal {
     private final EntityGorgon entity;

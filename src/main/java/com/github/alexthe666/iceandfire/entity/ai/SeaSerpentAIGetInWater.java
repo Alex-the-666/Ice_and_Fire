@@ -1,82 +1,59 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.Random;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntitySeaSerpent;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.EnumSet;
-import java.util.Random;
+public class SeaSerpentAIGetInWater  extends Goal {
+    private final EntitySeaSerpent creature;
+    private BlockPos targetPos;
 
-public class SeaSerpentAIGetInWater extends Goal {
-
-    private final double movementSpeed;
-    private final World world;
-    private EntitySeaSerpent serpent;
-    private double shelterX;
-    private double shelterY;
-    private double shelterZ;
-
-    public SeaSerpentAIGetInWater(EntitySeaSerpent serpent, double movementSpeedIn) {
-        this.setMutexFlags(EnumSet.of(Flag.MOVE));
-        this.movementSpeed = movementSpeedIn;
-        this.world = serpent.world;
-        this.serpent = serpent;
+    public SeaSerpentAIGetInWater(EntitySeaSerpent creature) {
+        this.creature = creature;
+        this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
     public boolean shouldExecute() {
-        if (serpent.isInWater()) {
-            return false;
-        } else {
-            Vector3d Vector3d = this.findPossibleShelter();
-            if (Vector3d == null) {
-                return false;
-            } else {
-                this.shelterX = Vector3d.x;
-                this.shelterY = Vector3d.y;
-                this.shelterZ = Vector3d.z;
-                return true;
-            }
+        if ((this.creature.jumpCooldown == 0 || this.creature.isOnGround()) && !this.creature.world.getFluidState(this.creature.getPosition()).isTagged(FluidTags.WATER)){
+            targetPos = generateTarget();
+            return targetPos != null;
+        }
+        return false;
+    }
+
+    public void startExecuting() {
+        if(targetPos != null){
+            this.creature.getNavigator().tryMoveToXYZ(targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.5D);
         }
     }
 
-    /**
-     * Returns whether an in-progress Goal should continue executing
-     */
     public boolean shouldContinueExecuting() {
-        return !this.serpent.getNavigator().noPath() && !this.serpent.isInWater();
+        return !this.creature.getNavigator().noPath() && targetPos != null && !this.creature.world.getFluidState(this.creature.getPosition()).isTagged(FluidTags.WATER);
     }
 
-    /**
-     * Execute a one shot task or start executing a continuous task
-     */
-    public void startExecuting() {
-        this.serpent.getNavigator().tryMoveToXYZ(this.shelterX, this.shelterY, this.shelterZ, this.movementSpeed);
-    }
-
-    @Nullable
-    public Vector3d findPossibleShelter() {
-        return findPossibleShelter(15, 12);
-    }
-
-    @Nullable
-    protected Vector3d findPossibleShelter(int xz, int y) {
-        Random random = this.serpent.getRNG();
-        BlockPos blockpos = new BlockPos(this.serpent.getPosX(), this.serpent.getBoundingBox().minY, this.serpent.getPosZ());
-
-        for (int i = 0; i < 10; ++i) {
-            BlockPos blockpos1 = blockpos.add(random.nextInt(xz * 2) - xz, random.nextInt(y) + 2, random.nextInt(xz * 2) - xz);
-            while (this.world.isAirBlock(blockpos1) && blockpos1.getY() > 3) {
+    public BlockPos generateTarget() {
+        BlockPos blockpos = null;
+        Random random = new Random();
+        int range = 16;
+        for(int i = 0; i < 15; i++){
+            BlockPos blockpos1 = this.creature.getPosition().add(random.nextInt(range) - range/2, 3, random.nextInt(range) - range/2);
+            while(this.creature.world.isAirBlock(blockpos1) && blockpos1.getY() > 1){
                 blockpos1 = blockpos1.down();
             }
-            if (this.world.getBlockState(blockpos1).getMaterial() == Material.WATER) {
-                return new Vector3d(blockpos1.getX(), blockpos1.getY(), blockpos1.getZ());
+            if(this.creature.world.getFluidState(blockpos1).isTagged(FluidTags.WATER)){
+                blockpos = blockpos1;
             }
         }
-
-        return null;
+        return blockpos;
     }
 }

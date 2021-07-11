@@ -1,8 +1,19 @@
 package com.github.alexthe666.iceandfire.entity.tile;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.google.common.collect.Lists;
-import net.minecraft.entity.*;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.particles.ParticleTypes;
@@ -12,15 +23,12 @@ import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.WeightedSpawnerEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.spawner.AbstractSpawner;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 public abstract class DreadSpawnerBaseLogic extends AbstractSpawner {
 
@@ -101,8 +109,9 @@ public abstract class DreadSpawnerBaseLogic extends AbstractSpawner {
                     double d0 = j >= 1 ? listnbt.getDouble(0) : (double) blockpos.getX() + (world.rand.nextDouble() - world.rand.nextDouble()) * (double) this.spawnRange + 0.5D;
                     double d1 = j >= 2 ? listnbt.getDouble(1) : (double) (blockpos.getY() + world.rand.nextInt(3) - 1);
                     double d2 = j >= 3 ? listnbt.getDouble(2) : (double) blockpos.getZ() + (world.rand.nextDouble() - world.rand.nextDouble()) * (double) this.spawnRange + 0.5D;
-                    if (world.hasNoCollisions(optional.get().func_220328_a(d0, d1, d2)) && EntitySpawnPlacementRegistry.func_223515_a(optional.get(), world.getWorld(), SpawnReason.SPAWNER, new BlockPos(d0, d1, d2), world.getRandom())) {
-                        Entity entity = EntityType.func_220335_a(compoundnbt, world, (p_221408_6_) -> {
+                    if (world.hasNoCollisions(optional.get().getBoundingBoxWithSizeApplied(d0, d1, d2)) && EntitySpawnPlacementRegistry.canSpawnEntity(optional.get(), (IServerWorld)world, SpawnReason.SPAWNER, new BlockPos(d0, d1, d2), world.getRandom())) {
+                        ServerWorld serverworld = (ServerWorld)world;
+                        Entity entity = EntityType.loadEntityAndExecute(compoundnbt, world, (p_221408_6_) -> {
                             p_221408_6_.setLocationAndAngles(d0, d1, d2, p_221408_6_.rotationYaw, p_221408_6_.rotationPitch);
                             return p_221408_6_;
                         });
@@ -125,7 +134,7 @@ public abstract class DreadSpawnerBaseLogic extends AbstractSpawner {
                             }
 
                             if (this.spawnData.getNbt().size() == 1 && this.spawnData.getNbt().contains("id", 8)){
-                                ((MobEntity) entity).onInitialSpawn(world, world.getDifficultyForLocation(entity.func_233580_cy_()), SpawnReason.SPAWNER, null, null);
+                                ((MobEntity) entity).onInitialSpawn(serverworld, world.getDifficultyForLocation(entity.getPosition()), SpawnReason.SPAWNER, null, null);
                             }
                         }
 
@@ -250,17 +259,16 @@ public abstract class DreadSpawnerBaseLogic extends AbstractSpawner {
     @OnlyIn(Dist.CLIENT)
     public Entity getCachedEntity() {
         if (this.cachedEntity == null) {
-            this.cachedEntity = EntityType.func_220335_a(this.spawnData.getNbt(), this.getWorld(), Function.identity());
+            this.cachedEntity = EntityType.loadEntityAndExecute(this.spawnData.getNbt(), this.getWorld(), Function.identity());
             if (this.spawnData.getNbt().size() == 1 && this.spawnData.getNbt().contains("id", 8) && this.cachedEntity instanceof MobEntity) {
-                ((MobEntity) this.cachedEntity).onInitialSpawn(this.getWorld(), this.getWorld().getDifficultyForLocation(this.cachedEntity.func_233580_cy_()), SpawnReason.SPAWNER, null, null);
             }
         }
 
         return this.cachedEntity;
     }
 
-    public void setNextSpawnData(WeightedSpawnerEntity p_184993_1_) {
-        this.spawnData = p_184993_1_;
+    public void setNextSpawnData(WeightedSpawnerEntity nextSpawnData) {
+        this.spawnData = nextSpawnData;
     }
 
     public abstract void broadcastEvent(int id);

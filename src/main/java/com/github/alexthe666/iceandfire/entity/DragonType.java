@@ -5,15 +5,13 @@ import com.github.alexthe666.iceandfire.block.BlockEggInIce;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityEggInIce;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.LightningBoltEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
 
 public class DragonType {
 
@@ -85,10 +83,13 @@ public class DragonType {
                     if (!egg.world.isRemote) {
                         egg.world.addEntity(dragon);
                     }
+                    if (egg.hasCustomName()) {
+                        dragon.setCustomName(egg.getCustomName());
+                    }
                     dragon.setTamed(true);
                     dragon.setOwnerId(egg.getOwnerId());
                     egg.world.playSound(egg.getPosX(), egg.getPosY() + egg.getEyeHeight(), egg.getPosZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, egg.getSoundCategory(), 2.5F, 1.0F, false);
-                    egg.world.playSound(egg.getPosX(), egg.getPosY() + egg.getEyeHeight(), egg.getPosZ(), IafSoundRegistry.DRAGON_HATCH, egg.getSoundCategory(), 2.5F, 1.0F, false);
+                    egg.world.playSound(egg.getPosX(), egg.getPosY() + egg.getEyeHeight(), egg.getPosZ(), IafSoundRegistry.EGG_HATCH, egg.getSoundCategory(), 2.5F, 1.0F, false);
                     egg.remove();
                 }
 
@@ -109,7 +110,7 @@ public class DragonType {
             boolean flag;
             BlockPos.Mutable blockpos$pooledmutable = new BlockPos.Mutable(egg.getPosX(), egg.getPosY(), egg.getPosZ()) ;
             flag = egg.world.isRainingAt(blockpos$pooledmutable) || egg.world.isRainingAt(blockpos$pooledmutable.setPos(egg.getPosX(), egg.getPosY() + (double)egg.size.height, egg.getPosZ()));
-            if (egg.world.canSeeSky(egg.func_233580_cy_().up()) && flag) {
+            if (egg.world.canSeeSky(egg.getPosition().up()) && flag) {
                 egg.setDragonAge(egg.getDragonAge() + 1);
             }
             if (egg.getDragonAge() > IafConfig.dragonEggTime) {
@@ -124,15 +125,19 @@ public class DragonType {
                 if (!egg.world.isRemote) {
                     egg.world.addEntity(dragon);
                 }
+                if (egg.hasCustomName()) {
+                    dragon.setCustomName(egg.getCustomName());
+                }
                 dragon.setTamed(true);
                 dragon.setOwnerId(egg.getOwnerId());
                 LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(egg.world);
-                lightningboltentity.func_233576_c_(egg.getPositionVec());
+                lightningboltentity.setPosition(egg.getPosX(), egg.getPosY(), egg.getPosZ());
+                lightningboltentity.setEffectOnly(true);
                 if(!egg.world.isRemote){
                     egg.world.addEntity(lightningboltentity);
                 }
                 egg.world.playSound(egg.getPosX(), egg.getPosY() + egg.getEyeHeight(), egg.getPosZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, egg.getSoundCategory(), 2.5F, 1.0F, false);
-                egg.world.playSound(egg.getPosX(), egg.getPosY() + egg.getEyeHeight(), egg.getPosZ(), IafSoundRegistry.DRAGON_HATCH, egg.getSoundCategory(), 2.5F, 1.0F, false);
+                egg.world.playSound(egg.getPosX(), egg.getPosY() + egg.getEyeHeight(), egg.getPosZ(), IafSoundRegistry.EGG_HATCH, egg.getSoundCategory(), 2.5F, 1.0F, false);
                 egg.remove();
 
 

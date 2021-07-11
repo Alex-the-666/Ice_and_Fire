@@ -1,17 +1,18 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemGeneric extends Item {
     int description = 0;
@@ -51,7 +52,7 @@ public class ItemGeneric extends Item {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         if (description > 0) {
             for (int i = 0; i < description; i++) {
-                tooltip.add(new TranslationTextComponent(this.getTranslationKey() + ".desc_" + i).func_240699_a_(TextFormatting.GRAY));
+                tooltip.add(new TranslationTextComponent(this.getTranslationKey() + ".desc_" + i).mergeStyle(TextFormatting.GRAY));
             }
         }
     }

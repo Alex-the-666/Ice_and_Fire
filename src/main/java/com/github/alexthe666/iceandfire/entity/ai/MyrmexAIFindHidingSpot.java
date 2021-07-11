@@ -1,7 +1,14 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntityMyrmexSentinel;
 import com.google.common.base.Predicate;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -9,10 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.gen.Heightmap;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class MyrmexAIFindHidingSpot extends Goal {
     private static final int RADIUS = 32;
@@ -38,26 +42,27 @@ public class MyrmexAIFindHidingSpot extends Goal {
     @Override
     public boolean shouldExecute() {
         this.targetBlock = getTargetPosition(wanderRadius);
-        return this.myrmex.canMove() && this.myrmex.getAttackTarget() == null && myrmex.canSeeSky() && !myrmex.isHiding();
+        return this.myrmex.canMove() && this.myrmex.getAttackTarget() == null && myrmex.canSeeSky() && !myrmex.isHiding() && myrmex.visibleTicks <= 0;
     }
 
     @Override
     public boolean shouldContinueExecuting() {
-        return !myrmex.shouldEnterHive() && this.myrmex.getNavigator().noPath() && this.myrmex.getAttackTarget() == null  && !myrmex.isHiding();
+        return !myrmex.shouldEnterHive() && this.myrmex.getAttackTarget() == null  && !myrmex.isHiding() && myrmex.visibleTicks <= 0;
     }
 
     @Override
     public void tick() {
        if(targetBlock != null){
+           this.myrmex.getNavigator().tryMoveToXYZ(this.targetBlock.getX() + 0.5D, this.targetBlock.getY(), this.targetBlock.getZ() + 0.5D, 1D);
            if (areMyrmexNear(5) || this.myrmex.isOnResin()) {
-               this.myrmex.getNavigator().tryMoveToXYZ(this.targetBlock.getX() + 0.5D, this.targetBlock.getY(), this.targetBlock.getZ() + 0.5D, 1D);
-               if (this.myrmex.getDistanceSq(Vector3d.func_237489_a_(this.targetBlock)) < 20) {
+               if (this.myrmex.getDistanceSq(Vector3d.copyCentered(this.targetBlock)) < 9) {
                    this.wanderRadius += RADIUS;
                    this.targetBlock = getTargetPosition(wanderRadius);
                }
            } else {
-               if (this.myrmex.getAttackTarget() == null && this.myrmex.getCustomer() == null && myrmex.visibleTicks == 0) {
+               if (this.myrmex.getDistanceSq(Vector3d.copyCentered(this.targetBlock)) < 9 && this.myrmex.getAttackTarget() == null && this.myrmex.getCustomer() == null && myrmex.visibleTicks == 0) {
                    myrmex.setHiding(true);
+                   myrmex.getNavigator().clearPath();
                }
            }
        }

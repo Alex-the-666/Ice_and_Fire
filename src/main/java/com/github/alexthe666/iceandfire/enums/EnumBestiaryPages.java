@@ -1,14 +1,16 @@
 package com.github.alexthe666.iceandfire.enums;
 
-import com.github.alexthe666.iceandfire.item.ItemBestiary;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import javax.annotation.Nullable;
+
+import com.github.alexthe666.iceandfire.item.ItemBestiary;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 
 public enum EnumBestiaryPages {
 
@@ -37,7 +39,8 @@ public enum EnumBestiaryPages {
     HYDRA(2),
     DREAD_MOBS(1),
     LIGHTNINGDRAGON(5),
-    LIGHTNINGDRAGONEGG(1);
+    LIGHTNINGDRAGONEGG(1),
+    GHOST(1);
 
     public int pages;
 

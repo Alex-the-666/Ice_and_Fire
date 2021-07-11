@@ -7,6 +7,7 @@ import com.github.alexthe666.iceandfire.item.IafItemRegistry;
 import com.github.alexthe666.iceandfire.item.ItemBestiary;
 import com.github.alexthe666.iceandfire.message.MessageUpdateLectern;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.IInventory;
@@ -146,6 +147,15 @@ public class ContainerLectern extends Container {
         ItemStack itemstack = this.tileFurnace.getStackInSlot(0);
         ItemStack itemstack1 = this.tileFurnace.getStackInSlot(1);
         int i = 3;
+
+        if (!playerIn.world.isRemote && !playerIn.isCreative()){
+            itemstack1.shrink(i);
+            if (itemstack1.isEmpty()) {
+                this.tileFurnace.setInventorySlotContents(1, ItemStack.EMPTY);
+            }
+            return false;
+        }
+
         boolean didEnchant = false;
         if ((itemstack1.isEmpty() || itemstack1.getCount() < i) && !playerIn.isCreative()) {
             return false;
@@ -162,16 +172,11 @@ public class ContainerLectern extends Container {
                         ((TileEntityLectern) IceAndFire.PROXY.getRefrencedTE()).randomizePages(itemstack, itemstack1);
                     }
                 }
-                if (!playerIn.isCreative() && didEnchant) {
-                    itemstack1.shrink(i);
-                    if (itemstack1.isEmpty()) {
-                        this.tileFurnace.setInventorySlotContents(1, ItemStack.EMPTY);
-                    }
-                }
+
                 this.tileFurnace.markDirty();
                 //this.xpSeed = playerIn.getXPSeed();
                 this.onCraftMatrixChanged(this.tileFurnace);
-                playerIn.world.playSound(null, playerIn.func_233580_cy_(), IafSoundRegistry.BESTIARY_PAGE, SoundCategory.BLOCKS, 1.0F, playerIn.world.rand.nextFloat() * 0.1F + 0.9F);
+                playerIn.world.playSound(null, playerIn.getPosition(), IafSoundRegistry.BESTIARY_PAGE, SoundCategory.BLOCKS, 1.0F, playerIn.world.rand.nextFloat() * 0.1F + 0.9F);
             }
             onUpdate();
             return true;

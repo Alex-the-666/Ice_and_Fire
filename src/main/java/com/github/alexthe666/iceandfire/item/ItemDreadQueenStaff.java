@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.item;
 
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.item.Item;
 
 public class ItemDreadQueenStaff extends Item {

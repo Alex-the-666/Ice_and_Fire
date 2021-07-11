@@ -1,7 +1,7 @@
 A criatura vai perseguir aqueles 
 que possuírem esses itens. Se um
-hipocampo for alimentado com uma 
-esponja, ele irá começar a confiar 
+hipocampo for alimentado com  
+algas, ele irá começar a confiar 
 na pessoa.
 
 

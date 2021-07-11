@@ -1,0 +1,7 @@
+{
+  "processors": [
+    {
+      "processor_type": "iceandfire:gorgon_temple_processor"
+    }
+  ]
+}

@@ -1,15 +1,16 @@
 package com.github.alexthe666.iceandfire.message;
 
+import java.util.function.Supplier;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.util.ISyncMount;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class MessageStartRidingMob {
 
@@ -51,17 +52,19 @@ public class MessageStartRidingMob {
                     Entity entity = player.world.getEntityByID(message.dragonId);
                     if (entity != null && entity instanceof ISyncMount && entity instanceof TameableEntity) {
                         TameableEntity dragon = (TameableEntity) entity;
-                        if (message.ride) {
-                            if(message.baby){
-                                dragon.startRiding(player, true);
-                            }else{
-                                player.startRiding(dragon, true);
-                            }
-                        } else {
-                            if(message.baby){
-                                dragon.stopRiding();
-                            }else{
-                                player.stopRiding();
+                        if (dragon.isOwner(player) && dragon.getDistance(player) < 14) {
+                            if (message.ride) {
+                                if (message.baby) {
+                                    dragon.startRiding(player, true);
+                                } else {
+                                    player.startRiding(dragon, true);
+                                }
+                            } else {
+                                if (message.baby) {
+                                    dragon.stopRiding();
+                                } else {
+                                    player.stopRiding();
+                                }
                             }
                         }
                     }

@@ -1,16 +1,16 @@
 package com.github.alexthe666.iceandfire.misc;
 
+import static com.github.alexthe666.iceandfire.IceAndFire.MODID;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-
-import static com.github.alexthe666.iceandfire.IceAndFire.MODID;
 
 @SuppressWarnings("WeakerAccess")
 public final class IafSoundRegistry {
 
     public static final SoundEvent BESTIARY_PAGE = createSoundEvent("bestiary_page");
 
-    public static final SoundEvent DRAGON_HATCH = createSoundEvent("dragon_hatch");
+    public static final SoundEvent EGG_HATCH = createSoundEvent("egg_hatch");
 
     public static final SoundEvent FIREDRAGON_BREATH = createSoundEvent("firedragon_breath");
 
@@ -82,7 +82,7 @@ public final class IafSoundRegistry {
 
     public static final SoundEvent GORGON_PETRIFY = createSoundEvent("gorgon_petrify");
 
-    public static final SoundEvent GORGON_TURN_STONE = createSoundEvent("gorgon_turn_stone");
+    public static final SoundEvent TURN_STONE = createSoundEvent("turn_stone");
 
     public static final SoundEvent PIXIE_IDLE = createSoundEvent("pixie_idle");
 
@@ -249,6 +249,16 @@ public final class IafSoundRegistry {
     public static final SoundEvent LIGHTNINGDRAGON_BREATH = createSoundEvent("lightningdragon_breath");
 
     public static final SoundEvent LIGHTNINGDRAGON_BREATH_CRACKLE = createSoundEvent("lightningdragon_breath_crackle");
+
+    public static final SoundEvent GHOST_IDLE = createSoundEvent("ghost_idle");
+
+    public static final SoundEvent GHOST_HURT = createSoundEvent("ghost_hurt");
+
+    public static final SoundEvent GHOST_DIE = createSoundEvent("ghost_die");
+
+    public static final SoundEvent GHOST_ATTACK = createSoundEvent("ghost_attack");
+
+    public static final SoundEvent GHOST_JUMPSCARE = createSoundEvent("ghost_jumpscare");
 
     private static SoundEvent createSoundEvent(final String soundName) {
         final ResourceLocation soundID = new ResourceLocation(MODID, soundName);

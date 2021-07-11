@@ -1,11 +1,11 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
-
-import java.util.Random;
 
 public class WorldGenRoostArch {
     private static final Direction[] HORIZONTALS = new Direction[]{Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};

@@ -1,12 +1,13 @@
-     As lendas eram verdadeiras. 
+As lendas eram verdadeiras. 
 Tais feras como essa, eu achava 
-impossível delas existirem. Muito 
-bem. Acho importante descrever 
-como elas são e também suas 
-atividades.
+impossível delas existirem. Muito bem. 
+Acho importante descrever como 
+elas são e também suas atividades.
 
 
 
+
+<image><drawings_firedragon.png 0 80 0 0 194 93 1>
 
 
 
@@ -14,10 +15,9 @@ atividades.
 
 
 A aparência da besta é obviamente 
-reptiliana. No entanto, é muito 
-maior do que a média de um réptil; 
+reptiliana. No entanto, é muito maior 
+do que a média de um réptil; 
 Os indivíduos que vi variam do
-
 tamanho de um porco para 25 blocos! 
 Ainda assim há rumores de dragões 
 maiores, dormindo em criptas antigas 
@@ -31,9 +31,12 @@ usadas na aviação. Essas feras
 parecem lerdas no começo, mas não 
 se engane, elas podem levantar voo 
 e atacar rapidamente uma presa.
-
     Talvez o maior perigo seja o
 aspecto deles terem a habilidade
 de produzir fogo pela boca. Eles 
 usam esse poder para cozinharem
 suas presas vivas.
+
+     Dragões de fogo machos têm asas
+padronizadas e coletam itens mais valiosos, 
+já as fêmeas tem chifres curvados.

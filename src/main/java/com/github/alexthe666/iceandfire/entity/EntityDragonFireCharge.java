@@ -3,6 +3,7 @@ package com.github.alexthe666.iceandfire.entity;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.entity.util.IDragonProjectile;
 import com.github.alexthe666.iceandfire.misc.IafDamageRegistry;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -12,7 +13,9 @@ import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.network.IPacket;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -53,7 +56,7 @@ public class EntityDragonFireCharge extends AbstractFireballEntity implements ID
     }
 
     public void tick() {
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         for (int i = 0; i < 4; ++i) {
             this.world.addParticle(ParticleTypes.FLAME, this.getPosX() + ((this.rand.nextDouble() - 0.5D) * getWidth()), this.getPosY() + ((this.rand.nextDouble() - 0.5D) * getWidth()), this.getPosZ() + ((this.rand.nextDouble() - 0.5D) * getWidth()), 0.0D, 0.0D, 0.0D);
         }
@@ -61,7 +64,7 @@ public class EntityDragonFireCharge extends AbstractFireballEntity implements ID
             remove();
         }
 
-        if (this.world.isRemote || (shootingEntity == null || shootingEntity.isAlive()) && this.world.isBlockLoaded(this.func_233580_cy_())) {
+        if (this.world.isRemote || (shootingEntity == null || shootingEntity.isAlive()) && this.world.isBlockLoaded(this.getPosition())) {
             super.tick();
 
             if (this.isFireballFiery()) {
@@ -70,7 +73,7 @@ public class EntityDragonFireCharge extends AbstractFireballEntity implements ID
 
             ++this.ticksInAir;
             Vector3d Vector3d = this.getMotion();
-            RayTraceResult raytraceresult = ProjectileHelper.func_234618_a_(this, this::func_230298_a_, RayTraceContext.BlockMode.COLLIDER);
+            RayTraceResult raytraceresult = ProjectileHelper.func_234618_a_(this, this::canHitMob);
 
             if (raytraceresult != null) {
                 this.onImpact(raytraceresult);
@@ -116,10 +119,16 @@ public class EntityDragonFireCharge extends AbstractFireballEntity implements ID
         }
     }
 
+    protected boolean canHitMob(Entity hitMob) {
+        Entity shooter = getShooter();
+        return hitMob != this && super.func_230298_a_(hitMob) && !(shooter == null || hitMob.isOnSameTeam(shooter)) && !(hitMob instanceof EntityDragonPart);
+    }
+
+
     @Override
     protected void onImpact(RayTraceResult movingObject) {
         boolean flag = this.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING);
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         if (!this.world.isRemote) {
             if (movingObject.getType() == RayTraceResult.Type.ENTITY) {
                 Entity entity = ((EntityRayTraceResult) movingObject).getEntity();
@@ -148,7 +157,8 @@ public class EntityDragonFireCharge extends AbstractFireballEntity implements ID
                         return;
                     }
                     if (shootingEntity != null && shootingEntity instanceof EntityDragonBase) {
-                        entity.attackEntityFrom(IafDamageRegistry.DRAGON_FIRE, 10.0F);
+                        float damageAmount = (float) IafConfig.dragonAttackDamageFire * ((EntityDragonBase) shootingEntity).getDragonStage();
+                        entity.attackEntityFrom(IafDamageRegistry.DRAGON_FIRE, damageAmount);
                         if (entity instanceof LivingEntity && ((LivingEntity) entity).getHealth() == 0) {
                             ((EntityDragonBase) shootingEntity).randomizeAttacks();
                         }
@@ -163,7 +173,7 @@ public class EntityDragonFireCharge extends AbstractFireballEntity implements ID
         }
         if(movingObject.getType() != RayTraceResult.Type.MISS) {
             if (shootingEntity instanceof EntityDragonBase && IafConfig.dragonGriefing != 2) {
-                IafDragonDestructionManager.destroyAreaFireCharge(world, this.func_233580_cy_(), ((EntityDragonBase) shootingEntity));
+                IafDragonDestructionManager.destroyAreaFireCharge(world, this.getPosition(), ((EntityDragonBase) shootingEntity));
             }
             this.remove();
         }

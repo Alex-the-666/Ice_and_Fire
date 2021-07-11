@@ -1,10 +1,11 @@
 package com.github.alexthe666.iceandfire.entity.props;
 
-import com.github.alexthe666.citadel.server.entity.EntityProperties;
+import java.util.Random;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityProperties;
+
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.nbt.CompoundNBT;
-
-import java.util.Random;
 
 public class ChickenEntityProperties extends EntityProperties<AnimalEntity> {
 

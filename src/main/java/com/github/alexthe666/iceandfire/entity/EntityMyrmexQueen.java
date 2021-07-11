@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.api.event.GenericGriefEvent;
@@ -8,6 +10,7 @@ import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexTrades;
 import com.github.alexthe666.iceandfire.world.gen.WorldGenMyrmexHive;
 import com.google.common.base.Predicate;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
@@ -16,7 +19,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.merchant.villager.VillagerTrades;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,12 +44,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.IFeatureConfig;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-
-import javax.annotation.Nullable;
 
 public class EntityMyrmexQueen extends EntityMyrmexBase {
 
@@ -85,7 +90,7 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
     }
 
     public void setCustomName(ITextComponent name) {
-        if (!this.getHive().equals(name)) {
+        if (!this.getHive().colonyName.equals(name.getUnformattedComponentText())) {
             if (this.getHive() != null) {
                 this.getHive().colonyName = name.getString();
             }
@@ -130,12 +135,12 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
         } else if (this.canSeeSky()) {
             this.setAnimation(ANIMATION_DIGNEST);
             if (this.getAnimationTick() == 42) {
-                int down = Math.max(15, this.func_233580_cy_().getY() - 20 + this.getRNG().nextInt(10));
+                int down = Math.max(15, this.getPosition().getY() - 20 + this.getRNG().nextInt(10));
                 BlockPos genPos = new BlockPos(this.getPosX(), down, this.getPosZ());
                 if (!MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, genPos.getX(), genPos.getY(), genPos.getZ()))) {
-                    WorldGenMyrmexHive hiveGen = new WorldGenMyrmexHive(true, this.isJungle(), NoFeatureConfig.field_236558_a_);
-                    if (!world.isRemote) {
-                        hiveGen.placeSmallGen(world, this.getRNG(), genPos);
+                    WorldGenMyrmexHive hiveGen = new WorldGenMyrmexHive(true, this.isJungle(), NoFeatureConfig.CODEC);
+                    if (!world.isRemote && world instanceof ServerWorld) {
+                        hiveGen.placeSmallGen((ServerWorld)world, this.getRNG(), genPos);
                     }
                     this.setMadeHome(true);
                     this.setLocationAndAngles(genPos.getX(), down, genPos.getZ(), 0, 0);
@@ -184,7 +189,7 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
         if (this.getAnimation() == ANIMATION_BITE && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
             this.playBiteSound();
             if (this.getAttackBounds().intersects(this.getAttackTarget().getBoundingBox())) {
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue()));
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue()));
             }
         }
         if (this.getAnimation() == ANIMATION_STING && this.getAnimationTick() == 0) {
@@ -193,7 +198,7 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
         if (this.getAnimation() == ANIMATION_STING && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
             if (this.getAttackBounds().intersects(this.getAttackTarget().getBoundingBox())) {
                 LivingEntity attackTarget = this.getAttackTarget();
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue() * 2));
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue() * 2));
                 this.getAttackTarget().addPotionEffect(new EffectInstance(Effects.POISON, 200, 2));
                 this.getAttackTarget().isAirBorne = true;
                 float f = MathHelper.sqrt(0.5 * 0.5 + 0.5 * 0.5);
@@ -201,7 +206,7 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
                 attackTarget.setMotion(attackTarget.getMotion().mul(0.5D, 1, 0.5D));
                 attackTarget.setMotion(attackTarget.getMotion().add(-0.5 / (double) f * 4, 1, -0.5 / (double) f * 4));
 
-                if (this.getAttackTarget().func_233570_aj_()) {
+                if (this.getAttackTarget().isOnGround()) {
                     attackTarget.setMotion(attackTarget.getMotion().add(0, 0.4, 0));
                 }
             }
@@ -217,7 +222,7 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
         this.goalSelector.addGoal(0, new SwimGoal(this));
         this.goalSelector.addGoal(0, new MyrmexAITradePlayer(this));
         this.goalSelector.addGoal(0, new MyrmexAILookAtTradePlayer(this));
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(1, new MyrmexAIAttackMelee(this, 1.0D, true));
         this.goalSelector.addGoal(3, new MyrmexAIReEnterHive(this, 1.0D));
         this.goalSelector.addGoal(4, new MyrmexAIWanderHiveCenter(this, 1.0D));
         this.goalSelector.addGoal(5, new MyrmexQueenAIWander(this, 1D));
@@ -244,15 +249,15 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 120D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 120D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.2D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.2D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, IafConfig.myrmexBaseAttackStrength * 3.5D)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, IafConfig.myrmexBaseAttackStrength * 3.5D)
                 //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, 128.0D)
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 128.0D)
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 15.0D);
+                .createMutableAttribute(Attributes.ARMOR, 15.0D);
     }
 
 
@@ -337,7 +342,7 @@ public class EntityMyrmexQueen extends EntityMyrmexBase {
     }
 
     @Override
-    public boolean func_213705_dZ() {
+    public boolean hasXPBar() {
         return false;
     }
 }

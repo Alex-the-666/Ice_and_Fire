@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.block;
 
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BreakableBlock;
@@ -9,12 +10,13 @@ import net.minecraft.block.material.Material;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
+
+import net.minecraft.block.AbstractBlock.Properties;
 
 public class BlockMyrmexConnectedResin extends BreakableBlock {
 
@@ -26,7 +28,15 @@ public class BlockMyrmexConnectedResin extends BreakableBlock {
     public static final BooleanProperty WEST = BooleanProperty.create("west");
 
     public BlockMyrmexConnectedResin(boolean jungle, boolean glass) {
-        super(Properties.create(Material.ROCK).hardnessAndResistance(glass ? 1.5F : 3.5F).notSolid().variableOpacity().sound(glass ? SoundType.GLASS : SoundType.STONE));
+        super(
+    		Properties
+    			.create(Material.ROCK)
+    			.hardnessAndResistance(glass ? 1.5F : 3.5F)
+    			.notSolid()
+    			.variableOpacity()
+    			.sound(glass ? SoundType.GLASS : SoundType.STONE)
+		);
+
         this.setDefaultState(this.getStateContainer().getBaseState().with(UP, Boolean.valueOf(false))
                 .with(DOWN, Boolean.valueOf(false))
                 .with(NORTH, Boolean.valueOf(false))
@@ -97,8 +107,8 @@ public class BlockMyrmexConnectedResin extends BreakableBlock {
         builder.add(NORTH, EAST, WEST, SOUTH, DOWN, UP);
     }
 
-    public boolean canFenceConnectTo(BlockState p_220111_1_, boolean p_220111_2_, Direction p_220111_3_) {
-        return p_220111_1_.getBlock() == this;
+    public boolean canFenceConnectTo(BlockState state, boolean isSideSolid, Direction direction) {
+        return state.getBlock() == this;
     }
 
     public boolean isOpaqueCube(BlockState state) {

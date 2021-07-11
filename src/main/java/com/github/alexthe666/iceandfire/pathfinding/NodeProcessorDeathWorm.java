@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.pathfinding;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.MobEntity;
 import net.minecraft.pathfinding.FlaggedPathPoint;
 import net.minecraft.pathfinding.NodeProcessor;
@@ -8,8 +10,6 @@ import net.minecraft.pathfinding.PathPoint;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockReader;
-
-import javax.annotation.Nullable;
 
 public class NodeProcessorDeathWorm extends NodeProcessor {
     public PathPoint getStart() {
@@ -27,12 +27,12 @@ public class NodeProcessorDeathWorm extends NodeProcessor {
     }
 
     @Override
-    public PathNodeType getPathNodeType(IBlockReader blockaccessIn, int x, int y, int z, MobEntity entitylivingIn, int xSize, int ySize, int zSize, boolean canBreakDoorsIn, boolean canEnterDoorsIn) {
+    public PathNodeType determineNodeType(IBlockReader blockaccessIn, int x, int y, int z, MobEntity entitylivingIn, int xSize, int ySize, int zSize, boolean canBreakDoorsIn, boolean canEnterDoorsIn) {
         return null;
     }
 
     @Override
-    public PathNodeType getPathNodeType(IBlockReader blockaccessIn, int x, int y, int z) {
+    public PathNodeType getFloorNodeType(IBlockReader blockaccessIn, int x, int y, int z) {
         return null;
     }
 

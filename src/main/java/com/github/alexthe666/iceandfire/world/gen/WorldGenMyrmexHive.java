@@ -1,15 +1,26 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.block.BlockMyrmexBiolight;
 import com.github.alexthe666.iceandfire.block.BlockMyrmexConnectedResin;
 import com.github.alexthe666.iceandfire.block.BlockMyrmexResin;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
-import com.github.alexthe666.iceandfire.entity.*;
+import com.github.alexthe666.iceandfire.entity.EntityMyrmexBase;
+import com.github.alexthe666.iceandfire.entity.EntityMyrmexQueen;
+import com.github.alexthe666.iceandfire.entity.EntityMyrmexSentinel;
+import com.github.alexthe666.iceandfire.entity.EntityMyrmexSoldier;
+import com.github.alexthe666.iceandfire.entity.EntityMyrmexWorker;
+import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.github.alexthe666.iceandfire.world.IafWorldRegistry;
 import com.github.alexthe666.iceandfire.world.MyrmexWorldData;
 import com.mojang.serialization.Codec;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.SpawnReason;
@@ -18,18 +29,12 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.ISeedReader;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class WorldGenMyrmexHive extends Feature<NoFeatureConfig> {
 
@@ -52,7 +57,7 @@ public class WorldGenMyrmexHive extends Feature<NoFeatureConfig> {
         this.jungle = jungle;
     }
 
-    public boolean placeSmallGen(IWorld worldIn, Random rand, BlockPos pos) {
+    public boolean placeSmallGen(ISeedReader worldIn, Random rand, BlockPos pos) {
         hasFoodRoom = false;
         hasNursery = false;
         totalRooms = 0;
@@ -64,9 +69,9 @@ public class WorldGenMyrmexHive extends Feature<NoFeatureConfig> {
     }
 
     @Override
-    public boolean func_230362_a_(ISeedReader worldIn, StructureManager structureManager, ChunkGenerator generator, Random rand, BlockPos pos, NoFeatureConfig config) {
+    public boolean generate(ISeedReader worldIn, ChunkGenerator p_230362_3_, Random rand, BlockPos pos, NoFeatureConfig p_230362_6_) {
         if(!small){
-            if(!IafWorldRegistry.isDimensionListed(worldIn)){
+            if(!IafWorldRegistry.isDimensionListedForFeatures(worldIn)){
                 return false;
             }
             if(!IafConfig.generateMyrmexColonies || rand.nextInt(IafConfig.myrmexColonyGenChance) != 0 || !IafWorldRegistry.isFarEnoughFromSpawn(worldIn, pos) || !IafWorldRegistry.isFarEnoughFromDangerousGen(worldIn, pos)){
@@ -92,7 +97,7 @@ public class WorldGenMyrmexHive extends Feature<NoFeatureConfig> {
         return false;
     }
 
-    private void generateMainRoom(IWorld world, Random rand, BlockPos position) {
+    private void generateMainRoom(IServerWorld world, Random rand, BlockPos position) {
         hive = new MyrmexHive(world.getWorld(), position, 100);
         MyrmexWorldData.addHive(world.getWorld(), hive);
         BlockState resin = jungle ? JUNGLE_RESIN : DESERT_RESIN;
@@ -214,7 +219,7 @@ public class WorldGenMyrmexHive extends Feature<NoFeatureConfig> {
     private void generateEntrance(IWorld world, Random rand, BlockPos position, int size, int height, Direction direction) {
         BlockPos up = position.up();
         hive.getEntranceBottoms().put(up, direction);
-        while (up.getY() < world.getHeight(small ? Heightmap.Type.MOTION_BLOCKING_NO_LEAVES : Heightmap.Type.WORLD_SURFACE_WG, up).getY() && !BlockTags.LOGS.func_230235_a_(world.getBlockState(up).getBlock())) {
+        while (up.getY() < world.getHeight(small ? Heightmap.Type.MOTION_BLOCKING_NO_LEAVES : Heightmap.Type.WORLD_SURFACE_WG, up).getY() && !BlockTags.LOGS.contains(world.getBlockState(up).getBlock())) {
             generateCircleRespectSky(world, rand, up, size, height, direction);
             up = up.up().offset(direction);
         }
@@ -442,10 +447,10 @@ public class WorldGenMyrmexHive extends Feature<NoFeatureConfig> {
                     WorldGenMyrmexDecoration.generateSkeleton(world, blockpos, center, size, random);
                 }
                 if (random.nextInt(13) == 0) {
-                    WorldGenMyrmexDecoration.generateLeaves(world, blockpos, center, size, random);
+                    WorldGenMyrmexDecoration.generateLeaves(world, blockpos, center, size, random, jungle);
                 }
                 if (random.nextInt(12) == 0) {
-                    WorldGenMyrmexDecoration.generatePumpkins(world, blockpos, center, size, random);
+                    WorldGenMyrmexDecoration.generatePumpkins(world, blockpos, center, size, random, jungle);
                 }
                 if (random.nextInt(6) == 0) {
                     WorldGenMyrmexDecoration.generateMushrooms(world, blockpos, center, size, random);

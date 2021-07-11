@@ -1,11 +1,12 @@
 package com.github.alexthe666.iceandfire.message;
 
+import java.util.function.Supplier;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class MessageSetMyrmexHiveNull {
 

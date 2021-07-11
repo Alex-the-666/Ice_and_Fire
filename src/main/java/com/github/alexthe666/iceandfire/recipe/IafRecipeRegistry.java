@@ -1,28 +1,59 @@
 package com.github.alexthe666.iceandfire.recipe;
 
-import com.github.alexthe666.iceandfire.entity.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.github.alexthe666.iceandfire.IceAndFire;
+import com.github.alexthe666.iceandfire.entity.EntityAmphithereArrow;
+import com.github.alexthe666.iceandfire.entity.EntityCockatriceEgg;
+import com.github.alexthe666.iceandfire.entity.EntityDeathWormEgg;
+import com.github.alexthe666.iceandfire.entity.EntityDragonArrow;
+import com.github.alexthe666.iceandfire.entity.EntityHippogryphEgg;
+import com.github.alexthe666.iceandfire.entity.EntityHydraArrow;
+import com.github.alexthe666.iceandfire.entity.EntitySeaSerpentArrow;
+import com.github.alexthe666.iceandfire.entity.EntityStymphalianArrow;
+import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
 import com.github.alexthe666.iceandfire.enums.EnumDragonArmor;
 import com.github.alexthe666.iceandfire.enums.EnumSeaSerpent;
 import com.github.alexthe666.iceandfire.enums.EnumSkullType;
 import com.github.alexthe666.iceandfire.enums.EnumTroll;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DispenserBlock;
+import net.minecraft.client.resources.JsonReloadListener;
 import net.minecraft.dispenser.IPosition;
 import net.minecraft.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionUtils;
+import net.minecraft.potion.Potions;
+
+import net.minecraft.profiler.IProfiler;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.tileentity.BannerPattern;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 
-public class IafRecipeRegistry {
+import net.minecraft.entity.projectile.AbstractArrowEntity;
+import org.apache.logging.log4j.Level;
 
+public class IafRecipeRegistry extends JsonReloadListener {
+
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().registerTypeAdapter(DragonForgeRecipe.class, new DragonForgeRecipe.Deserializer()).create();
     public static final BannerPattern PATTERN_FIRE = addBanner("fire", new ItemStack(IafItemRegistry.FIRE_DRAGON_HEART));
     public static final BannerPattern PATTERN_ICE = addBanner("ice", new ItemStack(IafItemRegistry.ICE_DRAGON_HEART));
     public static final BannerPattern PATTERN_LIGHTNING = addBanner("lightning", new ItemStack(IafItemRegistry.LIGHTNING_DRAGON_HEART));
@@ -42,24 +73,57 @@ public class IafRecipeRegistry {
     public static final BannerPattern PATTERN_TROLL = addBanner("troll", new ItemStack(IafItemRegistry.TROLL_TUSK));
     public static final BannerPattern PATTERN_WEEZER = addBanner("weezer", new ItemStack(IafItemRegistry.WEEZER_BLUE_ALBUM));
     public static final BannerPattern PATTERN_DREAD = addBanner("dread", new ItemStack(IafItemRegistry.DREAD_SHARD));
+    public static List<DragonForgeRecipe> ALL_FORGE_RECIPES = new ArrayList<>();
     public static List<DragonForgeRecipe> FIRE_FORGE_RECIPES = new ArrayList<>();
     public static List<DragonForgeRecipe> ICE_FORGE_RECIPES = new ArrayList<>();
     public static List<DragonForgeRecipe> LIGHTNING_FORGE_RECIPES = new ArrayList<>();
     public static List<ItemStack> BANNER_ITEMS = new ArrayList<>();
 
+    public IafRecipeRegistry() {
+        super(GSON, "dragonforge_recipes");
+    }
+
+    @Override
+    protected void apply(Map<ResourceLocation, JsonElement> splashList, IResourceManager resourceManagerIn, IProfiler profilerIn) {
+        ImmutableMap.Builder<ResourceLocation, DragonForgeRecipe> builder = ImmutableMap.builder();
+        ALL_FORGE_RECIPES.clear();
+        IceAndFire.LOGGER.log(Level.ALL, "Loading in dragonforge_recipes jsons...");
+        splashList.forEach((p_223385_1_, p_223385_2_) -> {
+            try {
+                DragonForgeRecipe fold = GSON.fromJson(p_223385_2_, DragonForgeRecipe.class);
+                builder.put(p_223385_1_, fold);
+            } catch (Exception exception) {
+                IceAndFire.LOGGER.error("Couldn't parse dragonforge recipe {}", p_223385_1_, exception);
+            }
+        });
+        ImmutableMap<ResourceLocation, DragonForgeRecipe> immutablemap = builder.build();
+        immutablemap.forEach((p_215305_2_, p_215305_3_) -> {
+            ALL_FORGE_RECIPES.add((DragonForgeRecipe)p_215305_3_);
+        });
+        FIRE_FORGE_RECIPES.clear();
+        ICE_FORGE_RECIPES.clear();
+        LIGHTNING_FORGE_RECIPES.clear();
+        for(DragonForgeRecipe recipe : ALL_FORGE_RECIPES){
+            if(recipe.getDragonType().equals("fire")){
+                FIRE_FORGE_RECIPES.add(recipe);
+            }
+            if(recipe.getDragonType().equals("ice")){
+                ICE_FORGE_RECIPES.add(recipe);
+            }
+            if(recipe.getDragonType().equals("lightning")){
+                LIGHTNING_FORGE_RECIPES.add(recipe);
+            }
+        }
+    }
+
     public static void preInit() {
-        FIRE_FORGE_RECIPES.add(new DragonForgeRecipe(new ItemStack(Items.IRON_INGOT), new ItemStack(IafItemRegistry.FIRE_DRAGON_BLOOD), new ItemStack(IafItemRegistry.DRAGONSTEEL_FIRE_INGOT)));
-        ICE_FORGE_RECIPES.add(new DragonForgeRecipe(new ItemStack(Items.IRON_INGOT), new ItemStack(IafItemRegistry.ICE_DRAGON_BLOOD), new ItemStack(IafItemRegistry.DRAGONSTEEL_ICE_INGOT)));
-        LIGHTNING_FORGE_RECIPES.add(new DragonForgeRecipe(new ItemStack(Items.IRON_INGOT), new ItemStack(IafItemRegistry.LIGHTNING_DRAGON_BLOOD), new ItemStack(IafItemRegistry.DRAGONSTEEL_LIGHTNING_INGOT)));
-
-
         DispenserBlock.registerDispenseBehavior(IafItemRegistry.STYMPHALIAN_ARROW, new ProjectileDispenseBehavior() {
             /**
              * Return the projectile entity spawned by this dispense behavior.
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
                 EntityStymphalianArrow entityarrow = new EntityStymphalianArrow(IafEntityRegistry.STYMPHALIAN_ARROW, worldIn, position.getX(), position.getY(), position.getZ());
-                entityarrow.pickupStatus = ArrowEntity.PickupStatus.ALLOWED;
+                entityarrow.pickupStatus = AbstractArrowEntity.PickupStatus.ALLOWED;
                 return entityarrow;
             }
         });
@@ -69,7 +133,7 @@ public class IafRecipeRegistry {
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
                 EntityAmphithereArrow entityarrow = new EntityAmphithereArrow(IafEntityRegistry.AMPHITHERE_ARROW, worldIn, position.getX(), position.getY(), position.getZ());
-                entityarrow.pickupStatus = EntityAmphithereArrow.PickupStatus.ALLOWED;
+                entityarrow.pickupStatus = AbstractArrowEntity.PickupStatus.ALLOWED;
                 return entityarrow;
             }
         });
@@ -79,7 +143,7 @@ public class IafRecipeRegistry {
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
                 EntitySeaSerpentArrow entityarrow = new EntitySeaSerpentArrow(IafEntityRegistry.SEA_SERPENT_ARROW, worldIn, position.getX(), position.getY(), position.getZ());
-                entityarrow.pickupStatus = EntitySeaSerpentArrow.PickupStatus.ALLOWED;
+                entityarrow.pickupStatus = AbstractArrowEntity.PickupStatus.ALLOWED;
                 return entityarrow;
             }
         });
@@ -89,7 +153,7 @@ public class IafRecipeRegistry {
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
                 EntityDragonArrow entityarrow = new EntityDragonArrow(IafEntityRegistry.DRAGON_ARROW, position.getX(), position.getY(), position.getZ(), worldIn);
-                entityarrow.pickupStatus = EntityDragonArrow.PickupStatus.ALLOWED;
+                entityarrow.pickupStatus = AbstractArrowEntity.PickupStatus.ALLOWED;
                 return entityarrow;
             }
         });
@@ -99,7 +163,7 @@ public class IafRecipeRegistry {
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
                 EntityHydraArrow entityarrow = new EntityHydraArrow(IafEntityRegistry.HYDRA_ARROW, worldIn, position.getX(), position.getY(), position.getZ());
-                entityarrow.pickupStatus = EntityHydraArrow.PickupStatus.ALLOWED;
+                entityarrow.pickupStatus = AbstractArrowEntity.PickupStatus.ALLOWED;
                 return entityarrow;
             }
         });
@@ -108,8 +172,7 @@ public class IafRecipeRegistry {
              * Return the projectile entity spawned by this dispense behavior.
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
-                EntityHippogryphEgg entityarrow = new EntityHippogryphEgg(IafEntityRegistry.HIPPOGRYPH_EGG, worldIn, position.getX(), position.getY(), position.getZ(), stackIn);
-                return entityarrow;
+                return new EntityHippogryphEgg(IafEntityRegistry.HIPPOGRYPH_EGG, worldIn, position.getX(), position.getY(), position.getZ(), stackIn);
             }
         });
         DispenserBlock.registerDispenseBehavior(IafItemRegistry.ROTTEN_EGG, new ProjectileDispenseBehavior() {
@@ -117,8 +180,7 @@ public class IafRecipeRegistry {
              * Return the projectile entity spawned by this dispense behavior.
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
-                EntityCockatriceEgg entityarrow = new EntityCockatriceEgg(IafEntityRegistry.COCKATRICE_EGG, position.getX(), position.getY(), position.getZ(), worldIn);
-                return entityarrow;
+                return new EntityCockatriceEgg(IafEntityRegistry.COCKATRICE_EGG, position.getX(), position.getY(), position.getZ(), worldIn);
             }
         });
         DispenserBlock.registerDispenseBehavior(IafItemRegistry.DEATHWORM_EGG, new ProjectileDispenseBehavior() {
@@ -126,8 +188,7 @@ public class IafRecipeRegistry {
              * Return the projectile entity spawned by this dispense behavior.
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
-                EntityDeathWormEgg entityarrow = new EntityDeathWormEgg(IafEntityRegistry.DEATH_WORM_EGG, position.getX(), position.getY(), position.getZ(), worldIn, false);
-                return entityarrow;
+                return new EntityDeathWormEgg(IafEntityRegistry.DEATH_WORM_EGG, position.getX(), position.getY(), position.getZ(), worldIn, false);
             }
         });
         DispenserBlock.registerDispenseBehavior(IafItemRegistry.DEATHWORM_EGG_GIGANTIC, new ProjectileDispenseBehavior() {
@@ -135,102 +196,9 @@ public class IafRecipeRegistry {
              * Return the projectile entity spawned by this dispense behavior.
              */
             protected ProjectileEntity getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
-                EntityDeathWormEgg entityarrow = new EntityDeathWormEgg(IafEntityRegistry.DEATH_WORM_EGG, position.getX(), position.getY(), position.getZ(), worldIn, true);
-                return entityarrow;
+                return new EntityDeathWormEgg(IafEntityRegistry.DEATH_WORM_EGG, position.getX(), position.getY(), position.getZ(), worldIn, true);
             }
         });
-        /*
-        OreDictionary.registerOre("desertMyrmexEgg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("jungleMyrmexEgg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("charredBlock", IafBlockRegistry.CHARRED_DIRT);
-        OreDictionary.registerOre("charredBlock", IafBlockRegistry.CHARRED_GRASS);
-        OreDictionary.registerOre("charredBlock", IafBlockRegistry.CHARRED_GRASS_PATH);
-        OreDictionary.registerOre("charredBlock", IafBlockRegistry.CHARRED_GRAVEL);
-        OreDictionary.registerOre("charredBlock", IafBlockRegistry.CHARRED_COBBLESTONE);
-        OreDictionary.registerOre("charredBlock", IafBlockRegistry.CHARRED_STONE);
-        OreDictionary.registerOre("frozenBlock", IafBlockRegistry.FROZEN_DIRT);
-        OreDictionary.registerOre("frozenBlock", IafBlockRegistry.FROZEN_GRASS);
-        OreDictionary.registerOre("frozenBlock", IafBlockRegistry.FROZEN_GRASS_PATH);
-        OreDictionary.registerOre("frozenBlock", IafBlockRegistry.FROZEN_GRAVEL);
-        OreDictionary.registerOre("frozenBlock", IafBlockRegistry.FROZEN_COBBLESTONE);
-        OreDictionary.registerOre("frozenBlock", IafBlockRegistry.FROZEN_STONE);
-        OreDictionary.registerOre("ingotFireDragonsteel", IafItemRegistry.DRAGONSTEEL_FIRE_INGOT);
-        OreDictionary.registerOre("blockFireDragonsteel", IafBlockRegistry.DRAGONSTEEL_FIRE_BLOCK);
-        OreDictionary.registerOre("ingotIceDragonsteel", IafItemRegistry.DRAGONSTEEL_ICE_INGOT);
-        OreDictionary.registerOre("blockIceDragonsteel", IafBlockRegistry.DRAGONSTEEL_ICE_BLOCK);
-        OreDictionary.registerOre("ingotSilver", IafItemRegistry.SILVER_INGOT);
-        OreDictionary.registerOre("nuggetSilver", IafItemRegistry.SILVER_NUGGET);
-        OreDictionary.registerOre("oreSilver", IafBlockRegistry.SILVER_ORE);
-        OreDictionary.registerOre("blockSilver", IafBlockRegistry.SILVER_BLOCK);
-        OreDictionary.registerOre("gemSapphire", IafItemRegistry.SAPPHIRE_GEM);
-        OreDictionary.registerOre("oreSapphire", IafBlockRegistry.SAPPHIRE_ORE);
-        OreDictionary.registerOre("blockSapphire", IafBlockRegistry.SAPPHIRE_BLOCK);
-        OreDictionary.registerOre("boneWither", IafItemRegistry.WITHERBONE);
-        OreDictionary.registerOre("fireDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_RED);
-        OreDictionary.registerOre("fireDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_BRONZE);
-        OreDictionary.registerOre("fireDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_GRAY);
-        OreDictionary.registerOre("fireDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_GREEN);
-        OreDictionary.registerOre("iceDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_BLUE);
-        OreDictionary.registerOre("iceDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_WHITE);
-        OreDictionary.registerOre("iceDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_SAPPHIRE);
-        OreDictionary.registerOre("iceDragonScaleBlock", IafBlockRegistry.DRAGON_SCALE_SILVER);
-        OreDictionary.registerOre("woolBlock", new ItemStack(Blocks.WOOL, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("foodMeat", Items.CHICKEN);
-        OreDictionary.registerOre("foodMeat", Items.COOKED_CHICKEN);
-        OreDictionary.registerOre("foodMeat", Items.BEEF);
-        OreDictionary.registerOre("foodMeat", Items.COOKED_BEEF);
-        OreDictionary.registerOre("foodMeat", Items.PORKCHOP);
-        OreDictionary.registerOre("foodMeat", Items.COOKED_PORKCHOP);
-        OreDictionary.registerOre("foodMeat", Items.MUTTON);
-        OreDictionary.registerOre("foodMeat", Items.COOKED_MUTTON);
-        OreDictionary.registerOre("foodMeat", Items.RABBIT);
-        OreDictionary.registerOre("foodMeat", Items.COOKED_RABBIT);
-        OreDictionary.registerOre("boneWithered", IafItemRegistry.WITHERBONE);
-        OreDictionary.registerOre("boneDragon", IafItemRegistry.DRAGON_BONE);
-        for (EnumSeaSerpent serpent : EnumSeaSerpent.values()) {
-            OreDictionary.registerOre("seaSerpentScales", serpent.scale);
-        }
-        OreDictionary.registerOre("listAllEgg", new ItemStack(IafItemRegistry.HIPPOGRYPH_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("objectEgg", new ItemStack(IafItemRegistry.HIPPOGRYPH_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("bakingEgg", new ItemStack(IafItemRegistry.HIPPOGRYPH_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("egg", new ItemStack(IafItemRegistry.HIPPOGRYPH_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("ingredientEgg", new ItemStack(IafItemRegistry.HIPPOGRYPH_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("foodSimpleEgg", new ItemStack(IafItemRegistry.HIPPOGRYPH_EGG, 1, OreDictionary.WILDCARD_VALUE));
-
-        OreDictionary.registerOre("listAllEgg", new ItemStack(IafItemRegistry.DEATHWORM_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("objectEgg", new ItemStack(IafItemRegistry.DEATHWORM_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("bakingEgg", new ItemStack(IafItemRegistry.DEATHWORM_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("egg", new ItemStack(IafItemRegistry.DEATHWORM_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("ingredientEgg", new ItemStack(IafItemRegistry.DEATHWORM_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("foodSimpleEgg", new ItemStack(IafItemRegistry.DEATHWORM_EGG, 1, OreDictionary.WILDCARD_VALUE));
-
-        OreDictionary.registerOre("listAllEgg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("objectEgg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("bakingEgg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("egg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("ingredientEgg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("foodSimpleEgg", new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("listAllEgg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("objectEgg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("bakingEgg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("egg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("ingredientEgg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("foodSimpleEgg", new ItemStack(IafItemRegistry.MYRMEX_DESERT_EGG, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("toolAxe", IafItemRegistry.DRAGONBONE_AXE);
-        OreDictionary.registerOre("toolAxe", IafItemRegistry.MYRMEX_DESERT_AXE);
-        OreDictionary.registerOre("toolAxe", IafItemRegistry.MYRMEX_JUNGLE_AXE);
-        OreDictionary.registerOre("toolAxe", IafItemRegistry.SILVER_AXE);
-        OreDictionary.registerOre("toolAxe", IafItemRegistry.DRAGONSTEEL_FIRE_AXE);
-        OreDictionary.registerOre("toolAxe", IafItemRegistry.DRAGONSTEEL_ICE_AXE);
-
-        OreDictionary.registerOre("dragonSkull",  new ItemStack(IafItemRegistry.DRAGON_SKULL, 1, OreDictionary.WILDCARD_VALUE));
-        OreDictionary.registerOre("mythicalSkull",  new ItemStack(IafItemRegistry.DRAGON_SKULL, 1, OreDictionary.WILDCARD_VALUE));
-        for(EnumSkullType skullType : EnumSkullType.values()){
-            OreDictionary.registerOre("mythicalSkull", skullType.skull_item);
-        }
-
-         */
-
         IafItemRegistry.BLINDFOLD_ARMOR_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(Items.STRING)));
         IafItemRegistry.SILVER_ARMOR_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.SILVER_INGOT)));
         IafItemRegistry.SILVER_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.SILVER_INGOT)));
@@ -257,6 +225,7 @@ public class IafRecipeRegistry {
         IafItemRegistry.AMPHITHERE_SWORD_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.AMPHITHERE_FEATHER)));
         IafItemRegistry.DRAGONSTEEL_FIRE_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.DRAGONSTEEL_FIRE_INGOT)));
         IafItemRegistry.DRAGONSTEEL_ICE_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.DRAGONSTEEL_ICE_INGOT)));
+        IafItemRegistry.DRAGONSTEEL_LIGHTNING_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.DRAGONSTEEL_LIGHTNING_INGOT)));
         IafItemRegistry.STYMHALIAN_SWORD_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.STYMPHALIAN_BIRD_FEATHER)));
         IafItemRegistry.MYRMEX_CHITIN_TOOL_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.MYRMEX_DESERT_CHITIN)));
         IafItemRegistry.MYRMEX_DESERT_ARMOR_MATERIAL.setRepairMaterial(Ingredient.fromStacks(new ItemStack(IafItemRegistry.MYRMEX_DESERT_CHITIN)));
@@ -266,13 +235,11 @@ public class IafRecipeRegistry {
         for (EnumSeaSerpent serpent : EnumSeaSerpent.values()) {
             serpent.armorMaterial.setRepairMaterial(Ingredient.fromStacks(new ItemStack(serpent.scale)));
         }
-        /*
-        ItemStack waterBreathingPotion = new ItemStack(Items.POTIONITEM, 1, 0);
-        CompoundNBT tag = new CompoundNBT();
-        tag.setString("Potion", "water_breathing");
-        waterBreathingPotion.setTagCompound(tag);
-        BrewingRecipeRegistry.addRecipe(new ItemStack(Items.POTIONITEM, 1, 0), new ItemStack(IafItemRegistry.SHINY_SCALES), waterBreathingPotion);
-        */
+        BrewingRecipeRegistry.addRecipe(Ingredient.fromItems(createPotion(Potions.WATER).getItem()), Ingredient.fromItems(IafItemRegistry.SHINY_SCALES), createPotion(Potions.WATER_BREATHING));
+    }
+
+    public static ItemStack createPotion(Potion potion) {
+        return PotionUtils.addPotionToItemStack(new ItemStack(Items.POTION), potion);
     }
 
     public static BannerPattern addBanner(String name, ItemStack craftingStack) {
@@ -281,7 +248,7 @@ public class IafRecipeRegistry {
 
     public static DragonForgeRecipe getFireForgeRecipe(ItemStack stack) {
         for (DragonForgeRecipe recipe : FIRE_FORGE_RECIPES) {
-            if (recipe.getInput().getItem() == stack.getItem()) {
+            if (recipe.getInput().test(stack)) {
                 return recipe;
             }
         }
@@ -290,7 +257,7 @@ public class IafRecipeRegistry {
 
     public static DragonForgeRecipe getIceForgeRecipe(ItemStack stack) {
         for (DragonForgeRecipe recipe : ICE_FORGE_RECIPES) {
-            if (recipe.getInput().getItem() == stack.getItem()) {
+            if (recipe.getInput().test(stack)) {
                 return recipe;
             }
         }
@@ -299,7 +266,7 @@ public class IafRecipeRegistry {
 
     public static DragonForgeRecipe getLightningForgeRecipe(ItemStack stack) {
         for (DragonForgeRecipe recipe : LIGHTNING_FORGE_RECIPES) {
-            if (recipe.getInput().getItem() == stack.getItem()) {
+            if (recipe.getInput().test(stack)) {
                 return recipe;
             }
         }
@@ -309,7 +276,7 @@ public class IafRecipeRegistry {
 
     public static DragonForgeRecipe getFireForgeRecipeForBlood(ItemStack stack) {
         for (DragonForgeRecipe recipe : FIRE_FORGE_RECIPES) {
-            if (recipe.getBlood().getItem() == stack.getItem()) {
+            if (recipe.getBlood().test(stack)) {
                 return recipe;
             }
         }
@@ -319,7 +286,7 @@ public class IafRecipeRegistry {
 
     public static DragonForgeRecipe getIceForgeRecipeForBlood(ItemStack stack) {
         for (DragonForgeRecipe recipe : ICE_FORGE_RECIPES) {
-            if (recipe.getBlood().getItem() == stack.getItem()) {
+            if (recipe.getBlood().test(stack)) {
                 return recipe;
             }
         }
@@ -328,7 +295,7 @@ public class IafRecipeRegistry {
 
     public static DragonForgeRecipe getLightningForgeRecipeForBlood(ItemStack stack) {
         for (DragonForgeRecipe recipe : LIGHTNING_FORGE_RECIPES) {
-            if (recipe.getBlood().getItem() == stack.getItem()) {
+            if (recipe.getBlood().test(stack)) {
                 return recipe;
             }
         }

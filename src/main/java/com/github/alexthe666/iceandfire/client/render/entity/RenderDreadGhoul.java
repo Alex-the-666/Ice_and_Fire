@@ -4,6 +4,7 @@ import com.github.alexthe666.iceandfire.client.model.ModelDreadGhoul;
 import com.github.alexthe666.iceandfire.client.render.entity.layer.LayerGenericGlowing;
 import com.github.alexthe666.iceandfire.entity.EntityDreadGhoul;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -33,7 +34,8 @@ public class RenderDreadGhoul extends MobRenderer<EntityDreadGhoul, ModelDreadGh
 
     @Override
     protected void preRenderCallback(EntityDreadGhoul entity, MatrixStack matrixStackIn, float partialTickTime) {
-        matrixStackIn.scale(entity.getScale(), entity.getScale(), entity.getScale());
+        float scale = entity.getScale() < 0.01F ? 1F : entity.getScale();
+        matrixStackIn.scale(scale, scale, scale);
     }
 
 

@@ -37,7 +37,7 @@ public class ChainBuffer {
      */
     public void calculateChainSwingBuffer(float maxAngle, int bufferTime, float angleDecrement, float divisor, LivingEntity entity) {
         this.prevYawVariation = this.yawVariation;
-        if (entity.renderYawOffset != entity.prevRenderYawOffset && MathHelper.abs(this.yawVariation) < maxAngle) {
+        if (entity.renderYawOffset != entity.prevRenderYawOffset && MathHelper.abs(entity.prevRenderYawOffset - entity.renderYawOffset) < 0.1F && MathHelper.abs(this.yawVariation) < maxAngle) {
             this.yawVariation += (entity.prevRenderYawOffset - entity.renderYawOffset) / divisor;
         }
         if (this.yawVariation > 0.7F * angleDecrement) {

@@ -1,0 +1,12 @@
+{
+  "dragon_type": "ice",
+  "input_left": {
+    "tag": "forge:ingots/iron"
+  },
+  "input_right": {
+    "item": "iceandfire:ice_dragon_blood"
+  },
+  "result": {
+    "item": "iceandfire:dragonsteel_ice_ingot"
+  }
+}

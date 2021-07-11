@@ -1,10 +1,17 @@
 package com.github.alexthe666.iceandfire.block;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.DragonType;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityDragonforge;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityDragonforgeInput;
-import net.minecraft.block.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ContainerBlock;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.player.PlayerEntity;
@@ -20,14 +27,20 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
+import net.minecraft.block.AbstractBlock.Properties;
 
 public class BlockDragonforgeInput extends ContainerBlock implements IDragonProof {
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     private int dragonType;
 
     public BlockDragonforgeInput(int dragonType) {
-        super(Properties.create(Material.ROCK).variableOpacity().hardnessAndResistance(40, 500).sound(SoundType.METAL));
+        super(
+    		Properties
+    			.create(Material.ROCK)
+    			.variableOpacity()
+    			.hardnessAndResistance(40, 500)
+    			.sound(SoundType.METAL)
+		);
 
         this.setRegistryName(IceAndFire.MODID, "dragonforge_" + DragonType.getNameFromInt(dragonType) + "_input");
         this.dragonType = dragonType;
@@ -43,7 +56,7 @@ public class BlockDragonforgeInput extends ContainerBlock implements IDragonProo
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult resultIn) {
         if (this.getConnectedTileEntity(worldIn, resultIn.getPos()) != null) {
             TileEntityDragonforge forge = this.getConnectedTileEntity(worldIn, resultIn.getPos());
-            if (forge.isFire == dragonType) {
+            if (forge != null && forge.isFire == dragonType) {
                 if (worldIn.isRemote) {
                     IceAndFire.PROXY.setRefrencedTE(worldIn.getTileEntity(forge.getPos()));
                 } else {
@@ -83,8 +96,8 @@ public class BlockDragonforgeInput extends ContainerBlock implements IDragonProo
         builder.add(ACTIVE);
     }
 
-    @Deprecated
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    @Override
+    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         if (worldIn.getTileEntity(pos) instanceof TileEntityDragonforgeInput) {
             ((TileEntityDragonforgeInput) worldIn.getTileEntity(pos)).resetCore();
         }

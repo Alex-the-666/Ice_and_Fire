@@ -1,10 +1,15 @@
 package com.github.alexthe666.iceandfire.client.particle;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector4f;
-import org.apache.commons.lang3.tuple.Pair;
-import java.util.*;
-import java.util.List;
 
 /*
     Lightning bolt effect code used with permission from aidancbrady

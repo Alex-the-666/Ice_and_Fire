@@ -1,14 +1,15 @@
 package com.github.alexthe666.iceandfire.client.model.util;
 
-import com.github.alexthe666.citadel.client.model.AdvancedModelBox;
-import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.model.ModelRenderer;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.github.alexthe666.citadel.client.model.AdvancedModelBox;
+import com.google.common.collect.ImmutableList;
+
+import net.minecraft.client.renderer.model.ModelRenderer;
 
 public class EntityModelPartBuilder {
     private static final Map<String, Iterable<ModelRenderer>> PART_MAP = new HashMap<>();

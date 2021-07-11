@@ -2,15 +2,14 @@ package com.github.alexthe666.iceandfire.client.model;
 
 import com.github.alexthe666.citadel.client.model.AdvancedEntityModel;
 import com.github.alexthe666.citadel.client.model.AdvancedModelBox;
-import com.github.alexthe666.iceandfire.client.model.util.EntityModelPartBuilder;
 import com.github.alexthe666.iceandfire.entity.DragonType;
 import com.github.alexthe666.iceandfire.entity.EntityDragonEgg;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityEggInIce;
 import com.google.common.collect.ImmutableList;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.BlockPos;
 
 public class ModelDragonEgg<T extends LivingEntity> extends AdvancedEntityModel<T> {
 
@@ -59,9 +58,9 @@ public class ModelDragonEgg<T extends LivingEntity> extends AdvancedEntityModel<
             EntityDragonEgg dragon = (EntityDragonEgg) entity;
             boolean flag = false;
             if (dragon.getEggType().dragonType == DragonType.FIRE) {
-                flag = dragon.world.getBlockState(dragon.func_233580_cy_()).getMaterial() == Material.FIRE;
+                flag = dragon.world.getBlockState(dragon.getPosition()).getMaterial() == Material.FIRE;
             } else if(dragon.getEggType().dragonType == DragonType.LIGHTNING){
-                flag = dragon.world.isRainingAt(dragon.func_233580_cy_());
+                flag = dragon.world.isRainingAt(dragon.getPosition());
             }
             if (flag) {
                 this.walk(Egg1, 0.3F, 0.3F, true, 1, 0, f2, 1);

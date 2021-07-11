@@ -1,6 +1,9 @@
 package com.github.alexthe666.iceandfire.block;
 
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -12,7 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.ToolType;
 
-import java.util.Random;
+import net.minecraft.block.AbstractBlock;
 
 public class BlockReturningState extends Block {
     public static final BooleanProperty REVERTS = BooleanProperty.create("revert");
@@ -20,7 +23,16 @@ public class BlockReturningState extends Block {
     private BlockState returnState;
 
     public BlockReturningState(Material materialIn, String name, String toolUsed, int toolStrength, float hardness, float resistance, SoundType sound, BlockState returnToState) {
-        super(Block.Properties.create(materialIn).sound(sound).hardnessAndResistance(hardness, resistance).harvestTool(ToolType.get(toolUsed)).harvestLevel(toolStrength).tickRandomly());
+        super(
+    		AbstractBlock.Properties
+    			.create(materialIn)
+    			.sound(sound)
+    			.hardnessAndResistance(hardness, resistance)
+    			.harvestTool(ToolType.get(toolUsed))
+    			.harvestLevel(toolStrength)
+    			.tickRandomly()
+		);
+
         setRegistryName(IceAndFire.MODID, name);
         this.returnState = returnToState;
         this.setDefaultState(this.stateContainer.getBaseState().with(REVERTS, Boolean.valueOf(false)));
@@ -28,7 +40,7 @@ public class BlockReturningState extends Block {
 
     @SuppressWarnings("deprecation")
     public BlockReturningState(Material materialIn, String name, String toolUsed, int toolStrength, float hardness, float resistance, SoundType sound, boolean slippery, BlockState returnToState) {
-        super(Block.Properties.create(materialIn).sound(sound).hardnessAndResistance(hardness, resistance).harvestTool(ToolType.get(toolUsed)).harvestLevel(toolStrength).slipperiness(0.98F).tickRandomly());
+        super(AbstractBlock.Properties.create(materialIn).sound(sound).hardnessAndResistance(hardness, resistance).harvestTool(ToolType.get(toolUsed)).harvestLevel(toolStrength).slipperiness(0.98F).tickRandomly());
         setRegistryName(IceAndFire.MODID, name);
         this.returnState = returnToState;
         this.setDefaultState(this.stateContainer.getBaseState().with(REVERTS, Boolean.valueOf(false)));

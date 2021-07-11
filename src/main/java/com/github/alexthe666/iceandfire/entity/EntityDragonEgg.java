@@ -1,11 +1,16 @@
 package com.github.alexthe666.iceandfire.entity;
 
-import com.github.alexthe666.iceandfire.IafConfig;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.util.IBlacklistedFromStatues;
 import com.github.alexthe666.iceandfire.entity.util.IDeadMob;
 import com.github.alexthe666.iceandfire.enums.EnumDragonEgg;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
 import com.google.common.collect.ImmutableList;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -24,11 +29,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
 
 public class EntityDragonEgg extends LivingEntity implements IBlacklistedFromStatues, IDeadMob {
 
@@ -43,9 +43,9 @@ public class EntityDragonEgg extends LivingEntity implements IBlacklistedFromSta
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 10.0D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 10.0D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0D);
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0D);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class EntityDragonEgg extends LivingEntity implements IBlacklistedFromSta
         super.registerData();
         this.getDataManager().register(DRAGON_TYPE, Integer.valueOf(0));
         this.getDataManager().register(DRAGON_AGE, Integer.valueOf(0));
-        this.dataManager.register(OWNER_UNIQUE_ID, null);
+        this.getDataManager().register(OWNER_UNIQUE_ID, Optional.empty());
     }
 
     @Nullable
@@ -129,7 +129,7 @@ public class EntityDragonEgg extends LivingEntity implements IBlacklistedFromSta
     }
 
     @Override
-    public SoundEvent getHurtSound(DamageSource p_184601_1_) {
+    public SoundEvent getHurtSound(DamageSource damageSourceIn) {
         return null;
     }
 

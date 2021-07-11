@@ -3,6 +3,7 @@ package com.github.alexthe666.iceandfire.item;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityDreadLichSkull;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -42,8 +43,8 @@ public class ItemLichStaff extends Item {
             worldIn.addEntity(charge);
             charge.shoot(d2, d3, d4, 1, 1);
             playerIn.playSound(SoundEvents.ENTITY_ZOMBIE_INFECT, 1F, 0.75F + 0.5F * playerIn.getRNG().nextFloat());
-            itemStackIn.damageItem(1, playerIn, (p_213625_1_) -> {
-                p_213625_1_.sendBreakAnimation(hand);
+            itemStackIn.damageItem(1, playerIn, (player) -> {
+                player.sendBreakAnimation(hand);
             });
             playerIn.getCooldownTracker().setCooldown(this, 4);
         }

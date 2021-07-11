@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.client.model.util;
 
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -71,7 +72,7 @@ public class LegSolver {
             } else {
                 dist -= 1 - (y % 1);
             }
-            if (entity.func_233570_aj_() && height <= dist) {
+            if (entity.isOnGround() && height <= dist) {
                 return height == dist ? height : Math.min(height + this.getFallSpeed(), dist);
             } else if (height > 0) {
                 return Math.max(height - this.getRiseSpeed(), dist);
@@ -81,7 +82,7 @@ public class LegSolver {
 
         private float getDistance(World world, BlockPos pos) {
             BlockState state = world.getBlockState(pos);
-            VoxelShape aabb = state.getCollisionShape(world, pos);
+            VoxelShape aabb = state.getCollisionShapeUncached(world, pos);
             return aabb.isEmpty() ? 1 : 1 - Math.min((float) aabb.max(Direction.Axis.Y, 0.5D, 0.5D), 1);
         }
 

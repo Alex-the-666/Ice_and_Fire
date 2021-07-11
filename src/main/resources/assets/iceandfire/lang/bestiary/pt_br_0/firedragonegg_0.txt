@@ -6,6 +6,10 @@ ninhada de ovos. Esses ovos
 tinham uma infinidade de belas
 cores, todas elas revestidas em 
 escamas brilhantes.
+<image><drawings_0.png 20 95 327 118 24 33 1>
+<image><drawings_0.png 60 95 303 118 24 33 1>
+<image><drawings_0.png 95 95 351 118 24 33 1>
+<image><drawings_0.png 135 95 375 118 24 33 1>
 
 
 

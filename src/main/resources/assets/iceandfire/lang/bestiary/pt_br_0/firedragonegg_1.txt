@@ -3,8 +3,7 @@
 
 
 
-
-
+<image><drawings_2.png 45 30 157 69 99 67 1>
 
 
 
@@ -15,6 +14,7 @@ netherrack que estavam ao redor do
 ovo explodiram em chamas. Depois de
 esperar um curto período de tempo, 
 não vi nenhuma diferença no ovo. 
+
 
 
 

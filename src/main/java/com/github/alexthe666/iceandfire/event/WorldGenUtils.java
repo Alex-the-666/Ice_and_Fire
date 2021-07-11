@@ -9,7 +9,7 @@ public class WorldGenUtils {
 
     private static boolean canHeightSkipBlock(BlockPos pos, IWorld world) {
         BlockState state = world.getBlockState(pos);
-        return BlockTags.LOGS.func_230235_a_(state.getBlock()) || !state.getFluidState().isEmpty();
+        return BlockTags.LOGS.contains(state.getBlock()) || !state.getFluidState().isEmpty();
     }
 
     public static BlockPos degradeSurface(IWorld world, BlockPos surface) {

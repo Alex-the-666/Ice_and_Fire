@@ -1,26 +1,34 @@
 package com.github.alexthe666.iceandfire.client.render.entity;
 
+import java.util.Locale;
+import java.util.Map;
+
 import com.github.alexthe666.citadel.client.model.TabulaModel;
-import com.github.alexthe666.iceandfire.client.model.*;
+import com.github.alexthe666.iceandfire.client.model.ModelAmphithere;
+import com.github.alexthe666.iceandfire.client.model.ModelCockatrice;
+import com.github.alexthe666.iceandfire.client.model.ModelCyclops;
+import com.github.alexthe666.iceandfire.client.model.ModelHippogryph;
+import com.github.alexthe666.iceandfire.client.model.ModelHydraHead;
+import com.github.alexthe666.iceandfire.client.model.ModelStymphalianBird;
+import com.github.alexthe666.iceandfire.client.model.ModelTroll;
 import com.github.alexthe666.iceandfire.entity.EntityMobSkull;
 import com.github.alexthe666.iceandfire.enums.EnumSkullType;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.model.SegmentedModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class RenderMobSkull extends EntityRenderer<EntityMobSkull> {
@@ -54,6 +62,7 @@ public class RenderMobSkull extends EntityRenderer<EntityMobSkull> {
     }
 
     public void render(EntityMobSkull entity, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
+        super.render(entity, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
         matrixStackIn.push();
         matrixStackIn.rotate(new Quaternion(Vector3f.XP, -180, true));
         matrixStackIn.rotate(new Quaternion(Vector3f.YN, 180 - entity.getYaw(), true));
@@ -143,7 +152,7 @@ public class RenderMobSkull extends EntityRenderer<EntityMobSkull> {
     }
 
     public ResourceLocation getSkullTexture(EnumSkullType skull) {
-        String s = "iceandfire:textures/models/skulls/skull_" + skull.name().toLowerCase() + ".png";
+        String s = "iceandfire:textures/models/skulls/skull_" + skull.name().toLowerCase(Locale.ROOT) + ".png";
         ResourceLocation resourcelocation = SKULL_TEXTURE_CACHE.get(s);
         if (resourcelocation == null) {
             resourcelocation = new ResourceLocation(s);

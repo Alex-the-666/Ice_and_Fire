@@ -1,9 +1,12 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.api.FoodUtils;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
 import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.google.common.base.Predicate;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
@@ -11,7 +14,7 @@ import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class DragonAITarget<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
     private EntityDragonBase dragon;
@@ -27,10 +30,12 @@ public class DragonAITarget<T extends LivingEntity> extends NearestAttackableTar
         if (dragon.getCommand() == 1 || dragon.getCommand() == 2 || dragon.isSleeping()) {
             return false;
         }
-        boolean b = super.shouldExecute();
-        if (b && nearestTarget != null && !nearestTarget.getClass().equals(this.dragon.getClass())) {
+        if(!dragon.isTamed() && dragon.lookingForRoostAIFlag){
+            return false;
+        }
+        if (nearestTarget != null && !nearestTarget.getClass().equals(this.dragon.getClass())) {
             float dragonSize = Math.max(this.dragon.getWidth(), this.dragon.getWidth() * dragon.getRenderSize());
-            if (dragonSize >= nearestTarget.getWidth()) {
+            if (dragonSize >= nearestTarget.getWidth() && super.shouldExecute()) {
                 if (nearestTarget instanceof PlayerEntity && !dragon.isTamed()) {
                     return true;
                 }
@@ -62,7 +67,7 @@ public class DragonAITarget<T extends LivingEntity> extends NearestAttackableTar
     }
 
     protected double getTargetDistance() {
-        ModifiableAttributeInstance iattributeinstance = this.goalOwner.getAttribute(Attributes.field_233819_b_);
+        ModifiableAttributeInstance iattributeinstance = this.goalOwner.getAttribute(Attributes.FOLLOW_RANGE);
         return iattributeinstance == null ? 64.0D : iattributeinstance.getValue();
     }
 }

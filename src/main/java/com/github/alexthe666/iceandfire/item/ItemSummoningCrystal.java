@@ -1,20 +1,24 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
 import com.github.alexthe666.iceandfire.world.DragonPosWorldData;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -23,12 +27,6 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.UUID;
 
 public class ItemSummoningCrystal extends Item {
 
@@ -78,14 +76,14 @@ public class ItemSummoningCrystal extends Item {
                     if (!draginTag.getString("CustomName").isEmpty()) {
                         dragonName = draginTag.getString("CustomName");
                     }
-                    tooltip.add(new TranslationTextComponent("item.iceandfire.summoning_crystal.bound", dragonName).func_240699_a_(TextFormatting.GRAY));
+                    tooltip.add(new TranslationTextComponent("item.iceandfire.summoning_crystal.bound", dragonName).mergeStyle(TextFormatting.GRAY));
                     flag = true;
                 }
             }
         }
         if (!flag) {
-            tooltip.add(new TranslationTextComponent("item.iceandfire.summoning_crystal.desc_0").func_240699_a_(TextFormatting.GRAY));
-            tooltip.add(new TranslationTextComponent("item.iceandfire.summoning_crystal.desc_1").func_240699_a_(TextFormatting.GRAY));
+            tooltip.add(new TranslationTextComponent("item.iceandfire.summoning_crystal.desc_0").mergeStyle(TextFormatting.GRAY));
+            tooltip.add(new TranslationTextComponent("item.iceandfire.summoning_crystal.desc_1").mergeStyle(TextFormatting.GRAY));
 
         }
 
@@ -108,7 +106,7 @@ public class ItemSummoningCrystal extends Item {
                         if (id != null) {
                             if (!context.getWorld().isRemote) {
                                 try {
-                                    Entity entity = context.getWorld().getServer().getWorld(context.getPlayer().world.func_234923_W_()).getEntityByUuid(id);
+                                    Entity entity = context.getWorld().getServer().getWorld(context.getPlayer().world.getDimensionKey()).getEntityByUuid(id);
                                     if (entity != null) {
                                         flag = true;
                                         summonEntity(entity, context.getWorld(), offsetPos, yaw);
@@ -147,7 +145,7 @@ public class ItemSummoningCrystal extends Item {
                                         }
                                         if (flag2) {
                                             try {
-                                                Entity entity = context.getWorld().getServer().getWorld(context.getPlayer().world.func_234923_W_()).getEntityByUuid(id);
+                                                Entity entity = context.getWorld().getServer().getWorld(context.getPlayer().world.getDimensionKey()).getEntityByUuid(id);
                                                 if (entity != null) {
                                                     flag = true;
                                                     summonEntity(entity, context.getWorld(), offsetPos, yaw);

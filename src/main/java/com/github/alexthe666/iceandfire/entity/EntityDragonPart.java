@@ -1,7 +1,6 @@
 package com.github.alexthe666.iceandfire.entity;
 
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.FMLPlayMessages;
 

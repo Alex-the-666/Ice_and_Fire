@@ -10,6 +10,9 @@ public class IafTagRegistry {
     public static final ResourceLocation SCARES_COCKATRICES = new ResourceLocation("iceandfire", "scares_cockatrices");
     public static final ResourceLocation SHEEP = new ResourceLocation("iceandfire", "sheep");
     public static final ResourceLocation VILLAGERS = new ResourceLocation("iceandfire", "villagers");
-    public static final ResourceLocation DRAGON_TARGETS = new ResourceLocation("iceandfire", "dragon_targets");
+    public static final ResourceLocation ICE_DRAGON_TARGETS = new ResourceLocation("iceandfire", "ice_dragon_targets");
+    public static final ResourceLocation FIRE_DRAGON_TARGETS = new ResourceLocation("iceandfire", "fire_dragon_targets");
+    public static final ResourceLocation LIGHTNING_DRAGON_TARGETS = new ResourceLocation("iceandfire", "lightning_dragon_targets");
+    public static final ResourceLocation CYCLOPS_UNLIFTABLES = new ResourceLocation("iceandfire", "cyclops_unliftables");
 
 }

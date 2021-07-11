@@ -1,0 +1,46 @@
+<image><drawings_2.png 70 30 0 96 58 36 1>
+
+
+
+
+
+Canibais Atrozes são zumbis
+velozes com garras extremamente
+afiadas, prontas para dilacerar
+e retalhar suas presas.
+<image><drawings_2.png 65 110 0 133 69 28 1>
+
+
+
+
+Bestas Horríferas são os restos de 
+animais mutilados convertidos pelo 
+Lich Medonho. Elas se movem 
+rapidamente e abocanham qualquer 
+criatura viva que elas possam 
+colocar seus dentes.
+<image><drawings_2.png 275 5 70 111 37 50 1>
+
+
+
+
+
+
+Aracnídeos Terríveis são artropódes
+mortos-vivos monstruosos prontos
+para cravarem suas presas em quaisquer
+seres vivos que seu mestre ordenar. 
+
+<item><iceandfire:dread_shard 0 95 43 1.25>
+<item><iceandfire:dread_key 0 125 43 1.25>
+
+
+
+
+
+Todos os monstros horrendos liberam
+fragmentos medonhos que podem ser 
+usados para criar blocos decorativos. 
+O Lich Medonho raramente irá deixar
+cair uma Chave Horrenda que poderá
+ser usada para abrir um Mausoléu...

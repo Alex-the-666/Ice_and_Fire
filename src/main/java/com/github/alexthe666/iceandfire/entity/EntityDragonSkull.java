@@ -1,9 +1,11 @@
 package com.github.alexthe666.iceandfire.entity;
 
-import com.github.alexthe666.iceandfire.IafConfig;
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.util.IBlacklistedFromStatues;
 import com.github.alexthe666.iceandfire.entity.util.IDeadMob;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+
 import net.minecraft.entity.AgeableEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -23,8 +25,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
+import net.minecraft.world.server.ServerWorld;
 
 public class EntityDragonSkull extends AnimalEntity implements IBlacklistedFromStatues, IDeadMob {
 
@@ -42,16 +43,20 @@ public class EntityDragonSkull extends AnimalEntity implements IBlacklistedFromS
         // setScale(this.getDragonAge());
     }
 
-    public boolean isBreedingItem(ItemStack p_70877_1_) {
+    public boolean isBreedingItem(ItemStack stack) {
         return false;
     }
 
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 10)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 10)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0D);
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0D);
+    }
+
+    public boolean canBreatheUnderwater() {
+        return true;
     }
 
     @Override
@@ -65,7 +70,7 @@ public class EntityDragonSkull extends AnimalEntity implements IBlacklistedFromS
     }
 
     public boolean isOnWall() {
-        return this.world.isAirBlock(this.func_233580_cy_().down());
+        return this.world.isAirBlock(this.getPosition().down());
     }
 
     public void onUpdate() {
@@ -117,7 +122,7 @@ public class EntityDragonSkull extends AnimalEntity implements IBlacklistedFromS
     }
 
     @Override
-    public SoundEvent getHurtSound(DamageSource p_184601_1_) {
+    public SoundEvent getHurtSound(DamageSource damageSourceIn) {
         return null;
     }
 
@@ -155,16 +160,16 @@ public class EntityDragonSkull extends AnimalEntity implements IBlacklistedFromS
 
     @Nullable
     @Override
-    public AgeableEntity createChild(AgeableEntity ageable) {
+    public AgeableEntity createChild(ServerWorld serverWorld, AgeableEntity ageable) {
         return null;
     }
 
     @Override
-    public ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
+    public ActionResultType getEntityInteractionResult(PlayerEntity player, Hand hand) {
         if (player.isSneaking()) {
             this.setYaw(player.rotationYaw);
         }
-        return super.func_230254_b_(player, hand);
+        return super.getEntityInteractionResult(player, hand);
     }
 
     @Override

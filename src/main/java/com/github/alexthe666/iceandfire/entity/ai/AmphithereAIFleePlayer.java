@@ -1,6 +1,10 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.entity.EntityAmphithere;
+
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.player.PlayerEntity;
@@ -8,8 +12,7 @@ import net.minecraft.pathfinding.Path;
 import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.vector.Vector3d;
 
-import java.util.EnumSet;
-import java.util.List;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class AmphithereAIFleePlayer extends Goal {
     private final double farSpeed;
@@ -42,7 +45,7 @@ public class AmphithereAIFleePlayer extends Goal {
                 } else if (this.closestLivingEntity.getDistanceSq(Vector3d) < this.closestLivingEntity.getDistanceSq(this.entity)) {
                     return false;
                 } else {
-                    this.path = this.entity.getNavigator().getPathToPos(Vector3d.x, Vector3d.y, Vector3d.z, 0);
+                    this.path = this.entity.getNavigator().pathfind(Vector3d.x, Vector3d.y, Vector3d.z, 0);
                     return this.path != null;
                 }
             }

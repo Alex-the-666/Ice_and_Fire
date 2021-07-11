@@ -1,35 +1,32 @@
 package com.github.alexthe666.iceandfire;
 
+import java.lang.reflect.Field;
+
+import com.github.alexthe666.iceandfire.config.BiomeConfig;
 import com.github.alexthe666.iceandfire.config.ConfigHolder;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
+import com.github.alexthe666.iceandfire.entity.IafVillagerRegistry;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.github.alexthe666.iceandfire.event.ServerEvents;
-import com.github.alexthe666.iceandfire.loot.CustomizeToDragon;
-import com.github.alexthe666.iceandfire.loot.CustomizeToSeaSerpent;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
-import com.github.alexthe666.iceandfire.world.BiomeGlacier;
+
 import com.github.alexthe666.iceandfire.world.IafWorldRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootFunctionType;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.biome.Biome;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeManager;
+import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-
-import java.lang.reflect.Field;
 
 @Mod.EventBusSubscriber(modid = IceAndFire.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CommonProxy {
@@ -43,6 +40,22 @@ public class CommonProxy {
             IafConfig.bakeClient(config);
         } else if (config.getSpec() == ConfigHolder.SERVER_SPEC) {
             IafConfig.bakeServer(config);
+        }
+        BiomeConfig.init();
+
+    }
+
+    @SubscribeEvent
+    public static void registerFeatures(final RegistryEvent.Register<Feature<?>> event) {
+        for (Feature<?> feature : IafWorldRegistry.featureList) {
+            event.getRegistry().register(feature);
+        }
+    }
+
+    @SubscribeEvent
+    public static void registerStructures(final RegistryEvent.Register<Structure<?>> event) {
+        for (Structure<?> feature : IafWorldRegistry.structureFeatureList) {
+            event.getRegistry().register(feature);
         }
     }
 
@@ -61,16 +74,6 @@ public class CommonProxy {
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @SubscribeEvent
-    public static void registerBiomes(RegistryEvent.Register<Biome> event) {
-        event.getRegistry().register(IafWorldRegistry.GLACIER_BIOME);
-        BiomeDictionary.addTypes(IafWorldRegistry.GLACIER_BIOME, BiomeDictionary.Type.OVERWORLD, BiomeDictionary.Type.SNOWY, BiomeDictionary.Type.COLD, BiomeDictionary.Type.SPARSE, BiomeDictionary.Type.DEAD, BiomeDictionary.Type.WASTELAND, BiomeDictionary.Type.OVERWORLD);
-        if (IafConfig.spawnGlaciers) {
-            BiomeManager.addSpawnBiome(IafWorldRegistry.GLACIER_BIOME);
-            BiomeManager.addBiome(BiomeManager.BiomeType.ICY, new BiomeManager.BiomeEntry(IafWorldRegistry.GLACIER_BIOME, IafConfig.glacierSpawnChance));
         }
     }
 

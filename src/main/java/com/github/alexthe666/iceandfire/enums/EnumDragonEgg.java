@@ -1,10 +1,11 @@
 package com.github.alexthe666.iceandfire.enums;
 
+import java.util.Map;
+
 import com.github.alexthe666.iceandfire.entity.DragonType;
 import com.google.common.collect.Maps;
-import net.minecraft.util.text.TextFormatting;
 
-import java.util.Map;
+import net.minecraft.util.text.TextFormatting;
 
 public enum EnumDragonEgg {
     RED(0, TextFormatting.DARK_RED, DragonType.FIRE), GREEN(1, TextFormatting.DARK_GREEN, DragonType.FIRE), BRONZE(2, TextFormatting.GOLD, DragonType.FIRE), GRAY(3, TextFormatting.GRAY, DragonType.FIRE),

@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -67,8 +68,8 @@ public class EntitySeaSerpentArrow extends AbstractArrowEntity {
         if (damage >= 3.0F && player.getActiveItemStack().getItem().isShield(player.getActiveItemStack(), player)) {
             ItemStack copyBeforeUse = player.getActiveItemStack().copy();
             int i = 1 + MathHelper.floor(damage);
-            player.getActiveItemStack().damageItem(i, player, (p_220038_0_) -> {
-                p_220038_0_.sendBreakAnimation(EquipmentSlotType.MAINHAND);
+            player.getActiveItemStack().damageItem(i, player, (entity) -> {
+                entity.sendBreakAnimation(EquipmentSlotType.MAINHAND);
             });
 
             if (player.getActiveItemStack().isEmpty()) {

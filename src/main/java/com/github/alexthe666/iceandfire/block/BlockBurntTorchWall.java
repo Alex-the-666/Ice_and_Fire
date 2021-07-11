@@ -1,9 +1,11 @@
 package com.github.alexthe666.iceandfire.block;
 
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
-import net.minecraft.block.TorchBlock;
 import net.minecraft.block.WallTorchBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.particles.RedstoneParticleData;
@@ -12,13 +14,20 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.util.Random;
+import net.minecraft.block.AbstractBlock.Properties;
 
 public class BlockBurntTorchWall extends WallTorchBlock implements IDreadBlock {
 
     public BlockBurntTorchWall() {
-        super(Properties.create(Material.WOOD).func_235838_a_((p_235454_0_) -> {  return 0;
-        }).sound(SoundType.WOOD).notSolid().variableOpacity().lootFrom(IafBlockRegistry.BURNT_TORCH), RedstoneParticleData.REDSTONE_DUST);
+        super(
+    		Properties.create(Material.WOOD)
+        		.setLightLevel((state) -> { return 0; })
+        		.sound(SoundType.WOOD).notSolid().variableOpacity()
+        		.lootFrom(IafBlockRegistry.BURNT_TORCH)
+                .doesNotBlockMovement(),
+    		RedstoneParticleData.REDSTONE_DUST
+		);
+
         setRegistryName(IceAndFire.MODID, "burnt_torch_wall");
     }
 

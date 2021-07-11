@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.AnimationHandler;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
@@ -10,13 +12,25 @@ import com.github.alexthe666.iceandfire.entity.util.IDreadMob;
 import com.github.alexthe666.iceandfire.entity.util.IVillagerFear;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
 import com.google.common.base.Predicate;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
@@ -29,10 +43,8 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity, IVillagerFear, IAnimalFear {
 
@@ -60,7 +72,12 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
         this.goalSelector.addGoal(6, new LookAtGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.addGoal(7, new LookRandomlyGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this, IDreadMob.class));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, 10,true,false,new Predicate<LivingEntity>() {
+            @Override
+            public boolean apply(@Nullable LivingEntity entity) {
+                return DragonUtils.canHostilesTarget(entity);
+            }
+        }));
         this.targetSelector.addGoal(3, new DreadAITargetNonDread(this, LivingEntity.class, false, new Predicate<LivingEntity>() {
             @Override
             public boolean apply(@Nullable LivingEntity entity) {
@@ -72,15 +89,15 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 30.0D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 30.0D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.35D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.35D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, 5.0D)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, 5.0D)
                 //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, 128.0D)
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 128.0D)
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 4.0D);
+                .createMutableAttribute(Attributes.ARMOR, 4.0D);
     }
 
     @Override
@@ -108,12 +125,13 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
 
     public void livingTick() {
         super.livingTick();
+
         if (Math.abs(firstWidth - INITIAL_WIDTH * getScale()) > 0.01F || Math.abs(firstHeight - INITIAL_HEIGHT * getScale()) > 0.01F) {
             firstWidth = INITIAL_WIDTH * getScale();
             firstHeight = INITIAL_HEIGHT * getScale();
         }
         if (this.getAnimation() == ANIMATION_SPAWN && this.getAnimationTick() < 30) {
-            BlockState belowBlock = world.getBlockState(this.func_233580_cy_().down());
+            BlockState belowBlock = world.getBlockState(this.getPosition().down());
             if (belowBlock.getBlock() != Blocks.AIR) {
                 for (int i = 0; i < 5; i++) {
                     this.world.addParticle(new BlockParticleData(ParticleTypes.BLOCK, belowBlock), this.getPosX() + (double) (this.rand.nextFloat() * this.getWidth() * 2.0F) - (double) this.getWidth(), this.getBoundingBox().minY, this.getPosZ() + (double) (this.rand.nextFloat() * this.getWidth() * 2.0F) - (double) this.getWidth(), this.rand.nextGaussian() * 0.02D, this.rand.nextGaussian() * 0.02D, this.rand.nextGaussian() * 0.02D);
@@ -127,8 +145,8 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
             }
             this.faceEntity(this.getAttackTarget(), 360, 80);
             if (this.getAnimation() == ANIMATION_SLASH && (this.getAnimationTick() == 9 || this.getAnimationTick() == 19)) {
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), (float) this.getAttribute(Attributes.field_233823_f_).getValue());
-                this.getAttackTarget().func_233627_a_(0.25F, this.getPosX() - this.getAttackTarget().getPosX(), this.getPosZ() - this.getAttackTarget().getPosZ());
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
+                this.getAttackTarget().applyKnockback(0.25F, this.getPosX() - this.getAttackTarget().getPosX(), this.getPosZ() - this.getAttackTarget().getPosZ());
             }
         }
         if (!world.isRemote) {
@@ -164,7 +182,7 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
         super.writeAdditional(compound);
         compound.putInt("Variant", this.getVariant());
         compound.putInt("ScreamStage", this.getScreamStage());
-        compound.putFloat("Scale", this.getScale());
+        compound.putFloat("DreadScale", this.getScale());
     }
 
     @Override
@@ -172,7 +190,7 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
         super.readAdditional(compound);
         this.setVariant(compound.getInt("Variant"));
         this.setScreamStage(compound.getInt("ScreamStage"));
-        this.setScale(compound.getFloat("Scale"));
+        this.setScale(compound.getFloat("DreadScale"));
     }
 
     public int getVariant() {
@@ -191,9 +209,12 @@ public class EntityDreadGhoul extends EntityDreadMob implements IAnimatedEntity,
         this.dataManager.set(SCREAMS, screamStage);
     }
 
+    public float getRenderScale() {
+        return getScale();
+    }
 
     @Nullable
-    public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         ILivingEntityData data = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.setAnimation(ANIMATION_SPAWN);
         this.setVariant(rand.nextInt(3));

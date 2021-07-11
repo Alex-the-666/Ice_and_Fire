@@ -1,12 +1,13 @@
 package com.github.alexthe666.iceandfire.entity.props;
 
-import com.github.alexthe666.citadel.server.entity.EntityProperties;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityProperties;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MiscEntityProperties extends EntityProperties<LivingEntity> {
 

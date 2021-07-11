@@ -1,12 +1,15 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntityDreadLich;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class DreadLichAIStrife extends Goal {
 
@@ -28,8 +31,8 @@ public class DreadLichAIStrife extends Goal {
         this.setMutexFlags(EnumSet.of(Flag.MOVE));
     }
 
-    public void setAttackCooldown(int p_189428_1_) {
-        this.attackCooldown = p_189428_1_;
+    public void setAttackCooldown(int attackCooldownIn) {
+        this.attackCooldown = attackCooldownIn;
     }
 
     public boolean shouldExecute() {

@@ -7,14 +7,14 @@ import com.github.alexthe666.iceandfire.client.render.entity.RenderHydra;
 import com.github.alexthe666.iceandfire.entity.EntityGorgon;
 import com.github.alexthe666.iceandfire.entity.EntityHydra;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.client.renderer.entity.LivingRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -44,37 +44,55 @@ public class LayerHydraHead extends LayerRenderer<EntityHydra, ModelHydraBody> {
             {50F, 37F, 25F, 15F, 0, -15F, -25F, -37F, -50F},
     };
     private final RenderHydra renderer;
-    private ModelHydraHead[] modelArr;
+    private static ModelHydraHead[] modelArr = new ModelHydraHead[EntityHydra.HEADS];
 
-    public LayerHydraHead(RenderHydra renderer) {
-        super(renderer);
-        this.renderer = renderer;
-        modelArr = new ModelHydraHead[EntityHydra.HEADS];
+    static{
         for (int i = 0; i < modelArr.length; i++) {
             modelArr[i] = new ModelHydraHead(i);
         }
     }
 
+    public LayerHydraHead(RenderHydra renderer) {
+        super(renderer);
+        this.renderer = renderer;
+
+    }
+
     @Override
     public void render(MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn, EntityHydra entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-        int heads = entity.getHeadCount();
-        boolean stone = EntityGorgon.isStoneMob(entity);
-        if (entity.isInvisible() && !stone) {
+        if (entity.isInvisible()) {
             return;
         }
+        renderHydraHeads(renderer.getEntityModel(), false, matrixStackIn, bufferIn, packedLightIn, entity, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch);
+    }
+
+    public static void renderHydraHeads(ModelHydraBody model, boolean stone, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn, EntityHydra hydra, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch){
         matrixStackIn.push();
-        translateToBody(matrixStackIn);
+        int heads = hydra.getHeadCount();
+        translateToBody(model, matrixStackIn);
+        RenderType type = RenderType.getEntityCutout(stone ? TEXTURE_STONE : getHeadTexture(hydra));
         for (int head = 1; head <= heads; head++) {
             matrixStackIn.push();
             float bodyWidth = 0.5F;
             matrixStackIn.translate(TRANSLATE[heads - 1][head - 1] * bodyWidth, 0, 0);
             matrixStackIn.rotate(new Quaternion(Vector3f.YP, ROTATE[heads - 1][head - 1], true));
-            ResourceLocation tex = stone ? TEXTURE_STONE : getEntityTexture(entity);
-            modelArr[head - 1].setRotationAngles(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            modelArr[head - 1].render(matrixStackIn, bufferIn.getBuffer(RenderType.getEntityCutout(tex)), packedLightIn, LivingRenderer.getPackedOverlay(entity, 0.0F), 1.0F, 1.0F, 1.0F, 1.0F);
+            modelArr[head - 1].setRotationAngles(hydra, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+            modelArr[head - 1].render(matrixStackIn, bufferIn.getBuffer(type), packedLightIn, LivingRenderer.getPackedOverlay(hydra, 0.0F), 1.0F, 1.0F, 1.0F, 1.0F);
             matrixStackIn.pop();
         }
         matrixStackIn.pop();
+    }
+
+
+    public static ResourceLocation getHeadTexture(EntityHydra gorgon) {
+        switch (gorgon.getVariant()) {
+            default:
+                return RenderHydra.TEXUTURE_0;
+            case 1:
+                return RenderHydra.TEXUTURE_1;
+            case 2:
+                return RenderHydra.TEXUTURE_2;
+        }
     }
 
     public ResourceLocation getEntityTexture(EntityHydra gorgon) {
@@ -88,11 +106,11 @@ public class LayerHydraHead extends LayerRenderer<EntityHydra, ModelHydraBody> {
         }
     }
 
-    protected void translateToBody(MatrixStack stack) {
-        postRender(this.renderer.getEntityModel().BodyUpper, stack, 0.0625F);
+    protected static void translateToBody(ModelHydraBody model, MatrixStack stack) {
+        postRender(model.BodyUpper, stack, 0.0625F);
     }
 
-    protected void postRender(AdvancedModelBox renderer, MatrixStack matrixStackIn, float scale) {
+    protected static void postRender(AdvancedModelBox renderer, MatrixStack matrixStackIn, float scale) {
         if (renderer.rotateAngleX == 0.0F && renderer.rotateAngleY == 0.0F && renderer.rotateAngleZ == 0.0F) {
             if (renderer.rotationPointX != 0.0F || renderer.rotationPointY != 0.0F || renderer.rotationPointZ != 0.0F) {
                 matrixStackIn.translate(renderer.rotationPointX * scale, renderer.rotationPointY * scale, renderer.rotationPointZ * scale);

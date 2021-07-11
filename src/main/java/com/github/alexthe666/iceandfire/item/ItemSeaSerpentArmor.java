@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.server.item.CustomArmorMaterial;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.enums.EnumSeaSerpent;
+
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -17,9 +22,6 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemSeaSerpentArmor extends ArmorItem {
 
@@ -58,8 +60,8 @@ public class ItemSeaSerpentArmor extends ArmorItem {
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 
-        tooltip.add(new TranslationTextComponent("sea_serpent." + armor_type.resourceName).func_240699_a_(armor_type.color));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.sea_serpent_armor.desc_0").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.sea_serpent_armor.desc_1").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("sea_serpent." + armor_type.resourceName).mergeStyle(armor_type.color));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.sea_serpent_armor.desc_0").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.sea_serpent_armor.desc_1").mergeStyle(TextFormatting.GRAY));
     }
 }

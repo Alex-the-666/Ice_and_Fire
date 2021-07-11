@@ -1,11 +1,12 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
-import java.util.Random;
 
 public class WorldGenDreadExitPortal {
     private static final ResourceLocation STRUCTURE = new ResourceLocation(IceAndFire.MODID, "dread_exit_portal");

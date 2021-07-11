@@ -1,8 +1,11 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.util.IBlacklistedFromStatues;
 import com.github.alexthe666.iceandfire.entity.util.IDeadMob;
 import com.github.alexthe666.iceandfire.enums.EnumSkullType;
+
 import net.minecraft.entity.AgeableEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -12,7 +15,6 @@ import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -22,8 +24,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
+import net.minecraft.world.server.ServerWorld;
 
 public class EntityMobSkull extends AnimalEntity implements IBlacklistedFromStatues, IDeadMob {
 
@@ -38,9 +39,13 @@ public class EntityMobSkull extends AnimalEntity implements IBlacklistedFromStat
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 10.0D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 10.0D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.0D);
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.0D);
+    }
+
+    public boolean canBreatheUnderwater() {
+        return true;
     }
 
     @Override
@@ -54,7 +59,7 @@ public class EntityMobSkull extends AnimalEntity implements IBlacklistedFromStat
     }
 
     public boolean isOnWall() {
-        return this.world.isAirBlock(this.func_233580_cy_().down());
+        return this.world.isAirBlock(this.getPosition().down());
     }
 
     public void onUpdate() {
@@ -110,16 +115,16 @@ public class EntityMobSkull extends AnimalEntity implements IBlacklistedFromStat
             this.entityDropItem(stack, 0.0F);
     }
 
-    public boolean isBreedingItem(ItemStack p_70877_1_) {
+    public boolean isBreedingItem(ItemStack stack) {
         return false;
     }
 
     @Override
-    public ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
+    public ActionResultType getEntityInteractionResult(PlayerEntity player, Hand hand) {
         if (player.isSneaking()) {
             this.setYaw(player.rotationYaw);
         }
-        return super.func_230254_b_(player, hand);
+        return super.getEntityInteractionResult(player, hand);
     }
 
     @Override
@@ -157,7 +162,7 @@ public class EntityMobSkull extends AnimalEntity implements IBlacklistedFromStat
 
     @Nullable
     @Override
-    public AgeableEntity createChild(AgeableEntity ageable) {
+    public AgeableEntity createChild(ServerWorld serverWorld, AgeableEntity ageable) {
         return null;
     }
 

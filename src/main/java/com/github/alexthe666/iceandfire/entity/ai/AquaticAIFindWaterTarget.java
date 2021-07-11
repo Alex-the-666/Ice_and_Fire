@@ -1,5 +1,8 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.Comparator;
+import java.util.EnumSet;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MobEntity;
@@ -10,8 +13,7 @@ import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 
-import java.util.Comparator;
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class AquaticAIFindWaterTarget extends Goal {
     protected AquaticAIFindWaterTarget.Sorter fleePosSorter;
@@ -63,7 +65,7 @@ public class AquaticAIFindWaterTarget extends Goal {
                 }
             }
         } else {
-            return this.mob.getAttackTarget().func_233580_cy_();
+            return this.mob.getAttackTarget().getPosition();
         }
         return null;
     }
@@ -77,12 +79,12 @@ public class AquaticAIFindWaterTarget extends Goal {
         private BlockPos pos;
 
         public Sorter(Entity theEntityIn) {
-            this.pos = theEntityIn.func_233580_cy_();
+            this.pos = theEntityIn.getPosition();
         }
 
         //further; more prefered.
         public int compare(BlockPos p_compare_1_, BlockPos p_compare_2_) {
-            this.pos = AquaticAIFindWaterTarget.this.mob.func_233580_cy_();
+            this.pos = AquaticAIFindWaterTarget.this.mob.getPosition();
             double d0 = this.pos.distanceSq(p_compare_1_);
             double d1 = this.pos.distanceSq(p_compare_2_);
             return d0 < d1 ? 1 : (d0 > d1 ? -1 : 0);

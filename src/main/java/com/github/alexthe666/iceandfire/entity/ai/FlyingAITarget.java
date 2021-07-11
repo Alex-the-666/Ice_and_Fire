@@ -1,12 +1,13 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntitySeaSerpent;
 import com.google.common.base.Predicate;
+
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.util.math.AxisAlignedBB;
-
-import javax.annotation.Nullable;
 
 public class FlyingAITarget extends NearestAttackableTargetGoal {
 

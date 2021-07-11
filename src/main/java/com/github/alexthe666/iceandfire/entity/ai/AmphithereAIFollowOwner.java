@@ -1,6 +1,9 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntityAmphithere;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -10,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class AmphithereAIFollowOwner extends Goal {
     private final EntityAmphithere ampithere;
@@ -40,7 +43,7 @@ public class AmphithereAIFollowOwner extends Goal {
             return false;
         } else if (LivingEntity instanceof PlayerEntity && LivingEntity.isSpectator()) {
             return false;
-        } else if (this.ampithere.func_233684_eK_()) {
+        } else if (this.ampithere.isQueuedToSit()) {
             return false;
         } else if (this.ampithere.getDistanceSq(LivingEntity) < (double) (this.minDist * this.minDist)) {
             return false;
@@ -51,7 +54,7 @@ public class AmphithereAIFollowOwner extends Goal {
     }
 
     public boolean shouldContinueExecuting() {
-        return !noPath() && this.ampithere.getDistanceSq(this.owner) > (double) (this.maxDist * this.maxDist) && !this.ampithere.func_233684_eK_();
+        return !noPath() && this.ampithere.getDistanceSq(this.owner) > (double) (this.maxDist * this.maxDist) && !this.ampithere.isQueuedToSit();
     }
 
     private boolean noPath() {
@@ -77,7 +80,7 @@ public class AmphithereAIFollowOwner extends Goal {
     public void tick() {
         this.ampithere.getLookController().setLookPositionWithEntity(this.owner, 10.0F, (float) this.ampithere.getVerticalFaceSpeed());
 
-        if (!this.ampithere.func_233684_eK_()) {
+        if (!this.ampithere.isQueuedToSit()) {
             if (--this.timeToRecalcPath <= 0) {
                 this.timeToRecalcPath = 10;
                 tryMoveTo();

@@ -1,9 +1,18 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import com.github.alexthe666.iceandfire.block.BlockGoldPile;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
-import net.minecraft.block.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.LeavesBlock;
+import net.minecraft.block.RotatedPillarBlock;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.LockableLootTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -11,10 +20,6 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
-import net.minecraftforge.common.BiomeDictionary;
-
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class WorldGenMyrmexDecoration {
 
@@ -62,22 +67,11 @@ public class WorldGenMyrmexDecoration {
         }
     }
 
-    public static void generateLeaves(IWorld worldIn, BlockPos blockpos, BlockPos origin, int radius, Random rand) {
+    public static void generateLeaves(IWorld worldIn, BlockPos blockpos, BlockPos origin, int radius, Random rand, boolean jungle) {
         if (worldIn.getBlockState(blockpos.down()).isSolidSide(worldIn, blockpos.down(), Direction.UP)) {
             BlockState leaf = Blocks.OAK_LEAVES.getDefaultState().with(LeavesBlock.PERSISTENT, Boolean.valueOf(true));
-            for (BiomeDictionary.Type type : BiomeDictionary.getTypes(worldIn.getBiome(blockpos))) {
-                if (type == BiomeDictionary.Type.SANDY || type == BiomeDictionary.Type.SAVANNA || type == BiomeDictionary.Type.WASTELAND) {
-                    leaf = Blocks.OAK_LEAVES.getDefaultState().with(LeavesBlock.PERSISTENT, Boolean.valueOf(true));
-                    break;
-                }
-                if (type == BiomeDictionary.Type.JUNGLE) {
-                    leaf = Blocks.JUNGLE_LEAVES.getDefaultState().with(LeavesBlock.PERSISTENT, Boolean.valueOf(true));
-                    break;
-                }
-                if (type == BiomeDictionary.Type.CONIFEROUS) {
-                    leaf = Blocks.SPRUCE_LEAVES.getDefaultState().with(LeavesBlock.PERSISTENT, Boolean.valueOf(true));
-                    break;
-                }
+            if (jungle) {
+                leaf = Blocks.JUNGLE_LEAVES.getDefaultState().with(LeavesBlock.PERSISTENT, Boolean.valueOf(true));
             }
             int i1 = 0;
             for (int i = 0; i1 >= 0 && i < 3; ++i) {
@@ -95,9 +89,9 @@ public class WorldGenMyrmexDecoration {
         }
     }
 
-    public static void generatePumpkins(IWorld worldIn, BlockPos blockpos, BlockPos origin, int radius, Random rand) {
+    public static void generatePumpkins(IWorld worldIn, BlockPos blockpos, BlockPos origin, int radius, Random rand, boolean jungle) {
         if (worldIn.getBlockState(blockpos.down()).isSolidSide(worldIn, blockpos.down(), Direction.UP)) {
-            worldIn.setBlockState(blockpos, BiomeDictionary.hasType(worldIn.getBiome(blockpos), BiomeDictionary.Type.JUNGLE) ? Blocks.MELON.getDefaultState() : Blocks.PUMPKIN.getDefaultState(), 2);
+            worldIn.setBlockState(blockpos, jungle ? Blocks.MELON.getDefaultState() : Blocks.PUMPKIN.getDefaultState(), 2);
         }
     }
 

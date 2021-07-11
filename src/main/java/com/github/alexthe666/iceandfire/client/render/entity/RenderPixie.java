@@ -5,6 +5,7 @@ import com.github.alexthe666.iceandfire.client.render.entity.layer.LayerPixieGlo
 import com.github.alexthe666.iceandfire.client.render.entity.layer.LayerPixieItem;
 import com.github.alexthe666.iceandfire.entity.EntityPixie;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -31,7 +32,7 @@ public class RenderPixie extends MobRenderer<EntityPixie, ModelPixie> {
     @Override
     public void preRenderCallback(EntityPixie LivingEntityIn, MatrixStack stack, float partialTickTime) {
         stack.scale(0.55F, 0.55F, 0.55F);
-        if (LivingEntityIn.func_233684_eK_()) {
+        if (LivingEntityIn.isQueuedToSit()) {
             stack.translate(0F, 0.5F, 0F);
 
         }

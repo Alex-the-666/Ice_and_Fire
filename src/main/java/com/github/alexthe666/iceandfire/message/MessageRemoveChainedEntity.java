@@ -1,14 +1,15 @@
 package com.github.alexthe666.iceandfire.message;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import java.util.function.Supplier;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.entity.props.ChainEntityProperties;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class MessageRemoveChainedEntity {
 

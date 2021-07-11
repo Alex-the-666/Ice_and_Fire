@@ -1,13 +1,15 @@
 package com.github.alexthe666.iceandfire.client.gui.bestiary;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.gui.widget.button.Button.IPressable;
 
 @OnlyIn(Dist.CLIENT)
 public class ChangePageButton extends Button {
@@ -24,9 +26,9 @@ public class ChangePageButton extends Button {
     }
 
     @Override
-    public void func_230431_b_(MatrixStack p_230430_1_,  int mouseX, int mouseY, float partial) {
-        if (this.field_230693_o_) {
-            boolean flag = mouseX >= this.field_230690_l_ && mouseY >= this.field_230691_m_ && mouseX < this.field_230690_l_ + this.field_230688_j_ && mouseY < this.field_230691_m_ + this.field_230689_k_;
+    public void renderWidget(MatrixStack matrixStack,  int mouseX, int mouseY, float partial) {
+        if (this.active) {
+            boolean flag = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
             Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("iceandfire:textures/gui/bestiary/widgets.png"));
             int i = 0;
             int j = 64;
@@ -39,7 +41,7 @@ public class ChangePageButton extends Button {
             }
             j += color * 23;
 
-            this.func_238474_b_(p_230430_1_, this.field_230690_l_, this.field_230691_m_, i, j, field_230688_j_, field_230689_k_);
+            this.blit(matrixStack, this.x, this.y, i, j, width, height);
         }
     }
 }

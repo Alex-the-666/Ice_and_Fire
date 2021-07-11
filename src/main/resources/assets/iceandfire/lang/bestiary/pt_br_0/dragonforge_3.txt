@@ -1,0 +1,48 @@
+O resultado é conhecido como
+Aço Dracônico. O Aço Dracônico
+é um dos mais fortes e versáteis
+materiais conhecidos pelo homem.
+Pode ser transformado em ferramentas,
+armaduras e armaduras para dragão.
+<item><iceandfire:dragonsteel_fire_sword 0 10 40 1>
+<item><iceandfire:dragonsteel_fire_pickaxe 0 26 40 1>
+<item><iceandfire:dragonsteel_fire_axe 0 42 40 1>
+<item><iceandfire:dragonsteel_fire_shovel 0 58 40 1>
+<item><iceandfire:dragonsteel_fire_hoe 0 74 40 1>
+<item><iceandfire:dragonsteel_fire_helmet 0 20 60 1>
+<item><iceandfire:dragonsteel_fire_chestplate 0 35 60 1>
+<item><iceandfire:dragonsteel_fire_leggings 0 50 60 1>
+<item><iceandfire:dragonsteel_fire_boots 0 65 60 1>
+
+
+
+
+
+
+
+
+Tenha em mente que forjas dracônicas
+também podem ser construídas com
+dragões de gelo, para criar
+Aço Dracônico de Gelo utilize
+o hálito gélido desses dragões.
+<item><iceandfire:dragonforge_ice_brick 0 70 4 1.5>
+<item><iceandfire:dragonforge_ice_input 0 90 4 1.5>
+<item><iceandfire:dragonforge_ice_core 0 110 4 1.5>
+
+
+
+
+
+
+Aço Dracônico de fogo deixa seus
+inimigos queimando por até 15
+segundos e os empurra longemente.
+Aço Dragônico de gelo congela os
+alvos em blocos gigantes de gelo.
+Ambos os tipos desferem grandes
+quantidades de dano, é possível
+aniquilar dragões enormes facilmente.
+Armaduras de Aço Dracônico 
+também garantem uma maior proteção
+contra sopros de dragão.

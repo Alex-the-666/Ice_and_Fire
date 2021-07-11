@@ -2,6 +2,7 @@ package com.github.alexthe666.iceandfire.block;
 
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityIceDragon;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -21,12 +22,26 @@ import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class BlockIceSpikes extends Block {
     protected static final VoxelShape AABB = Block.makeCuboidShape(1, 0, 1, 15, 8, 15);
     public Item itemBlock;
 
     public BlockIceSpikes() {
-        super(Properties.create(Material.PACKED_ICE).notSolid().variableOpacity().tickRandomly().sound(SoundType.GLASS).hardnessAndResistance(2.5F).harvestLevel(1).harvestTool(ToolType.PICKAXE));
+        super(
+    		Properties
+    			.create(Material.PACKED_ICE)
+    			.notSolid()
+    			.variableOpacity()
+    			.tickRandomly()
+    			.sound(SoundType.GLASS)
+    			.hardnessAndResistance(2.5F)
+    			.harvestLevel(1)
+    			.harvestTool(ToolType.PICKAXE)
+    			.setRequiresTool()
+		);
+
         this.setRegistryName(IceAndFire.MODID, "dragon_ice_spikes");
     }
 
@@ -59,7 +74,7 @@ public class BlockIceSpikes extends Block {
         if (!(entityIn instanceof EntityIceDragon)) {
             entityIn.attackEntityFrom(DamageSource.CACTUS, 1);
             if (entityIn instanceof LivingEntity && entityIn.getMotion().x != 0 && entityIn.getMotion().z != 0) {
-                ((LivingEntity) entityIn).func_233627_a_(0.5F, entityIn.getMotion().x, entityIn.getMotion().z);
+                ((LivingEntity) entityIn).applyKnockback(0.5F, entityIn.getMotion().x, entityIn.getMotion().z);
             }
         }
     }

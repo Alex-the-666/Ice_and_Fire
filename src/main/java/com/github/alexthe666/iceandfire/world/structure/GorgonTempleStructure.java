@@ -3,27 +3,25 @@ package com.github.alexthe666.iceandfire.world.structure;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.mojang.serialization.Codec;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.IWorld;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.GenerationStage;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
+import net.minecraft.world.gen.feature.jigsaw.JigsawManager;
+import net.minecraft.world.gen.feature.structure.AbstractVillagePiece;
 import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.structure.StructureStart;
+import net.minecraft.world.gen.feature.structure.VillageConfig;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 
-import java.util.Iterator;
-import java.util.Random;
-import java.util.function.Function;
+import net.minecraft.world.gen.feature.structure.Structure.IStartFactory;
 
 public class GorgonTempleStructure extends Structure<NoFeatureConfig> {
 
@@ -32,7 +30,7 @@ public class GorgonTempleStructure extends Structure<NoFeatureConfig> {
         this.setRegistryName("iceandfire:gorgon_temple");
     }
 
-    public GenerationStage.Decoration func_236396_f_() {
+    public GenerationStage.Decoration getDecorationStage() {
         return GenerationStage.Decoration.SURFACE_STRUCTURES;
     }
 
@@ -40,15 +38,16 @@ public class GorgonTempleStructure extends Structure<NoFeatureConfig> {
         return IceAndFire.MODID + ":gorgon_temple";
     }
 
-    public int getSize() {
-        return 4;
-    }
-
     public IStartFactory getStartFactory() {
         return GorgonTempleStructure.Start::new;
     }
 
-   /* protected int getSeedModifier() {
+   /*
+    public int getSize() {
+        return 4;
+    }
+
+    protected int getSeedModifier() {
         return 123456789;
     }
 
@@ -60,40 +59,53 @@ public class GorgonTempleStructure extends Structure<NoFeatureConfig> {
         return 4; //Math.max(IafConfig.spawnGorgonsChance / 2, 1);
     }*/
 
-    public static class Start extends StructureStart {
-        public Start(Structure<?> p_i225817_1_, int p_i225817_2_, int p_i225817_3_, MutableBoundingBox p_i225817_4_, int p_i225817_5_, long p_i225817_6_) {
-            super(p_i225817_1_, p_i225817_2_, p_i225817_3_, p_i225817_4_, p_i225817_5_, p_i225817_6_);
-        }
-
-        public void func_230366_a_(ISeedReader p_230366_1_, StructureManager p_230366_2_, ChunkGenerator p_230366_3_, Random p_230366_4_, MutableBoundingBox p_230366_5_, ChunkPos p_230366_6_) {
-            synchronized(this.components) {
-                if (!this.components.isEmpty()) {
-                    MutableBoundingBox mutableboundingbox = ((StructurePiece)this.components.get(0)).getBoundingBox();
-                    Vector3i vector3i = mutableboundingbox.func_215126_f();
-                    BlockPos blockpos = new BlockPos(vector3i.getX(), mutableboundingbox.minY, vector3i.getZ());
-                    Iterator<StructurePiece> iterator = this.components.iterator();
-
-                    while(iterator.hasNext()) {
-                        StructurePiece structurepiece = iterator.next();
-                        if (structurepiece.getBoundingBox().intersectsWith(p_230366_5_) && !structurepiece.func_230383_a_(p_230366_1_, p_230366_2_, p_230366_3_, p_230366_4_, p_230366_5_, p_230366_6_, blockpos)) {
-                            iterator.remove();
-                        }
-                    }
-
-                    this.recalculateStructureSize();
-                }
-            }
+    public static class Start extends StructureStart<NoFeatureConfig> {
+        public Start(Structure<NoFeatureConfig> structure, int x, int z, MutableBoundingBox boundingBox, int refCount, long seed) {
+            super(structure, x, z, boundingBox, refCount, seed);
         }
 
         @Override
-        public void func_230364_a_(ChunkGenerator p_230364_1_, TemplateManager p_230364_2_, int chunkX, int chunkZ, Biome p_230364_5_, IFeatureConfig p_230364_6_) {
+        public void func_230364_a_(DynamicRegistries dynamicRegistries, ChunkGenerator chunkGenerator, TemplateManager templateManager, int x, int z, Biome biome, NoFeatureConfig config) {
             if(IafConfig.spawnGorgons) {
-                Rotation rotation = Rotation.values()[this.rand.nextInt(Rotation.values().length)];
-                BlockPos blockpos = new BlockPos(chunkX * 16, 90, chunkZ * 16);
-                GorgonTemplePiece.func_204760_a(p_230364_2_, blockpos, rotation, this.components, this.rand);
+                Rotation rotation = Rotation.randomRotation(this.rand);
+                int i = 5;
+                int j = 5;
+                if (rotation == Rotation.CLOCKWISE_90) {
+                   i = -5;
+                } else if (rotation == Rotation.CLOCKWISE_180) {
+                   i = -5;
+                   j = -5;
+                } else if (rotation == Rotation.COUNTERCLOCKWISE_90) {
+                   j = -5;
+                }
+
+                int k = (x << 4) + 7;
+                int l = (z << 4) + 7;
+                int i1 = chunkGenerator.getNoiseHeightMinusOne(k, l, Heightmap.Type.WORLD_SURFACE_WG);
+                int j1 = chunkGenerator.getNoiseHeightMinusOne(k, l + j, Heightmap.Type.WORLD_SURFACE_WG);
+                int k1 = chunkGenerator.getNoiseHeightMinusOne(k + i, l, Heightmap.Type.WORLD_SURFACE_WG);
+                int l1 = chunkGenerator.getNoiseHeightMinusOne(k + i, l + j, Heightmap.Type.WORLD_SURFACE_WG);
+                int i2 = Math.min(Math.min(i1, j1), Math.min(k1, l1));
+                BlockPos blockpos = new BlockPos(x * 16 + 8, i2 + 2, z * 16 + 8);
+
+                // All a structure has to do is call this method to turn it into a jigsaw based structure!
+                // No manual pieces class needed.
+                JigsawManager.func_242837_a(
+                        dynamicRegistries,
+                        new VillageConfig(() -> dynamicRegistries.getRegistry(Registry.JIGSAW_POOL_KEY)
+                                .getOrDefault(new ResourceLocation(IceAndFire.MODID, "gorgon_temple/top_pool")),
+                                3), // Depth of jigsaw branches. Gorgon temple has a depth of 3. (start top -> bottom -> gorgon)
+                        AbstractVillagePiece::new,
+                        chunkGenerator,
+                        templateManager,
+                        blockpos,
+                        this.components,
+                        this.rand,
+                        false,
+                        false);
+                
                 this.recalculateStructureSize();
             }
         }
     }
-
 }

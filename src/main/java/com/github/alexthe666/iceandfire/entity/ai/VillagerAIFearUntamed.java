@@ -1,10 +1,10 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.function.Predicate;
+
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.AvoidEntityGoal;
-
-import java.util.function.Predicate;
 
 public class VillagerAIFearUntamed extends AvoidEntityGoal<LivingEntity> {
 

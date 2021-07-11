@@ -1,15 +1,20 @@
 package com.github.alexthe666.iceandfire.pathfinding;
 
+import java.util.stream.Collectors;
+
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.entity.EntityCyclops;
+
 import net.minecraft.entity.Entity;
-import net.minecraft.pathfinding.*;
+import net.minecraft.pathfinding.GroundPathNavigator;
+import net.minecraft.pathfinding.Path;
+import net.minecraft.pathfinding.PathFinder;
+import net.minecraft.pathfinding.PathNodeType;
+import net.minecraft.pathfinding.WalkNodeProcessor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-
-import java.util.stream.Collectors;
 
 public class PathNavigateCyclops extends GroundPathNavigator {
     public BlockPos targetPosition;
@@ -38,17 +43,17 @@ public class PathNavigateCyclops extends GroundPathNavigator {
         return super.getPathToPos(pos, i);
     }
 
-    public Path getPathToEntity(Entity entityIn, int i) {
-        this.targetPosition = entityIn.func_233580_cy_();
-        return super.getPathToEntity(entityIn, i);
+    public Path pathfind(Entity entityIn, int i) {
+        this.targetPosition = entityIn.getPosition();
+        return super.pathfind(entityIn, i);
     }
 
     public boolean tryMoveToEntityLiving(Entity entityIn, double speedIn) {
-        Path path = this.getPathToEntity(entityIn, 0);
+        Path path = this.pathfind(entityIn, 0);
         if (path != null) {
             return this.setPath(path, speedIn);
         } else {
-            this.targetPosition = entityIn.func_233580_cy_();
+            this.targetPosition = entityIn.getPosition();
             this.speed = speedIn;
             return true;
         }
@@ -65,7 +70,7 @@ public class PathNavigateCyclops extends GroundPathNavigator {
         }
 
         this.maxDistanceToWaypoint = this.entity.getWidth();
-        Vector3d Vector3d1 = Vector3d.func_237489_a_(this.currentPath.getCurrentPos());
+        Vector3d Vector3d1 = Vector3d.copyCentered(this.currentPath.func_242948_g());
         float distX = MathHelper.abs((float) (this.entity.getPosX() - (Vector3d1.x + 0.5D)));
         float distZ = MathHelper.abs((float) (this.entity.getPosZ() - (Vector3d1.z + 0.5D)));
         float distY = (float) Math.abs(this.entity.getPosY() - Vector3d1.y);
@@ -99,7 +104,7 @@ public class PathNavigateCyclops extends GroundPathNavigator {
         }
 
         if (this.currentPath != null && !this.currentPath.isFinished()) {
-            Vector3d vector3d = Vector3d.func_237489_a_(this.currentPath.getCurrentPos());
+            Vector3d vector3d = Vector3d.copyCentered(this.currentPath.func_242948_g());
 
             if (vector3d.equals(this.timeoutCachedNode)) {
                 this.timeoutTimer += System.currentTimeMillis() - this.lastTimeoutCheck;
@@ -138,13 +143,8 @@ public class PathNavigateCyclops extends GroundPathNavigator {
             double d3 = 1.0D / Math.sqrt(d2);
             d0 = d0 * d3;
             d1 = d1 * d3;
-            if (IafConfig.completeDragonPathfinding) {
-                sizeX = sizeX + 2;
-                sizeZ = sizeZ + 2;
-            } else {
-                sizeX = 1;
-                sizeZ = 1;
-            }
+            sizeX = sizeX + 2;
+            sizeZ = sizeZ + 2;
             if (!this.isSafeToStandAt(i, (int) posVec31.y, j, sizeX, sizeY, sizeZ, posVec31, d0, d1)) {
                 return false;
             } else {
@@ -206,7 +206,7 @@ public class PathNavigateCyclops extends GroundPathNavigator {
                     double d1 = (double) l + 0.5D - vec31.z;
 
                     if (d0 * p_179683_8_ + d1 * p_179683_10_ >= 0.0D) {
-                        PathNodeType pathnodetype = this.nodeProcessor.getPathNodeType(this.world, k, y - 1, l, this.entity, sizeX, sizeY, sizeZ, true, true);
+                        PathNodeType pathnodetype = this.nodeProcessor.determineNodeType(this.world, k, y - 1, l, this.entity, sizeX, sizeY, sizeZ, true, true);
 
                         if (pathnodetype == PathNodeType.WATER) {
                             return false;
@@ -220,7 +220,7 @@ public class PathNavigateCyclops extends GroundPathNavigator {
                             return false;
                         }
 
-                        pathnodetype = this.nodeProcessor.getPathNodeType(this.world, k, y, l, this.entity, sizeX, sizeY, sizeZ, true, true);
+                        pathnodetype = this.nodeProcessor.determineNodeType(this.world, k, y, l, this.entity, sizeX, sizeY, sizeZ, true, true);
                         float f = this.entity.getPathPriority(pathnodetype);
 
                         if (f < 0.0F || f >= 8.0F) {

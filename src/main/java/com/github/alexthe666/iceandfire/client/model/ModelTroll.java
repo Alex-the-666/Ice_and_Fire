@@ -9,6 +9,7 @@ import com.github.alexthe666.iceandfire.entity.EntityTroll;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.Entity;
@@ -343,11 +344,8 @@ public class ModelTroll extends ModelDragonBase<EntityTroll> {
     }
 
     public void setRotationAngles(EntityTroll entity, float f, float f1, float f2, float f3, float f4) {
-        if (entity instanceof EntityTroll && EntityGorgon.isStoneMob(entity)) {
-            animateStatue(entity);
-            this.log1.showModel = false;
-            return;
-        }
+        this.log1.showModel = true;
+
         animate(entity, f, f1, f2, f3, f4, 1);
 
         this.progressRotation(head, entity.stoneProgress, (float) Math.toRadians(-31), 0.0F, 0.0F);
@@ -386,22 +384,18 @@ public class ModelTroll extends ModelDragonBase<EntityTroll> {
     }
 
     public void animateStatue(EntityTroll troll) {
-        this.resetToDefaultPose();
-        this.progressRotation(head, troll.stoneProgress, (float) Math.toRadians(-31), 0.0F, 0.0F);
-        this.progressRotation(jaw, troll.stoneProgress, (float) Math.toRadians(54), 0.0F, 0.0F);
-        this.progressRotation(leftarm, troll.stoneProgress, (float) Math.toRadians(10), (float) Math.toRadians(-73), (float) Math.toRadians(-60));
-        this.progressRotation(leftarm2, troll.stoneProgress, (float) Math.toRadians(-80), 0.0F, 0.0F);
-        this.progressRotation(rightarm, troll.stoneProgress, (float) Math.toRadians(-101), (float) Math.toRadians(70), 0);
-        this.progressRotation(rightarm2, troll.stoneProgress, (float) Math.toRadians(-40), 0.0F, 0.0F);
+        this.progressRotation(head, 20, (float) Math.toRadians(-31), 0.0F, 0.0F);
+        this.progressRotation(jaw, 20, (float) Math.toRadians(54), 0.0F, 0.0F);
+        this.progressRotation(leftarm, 20, (float) Math.toRadians(10), (float) Math.toRadians(-73), (float) Math.toRadians(-60));
+        this.progressRotation(leftarm2, 20, (float) Math.toRadians(-80), 0.0F, 0.0F);
+        this.progressRotation(rightarm, 20, (float) Math.toRadians(-101), (float) Math.toRadians(70), 0);
+        this.progressRotation(rightarm2, 20, (float) Math.toRadians(-40), 0.0F, 0.0F);
     }
 
     @Override
     public void renderStatue(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, Entity living) {
-        this.resetToDefaultPose();
         animateStatue((EntityTroll) living);
         this.log1.showModel = false;
         this.render(matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-
-        this.resetToDefaultPose();
     }
 }

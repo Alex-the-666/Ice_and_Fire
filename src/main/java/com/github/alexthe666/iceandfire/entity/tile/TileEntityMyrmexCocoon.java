@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.entity.tile;
 
-import com.github.alexthe666.iceandfire.inventory.ContainerLectern;
+import javax.annotation.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -18,8 +19,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-
-import javax.annotation.Nullable;
 
 public class TileEntityMyrmexCocoon extends LockableLootTileEntity {
 
@@ -44,8 +43,8 @@ public class TileEntityMyrmexCocoon extends LockableLootTileEntity {
     }
 
 
-    public void func_230337_a_(BlockState bs, CompoundNBT compound) {
-        super.func_230337_a_(bs, compound);
+    public void read(BlockState bs, CompoundNBT compound) {
+        super.read(bs, compound);
         this.chestContents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
 
         if (!this.checkLootAndRead(compound)) {
@@ -110,7 +109,7 @@ public class TileEntityMyrmexCocoon extends LockableLootTileEntity {
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
-        func_230337_a_(this.getBlockState(), packet.getNbtCompound());
+        read(this.getBlockState(), packet.getNbtCompound());
     }
 
     public CompoundNBT getUpdateTag() {

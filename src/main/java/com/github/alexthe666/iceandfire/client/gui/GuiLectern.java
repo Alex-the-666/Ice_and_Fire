@@ -1,5 +1,8 @@
 package com.github.alexthe666.iceandfire.client.gui;
 
+import java.util.List;
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityLectern;
 import com.github.alexthe666.iceandfire.enums.EnumBestiaryPages;
@@ -9,28 +12,27 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.Minecraft;
+
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.model.BookModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import java.util.List;
-import java.util.Random;
 
 @OnlyIn(Dist.CLIENT)
 public class GuiLectern extends ContainerScreen<ContainerLectern> {
@@ -58,21 +60,21 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
         this.nameable = name;
     }
 
-    protected void func_230451_b_(MatrixStack matrixStack, int mouseX, int mouseY) {
+    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int mouseX, int mouseY) {
         FontRenderer font = this.getMinecraft().fontRenderer;
-        font.func_238421_b_(matrixStack, this.nameable.getString(), 12, 4, 4210752);
-        font.func_238421_b_(matrixStack, this.playerInventory.getDisplayName().getString(), 8, this.ySize - 96 + 2, 4210752);
+        font.drawString(matrixStack, this.nameable.getString(), 12, 4, 4210752);
+        font.drawString(matrixStack, this.playerInventory.getDisplayName().getString(), 8, this.ySize - 96 + 2, 4210752);
     }
 
-    public void func_231023_e_() {
-        super.func_231023_e_();
+    public void tick() {
+        super.tick();
         this.container.onUpdate();
         this.tickBook();
     }
 
-    public boolean func_231044_a_(double mouseX, double mouseY, int mouseButton) {
-        int i = (this.field_230708_k_ - this.xSize) / 2;
-        int j = (this.field_230709_l_ - this.ySize) / 2;
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        int i = (this.width - this.xSize) / 2;
+        int j = (this.height - this.ySize) / 2;
 
         for (int k = 0; k < 3; ++k) {
             double l = mouseX - (i + 60);
@@ -84,21 +86,21 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
                 return true;
             }
         }
-        return super.func_231044_a_(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
-    protected void func_230450_a_(MatrixStack p_230450_1_, float partialTicks, int mouseX, int mouseY) {
+    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         RenderHelper.setupGuiFlatDiffuseLighting();
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.getMinecraft().getTextureManager().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
-        int i = (this.field_230708_k_ - this.xSize) / 2;
-        int j = (this.field_230709_l_ - this.ySize) / 2;
-        this.func_238474_b_(p_230450_1_, i, j, 0, 0, this.xSize, this.ySize);
+        int i = (this.width - this.xSize) / 2;
+        int j = (this.height - this.ySize) / 2;
+        this.blit(matrixStack, i, j, 0, 0, this.xSize, this.ySize);
         RenderSystem.matrixMode(5889);
         RenderSystem.pushMatrix();
         RenderSystem.loadIdentity();
         int k = (int) this.getMinecraft().getMainWindow().getGuiScaleFactor();
-        RenderSystem.viewport((this.field_230708_k_ - 320) / 2 * k, (this.field_230709_l_ - 240) / 2 * k, 320 * k, 240 * k);
+        RenderSystem.viewport((this.width - 320) / 2 * k, (this.height - 240) / 2 * k, 320 * k, 240 * k);
         RenderSystem.translatef(-0.34F, 0.23F, 0.0F);
         RenderSystem.multMatrix(Matrix4f.perspective(90.0D, 1.3333334F, 9.0F, 80.0F));
         RenderSystem.matrixMode(5888);
@@ -138,7 +140,7 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
         }
 
         RenderSystem.enableRescaleNormal();
-        MODEL_BOOK.func_228247_a_(0, f3, f4, f1);
+        MODEL_BOOK.setBookState(0, f3, f4, f1);
         IRenderTypeBuffer.Impl irendertypebuffer$impl = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
         IVertexBuilder ivertexbuilder = irendertypebuffer$impl.getBuffer(MODEL_BOOK.getRenderType(ENCHANTMENT_TABLE_BOOK_TEXTURE));
         MODEL_BOOK.render(matrixstack, ivertexbuilder, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
@@ -155,12 +157,12 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
         for (int i1 = 0; i1 < 3; ++i1) {
             int j1 = i + 60;
             int k1 = j1 + 20;
-            this.func_230926_e_(0);
-            this.field_230706_i_.getTextureManager().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
+            this.setBlitOffset(0);
+            this.getMinecraft().getTextureManager().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
             int l1 = this.container.getPossiblePages()[i1] == null ? -1 : this.container.getPossiblePages()[i1].ordinal();//enchantment level
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             if (l1 == -1) {
-                this.func_238474_b_(p_230450_1_, j1, j + 14 + 19 * i1, 0, 185, 108, 19);
+                this.blit(matrixStack, j1, j + 14 + 19 * i1, 0, 185, 108, 19);
             } else {
                 String s = "" + 3;
                 FontRenderer fontrenderer = this.getMinecraft().fontRenderer;
@@ -181,24 +183,24 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
                         int l2 = mouseY - (j + 14 + 19 * i1);
                         int j3 = 0X9F988C;
                         if (k2 >= 0 && l2 >= 0 && k2 < 108 && l2 < 19) {
-                            this.func_238474_b_(p_230450_1_, j1, j + 14 + 19 * i1, 0, 204, 108, 19);
+                            this.blit(matrixStack, j1, j + 14 + 19 * i1, 0, 204, 108, 19);
                             j2 = 16777088;
                             j3 = 16777088;
                         } else {
-                            this.func_238474_b_(p_230450_1_, j1, j + 14 + 19 * i1, 0, 166, 108, 19);
+                            this.blit(matrixStack, j1, j + 14 + 19 * i1, 0, 166, 108, 19);
                         }
 
-                        this.func_238474_b_(p_230450_1_, j1 + 1, j + 15 + 19 * i1, 16 * i1, 223, 16, 16);
+                        this.blit(matrixStack, j1 + 1, j + 15 + 19 * i1, 16 * i1, 223, 16, 16);
                         RenderSystem.pushMatrix();
-                        RenderSystem.translatef(field_230708_k_ / 2F - 10, field_230709_l_ / 2F - 83 + (1.0F - textScale) * 55, 2);
+                        RenderSystem.translatef(width / 2F - 10, height / 2F - 83 + (1.0F - textScale) * 55, 2);
                         RenderSystem.scalef(textScale, textScale, 1);
-                        fontrenderer.func_238421_b_(p_230450_1_,s1, 0, 20 + 19 * i1, j2);
+                        fontrenderer.drawString(matrixStack,s1, 0, 20 + 19 * i1, j2);
                         RenderSystem.popMatrix();
                         fontrenderer = this.getMinecraft().fontRenderer;
-                        fontrenderer.func_238405_a_(p_230450_1_, s, (float) (k1 + 84 - fontrenderer.getStringWidth(s)), (float) (j + 13 + 19 * i1 + 7), j3);
+                        fontrenderer.drawStringWithShadow(matrixStack, s, (float) (k1 + 84 - fontrenderer.getStringWidth(s)), (float) (j + 13 + 19 * i1 + 7), j3);
                     } else {
-                        this.func_238474_b_(p_230450_1_,j1, j + 14 + 19 * i1, 0, 185, 108, 19);
-                        this.func_238474_b_(p_230450_1_,j1 + 1, j + 15 + 19 * i1, 16 * i1, 239, 16, 16);
+                        this.blit(matrixStack,j1, j + 14 + 19 * i1, 0, 185, 108, 19);
+                        this.blit(matrixStack,j1 + 1, j + 15 + 19 * i1, 16 * i1, 239, 16, 16);
                         j2 = 4226832;
                     }
                 }
@@ -206,11 +208,11 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
         }
     }
 
-    public void func_230430_a_(MatrixStack p_230430_1_, int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         partialTicks = this.getMinecraft().getRenderPartialTicks();
-        this.func_230446_a_(p_230430_1_);
-        super.func_230430_a_(p_230430_1_, mouseX, mouseY, partialTicks);
-        this.func_230459_a_(p_230430_1_, mouseX, mouseY);
+        this.renderBackground(matrixStack);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        this.renderHoveredTooltip(matrixStack, mouseX, mouseY);
         boolean flag = this.getMinecraft().player.isCreative();
         int i = this.container.getManuscriptAmount();
 
@@ -220,19 +222,19 @@ public class GuiLectern extends ContainerScreen<ContainerLectern> {
             int i1 = 3;
 
             if (this.isPointInRegion(60, 14 + 19 * j, 108, 17, mouseX, mouseY) && k > 0) {
-                List<ITextProperties> list = Lists.newArrayList();
+                List<IReorderingProcessor> list = Lists.newArrayList();
 
                 if (enchantment == null) {
-                    list.add(new StringTextComponent(TextFormatting.RED + I18n.format("container.lectern.no_bestiary")));
+                    list.add(new StringTextComponent(TextFormatting.RED + I18n.format("container.lectern.no_bestiary")).func_241878_f());
                 } else if (!flag) {
-                    list.add(new StringTextComponent("" + TextFormatting.WHITE + TextFormatting.ITALIC + I18n.format(enchantment == null ? "" : "bestiary." + enchantment.name().toLowerCase())));
+                    list.add(new StringTextComponent("" + TextFormatting.WHITE + TextFormatting.ITALIC + I18n.format(enchantment == null ? "" : "bestiary." + enchantment.name().toLowerCase())).func_241878_f());
                     TextFormatting textformatting = i >= i1 ? TextFormatting.GRAY : TextFormatting.RED;
-                    list.add(new StringTextComponent(textformatting + "" + I18n.format("container.lectern.costs")));
+                    list.add(new StringTextComponent(textformatting + "" + I18n.format("container.lectern.costs")).func_241878_f());
                     String s = I18n.format("container.lectern.manuscript.many", i1);
-                    list.add(new StringTextComponent(textformatting + "" + s));
+                    list.add(new StringTextComponent(textformatting + "" + s).func_241878_f());
                 }
 
-                this.func_238654_b_(p_230430_1_, list, mouseX, mouseY);
+                this.renderTooltip(matrixStack, list, mouseX, mouseY);
                 break;
             }
         }

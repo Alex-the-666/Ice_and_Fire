@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityStymphalianFeather;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -15,9 +20,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemStymphalianFeatherBundle extends Item {
 
@@ -36,7 +38,7 @@ public class ItemStymphalianFeatherBundle extends Item {
         for (int i = 0; i < 8; i++) {
             EntityStymphalianFeather feather = new EntityStymphalianFeather(IafEntityRegistry.STYMPHALIAN_FEATHER, worldIn, player);
             rotation += 45;
-            feather.shoot(0, rotation, 0.0F, 1.5F, 1.0F);
+            feather.setDirectionAndMovement(player,0, rotation, 0.0F, 1.5F, 1.0F);
             if (!worldIn.isRemote) {
                 worldIn.addEntity(feather);
             }
@@ -51,7 +53,7 @@ public class ItemStymphalianFeatherBundle extends Item {
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 
-        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.stymphalian_feather_bundle.desc_0").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.legendary_weapon.desc").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.stymphalian_feather_bundle.desc_0").mergeStyle(TextFormatting.GRAY));
     }
 }

@@ -1,14 +1,17 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+
 import com.github.alexthe666.iceandfire.entity.EntityMyrmexWorker;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.github.alexthe666.iceandfire.world.gen.WorldGenMyrmexHive;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.EnumSet;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class MyrmexAIStoreBabies extends Goal {
     private final EntityMyrmexWorker myrmex;
@@ -30,7 +33,7 @@ public class MyrmexAIStoreBabies extends Goal {
         if (village == null) {
             return false;
         } else {
-            nextRoom = MyrmexHive.getGroundedPos(this.myrmex.world, village.getRandomRoom(WorldGenMyrmexHive.RoomType.NURSERY, this.myrmex.getRNG(), this.myrmex.func_233580_cy_())).up();
+            nextRoom = MyrmexHive.getGroundedPos(this.myrmex.world, village.getRandomRoom(WorldGenMyrmexHive.RoomType.NURSERY, this.myrmex.getRNG(), this.myrmex.getPosition())).up();
             return true;
         }
     }
@@ -40,11 +43,11 @@ public class MyrmexAIStoreBabies extends Goal {
     }
 
     public void startExecuting() {
+        this.myrmex.getNavigator().tryMoveToXYZ(this.nextRoom.getX(), this.nextRoom.getY(), this.nextRoom.getZ(), 1.5F);
     }
 
     @Override
     public void tick() {
-        this.myrmex.getNavigator().tryMoveToXYZ(this.nextRoom.getX(), this.nextRoom.getY(), this.nextRoom.getZ(), 1.5F);
         if (nextRoom != null && this.myrmex.getDistanceSq(nextRoom.getX() + 0.5D, nextRoom.getY() + 0.5D, nextRoom.getZ() + 0.5D) < 4 && this.myrmex.holdingBaby()) {
             if (!this.myrmex.getPassengers().isEmpty()) {
                 for (Entity entity : this.myrmex.getPassengers()) {
@@ -58,7 +61,7 @@ public class MyrmexAIStoreBabies extends Goal {
 
     public void resetTask() {
         nextRoom = BlockPos.ZERO;
-        this.myrmex.getNavigator().setPath(null, this.movementSpeed);
+        this.myrmex.getNavigator().clearPath();
     }
 
 }

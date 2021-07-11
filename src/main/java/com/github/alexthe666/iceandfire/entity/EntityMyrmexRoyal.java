@@ -1,11 +1,18 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import java.util.EnumSet;
+import java.util.Random;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.entity.ai.*;
 import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexTrades;
+import com.github.alexthe666.iceandfire.pathfinding.raycoms.AdvancedPathNavigate;
 import com.google.common.base.Predicate;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -14,7 +21,12 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.controller.MovementController;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.merchant.villager.VillagerTrades;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AnimalEntity;
@@ -24,21 +36,20 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.pathfinding.ClimberPathNavigator;
-import net.minecraft.pathfinding.FlyingPathNavigator;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
-import java.util.EnumSet;
-import java.util.Random;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class EntityMyrmexRoyal extends EntityMyrmexBase {
 
@@ -102,11 +113,11 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
     protected void switchNavigator(boolean onLand) {
         if (onLand) {
             this.moveController = new MovementController(this);
-            this.navigator = new ClimberPathNavigator(this, world);
+            this.navigator = createNavigator(world, AdvancedPathNavigate.MovementType.CLIMBING);
             this.isLandNavigator = true;
         } else {
             this.moveController = new EntityMyrmexRoyal.FlyMoveHelper(this);
-            this.navigator = new FlyingPathNavigator(this, world);
+            this.navigator = createNavigator(world, AdvancedPathNavigate.MovementType.FLYING);
             this.isLandNavigator = false;
         }
     }
@@ -167,7 +178,7 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
         if (flying && this.canSeeSky() && this.isBreedingSeason()) {
             this.releaseTicks++;
         }
-        if (!flying && this.canSeeSky() && daylightTicks > 300 && this.isBreedingSeason() && this.getAttackTarget() == null && this.canMove() && this.func_233570_aj_() && !isMating) {
+        if (!flying && this.canSeeSky() && daylightTicks > 300 && this.isBreedingSeason() && this.getAttackTarget() == null && this.canMove() && this.isOnGround() && !isMating) {
             this.setFlying(true);
             this.setMotion(this.getMotion().add(0, 0.42D, 0));
         }
@@ -177,13 +188,13 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
         if (this.getAnimation() == ANIMATION_BITE && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
             this.playBiteSound();
             if (this.getAttackBounds().intersects(this.getAttackTarget().getBoundingBox())) {
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue()));
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue()));
             }
         }
         if (this.getAnimation() == ANIMATION_STING && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
             this.playStingSound();
             if (this.getAttackBounds().intersects(this.getAttackTarget().getBoundingBox())) {
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue() * 2));
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue() * 2));
                 this.getAttackTarget().addPotionEffect(new EffectInstance(Effects.POISON, 70, 1));
             }
         }
@@ -193,7 +204,7 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
                 this.setFlying(false);
                 this.mate.setFlying(false);
                 isMating = true;
-                if (this.func_233570_aj_() && this.mate.onGround) {
+                if (this.isOnGround() && this.mate.onGround) {
                     breedingTicks++;
                     if (breedingTicks > 100) {
                         if (this.isAlive()) {
@@ -230,7 +241,7 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
         this.goalSelector.addGoal(0, new MyrmexAIMoveToMate(this, 1.0D));
         this.goalSelector.addGoal(1, new AIFlyAtTarget());
         this.goalSelector.addGoal(2, new AIFlyRandom());
-        this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(3, new MyrmexAIAttackMelee(this, 1.0D, true));
         this.goalSelector.addGoal(4, new MyrmexAILeaveHive(this, 1.0D));
         this.goalSelector.addGoal(4, new MyrmexAIReEnterHive(this, 1.0D));
         this.goalSelector.addGoal(5, new MyrmexAIMoveThroughHive(this, 1.0D));
@@ -277,15 +288,15 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 50D)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 50D)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.3D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.3D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, IafConfig.myrmexBaseAttackStrength * 2D)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, IafConfig.myrmexBaseAttackStrength * 2D)
                 //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, 64.0D)
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 64.0D)
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 9.0D);
+                .createMutableAttribute(Attributes.ARMOR, 9.0D);
     }
 
     @Override
@@ -362,17 +373,16 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
     }
 
     @Override
-    public boolean func_213705_dZ() {
+    public boolean hasXPBar() {
         return false;
     }
 
     protected boolean isDirectPathBetweenPoints(BlockPos posVec31, BlockPos posVec32)
     {
-        Vector3d vector3d = Vector3d.func_237489_a_(posVec31);
-        Vector3d vector3d1 = Vector3d.func_237489_a_(posVec32);
+        Vector3d vector3d = Vector3d.copyCentered(posVec31);
+        Vector3d vector3d1 = Vector3d.copyCentered(posVec32);
         return world.rayTraceBlocks(new RayTraceContext(vector3d, vector3d1, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this)).getType() == RayTraceResult.Type.MISS;
     }
-
     class FlyMoveHelper extends MovementController {
         public FlyMoveHelper(EntityMyrmexRoyal pixie) {
             super(pixie);
@@ -430,7 +440,7 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
                 } else {
                     target = EntityMyrmexRoyal.getPositionRelativetoGround(EntityMyrmexRoyal.this, EntityMyrmexRoyal.this.world, EntityMyrmexRoyal.this.getPosX() + EntityMyrmexRoyal.this.rand.nextInt(30) - 15, EntityMyrmexRoyal.this.getPosZ() + EntityMyrmexRoyal.this.rand.nextInt(30) - 15, EntityMyrmexRoyal.this.rand);
                 }
-                return isDirectPathBetweenPoints(EntityMyrmexRoyal.this.func_233580_cy_(), target) && !EntityMyrmexRoyal.this.getMoveHelper().isUpdating() && EntityMyrmexRoyal.this.rand.nextInt(2) == 0;
+                return isDirectPathBetweenPoints(EntityMyrmexRoyal.this.getPosition(), target) && !EntityMyrmexRoyal.this.getMoveHelper().isUpdating() && EntityMyrmexRoyal.this.rand.nextInt(2) == 0;
             } else {
                 return false;
             }
@@ -442,7 +452,7 @@ public class EntityMyrmexRoyal extends EntityMyrmexBase {
         }
 
         public void tick() {
-            if (!isDirectPathBetweenPoints(EntityMyrmexRoyal.this.func_233580_cy_(), target)) {
+            if (!isDirectPathBetweenPoints(EntityMyrmexRoyal.this.getPosition(), target)) {
                 if (EntityMyrmexRoyal.this instanceof EntityMyrmexSwarmer && ((EntityMyrmexSwarmer) EntityMyrmexRoyal.this).getSummoner() != null) {
                     Entity summon = ((EntityMyrmexSwarmer) EntityMyrmexRoyal.this).getSummoner();
                     target = EntityMyrmexRoyal.getPositionRelativetoGround(EntityMyrmexRoyal.this, EntityMyrmexRoyal.this.world, summon.getPosX() + EntityMyrmexRoyal.this.rand.nextInt(10) - 5, summon.getPosZ() + EntityMyrmexRoyal.this.rand.nextInt(10) - 5, EntityMyrmexRoyal.this.rand);

@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.client.model;
 
 import com.github.alexthe666.iceandfire.entity.EntityStoneStatue;
+
 import net.minecraft.client.renderer.entity.model.BipedModel;
 
 public class ModelStonePlayer extends BipedModel<EntityStoneStatue> {

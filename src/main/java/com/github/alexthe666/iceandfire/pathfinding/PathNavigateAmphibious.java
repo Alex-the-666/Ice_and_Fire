@@ -1,17 +1,22 @@
 package com.github.alexthe666.iceandfire.pathfinding;
 
+import java.util.stream.Collectors;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.pathfinding.*;
+import net.minecraft.pathfinding.Path;
+import net.minecraft.pathfinding.PathFinder;
+import net.minecraft.pathfinding.PathNavigator;
+import net.minecraft.pathfinding.PathNodeType;
+import net.minecraft.pathfinding.PathPoint;
+import net.minecraft.pathfinding.WalkNodeProcessor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-
-import java.util.stream.Collectors;
 
 public class PathNavigateAmphibious extends PathNavigator {
     private boolean shouldAvoidSun;
@@ -29,7 +34,7 @@ public class PathNavigateAmphibious extends PathNavigator {
     }
 
     protected boolean canNavigate() {
-        return this.entity.func_233570_aj_() || this.getCanSwim() && this.isInLiquid() || this.entity.isPassenger();
+        return this.entity.isOnGround() || this.getCanSwim() && this.isInLiquid() || this.entity.isPassenger();
     }
 
     protected Vector3d getEntityPosition() {
@@ -66,8 +71,8 @@ public class PathNavigateAmphibious extends PathNavigator {
         }
     }
 
-    public Path getPathToEntity(Entity entityIn, int i) {
-        return this.getPathToPos(entityIn.func_233580_cy_(), i);
+    public Path pathfind(Entity entityIn, int i) {
+        return this.getPathToPos(entityIn.getPosition(), i);
     }
 
     private int getPathablePosY() {
@@ -186,7 +191,7 @@ public class PathNavigateAmphibious extends PathNavigator {
                     double d1 = (double) l + 0.5D - vec31.z;
 
                     if (d0 * p_179683_8_ + d1 * p_179683_10_ >= 0.0D) {
-                        PathNodeType pathnodetype = this.nodeProcessor.getPathNodeType(this.world, k, y - 1, l, this.entity, sizeX, sizeY, sizeZ, true, true);
+                        PathNodeType pathnodetype = this.nodeProcessor.determineNodeType(this.world, k, y - 1, l, this.entity, sizeX, sizeY, sizeZ, true, true);
                         if (pathnodetype == PathNodeType.LAVA) {
                             return false;
                         }
@@ -195,7 +200,7 @@ public class PathNavigateAmphibious extends PathNavigator {
                             return false;
                         }
 
-                        pathnodetype = this.nodeProcessor.getPathNodeType(this.world, k, y, l, this.entity, sizeX, sizeY, sizeZ, true, true);
+                        pathnodetype = this.nodeProcessor.determineNodeType(this.world, k, y, l, this.entity, sizeX, sizeY, sizeZ, true, true);
                         float f = this.entity.getPathPriority(pathnodetype);
 
                         if (f < 0.0F || f >= 8.0F) {

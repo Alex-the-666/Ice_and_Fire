@@ -1,1 +1,20 @@
-{  "type": "minecraft:block",  "pools": [    {      "name": "dread_stone_slab",      "rolls": 1,      "entries": [        {          "type": "minecraft:item",          "name": "iceandfire:dread_stone_slab"        }      ],      "conditions": [        {          "condition": "minecraft:survives_explosion"        }      ]    }  ]}
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "name": "dread_stone_slab",
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "iceandfire:dread_stone_slab"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

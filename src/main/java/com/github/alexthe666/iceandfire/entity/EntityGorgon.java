@@ -1,25 +1,40 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.AnimationHandler;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.ai.GorgonAIStareAttack;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
-import com.github.alexthe666.iceandfire.entity.util.*;
+import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
+import com.github.alexthe666.iceandfire.entity.util.IAnimalFear;
+import com.github.alexthe666.iceandfire.entity.util.IBlacklistedFromStatues;
+import com.github.alexthe666.iceandfire.entity.util.IHumanoid;
+import com.github.alexthe666.iceandfire.entity.util.IVillagerFear;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
-import com.github.alexthe666.iceandfire.message.MessageStoneStatue;
 import com.github.alexthe666.iceandfire.misc.IafDamageRegistry;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
 import com.google.common.base.Predicate;
-import net.minecraft.entity.*;
+
+import net.minecraft.entity.CreatureAttribute;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.FleeSunGoal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.entity.ai.goal.RestrictSunGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
 import net.minecraft.entity.item.ExperienceOrbEntity;
-import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -33,8 +48,6 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class EntityGorgon extends MonsterEntity implements IAnimatedEntity, IVillagerFear, IAnimalFear, IHumanoid {
 
@@ -63,17 +76,11 @@ public class EntityGorgon extends MonsterEntity implements IAnimatedEntity, IVil
     }
 
     public static boolean isStoneMob(LivingEntity mob) {
-        try {
-            StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(mob, StoneEntityProperties.class);
-            return properties != null && properties.isStone();
-        } catch (Exception e) {
-            IceAndFire.LOGGER.warn("stone entity properties do not exist for " + mob.getName());
-        }
-        return false;
+        return mob instanceof EntityStoneStatue;
     }
 
     public static boolean isBlindfolded(LivingEntity attackTarget) {
-        return attackTarget != null && attackTarget.getItemStackFromSlot(EquipmentSlotType.HEAD).getItem() == IafItemRegistry.BLINDFOLD;
+        return attackTarget != null && (attackTarget.getItemStackFromSlot(EquipmentSlotType.HEAD).getItem() == IafItemRegistry.BLINDFOLD || attackTarget.isPotionActive(Effects.BLINDNESS));
     }
 
     public boolean isTargetBlocked(Vector3d target) {
@@ -113,8 +120,7 @@ public class EntityGorgon extends MonsterEntity implements IAnimatedEntity, IVil
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, LivingEntity.class, 0, true, false, new Predicate<Entity>() {
             @Override
             public boolean apply(@Nullable Entity entity) {
-                StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(entity, StoneEntityProperties.class);
-                return entity instanceof LivingEntity && DragonUtils.isAlive((LivingEntity) entity) && !(entity instanceof EntityMutlipartPart) && (properties == null || !properties.isStone()) || (entity instanceof IBlacklistedFromStatues && ((IBlacklistedFromStatues) entity).canBeTurnedToStone());
+                return entity instanceof LivingEntity && DragonUtils.isAlive((LivingEntity) entity)  || (entity instanceof IBlacklistedFromStatues && ((IBlacklistedFromStatues) entity).canBeTurnedToStone());
             }
         }));
         this.goalSelector.removeGoal(aiMelee);
@@ -216,51 +222,25 @@ public class EntityGorgon extends MonsterEntity implements IAnimatedEntity, IVil
                 }
                 if (this.getAnimation() == ANIMATION_SCARE) {
                     if (this.getAnimationTick() > 10) {
-                        if (this.getAttackTarget() instanceof PlayerEntity) {
-                            if (!world.isRemote) {
-                                this.getAttackTarget().attackEntityFrom(IafDamageRegistry.GORGON_DMG, Integer.MAX_VALUE);
-                                if (!this.getAttackTarget().isAlive() && playerStatueCooldown == 0) {
-                                    EntityStoneStatue statue = new EntityStoneStatue(IafEntityRegistry.STONE_STATUE, world);
-                                    statue.setPositionAndRotation(this.getAttackTarget().getPosX(), this.getAttackTarget().getPosY(), this.getAttackTarget().getPosZ(), this.getAttackTarget().rotationYaw, this.getAttackTarget().rotationPitch);
-                                    statue.smallArms = true;
-                                    if (!world.isRemote) {
-                                        world.addEntity(statue);
-                                    }
-                                    statue.prevRotationYaw = this.getAttackTarget().rotationYaw;
-                                    statue.rotationYaw = this.getAttackTarget().rotationYaw;
-                                    statue.rotationYawHead = this.getAttackTarget().rotationYaw;
-                                    statue.renderYawOffset = this.getAttackTarget().rotationYaw;
-                                    statue.prevRenderYawOffset = this.getAttackTarget().rotationYaw;
-                                    playerStatueCooldown = 40;
-                                    this.setAttackTarget(null);
+                        if (!world.isRemote) {
+                            if (playerStatueCooldown == 0) {
+                                EntityStoneStatue statue = EntityStoneStatue.buildStatueEntity(this.getAttackTarget());
+                                statue.setPositionAndRotation(this.getAttackTarget().getPosX(), this.getAttackTarget().getPosY(), this.getAttackTarget().getPosZ(), this.getAttackTarget().rotationYaw, this.getAttackTarget().rotationPitch);
+                                if (!world.isRemote) {
+                                    world.addEntity(statue);
                                 }
-                            }
-                        } else {
-                            if (this.getAttackTarget() instanceof LivingEntity && !(this.getAttackTarget() instanceof IBlacklistedFromStatues) || this.getAttackTarget() instanceof IBlacklistedFromStatues && ((IBlacklistedFromStatues) this.getAttackTarget()).canBeTurnedToStone()) {
-                                StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this.getAttackTarget(), StoneEntityProperties.class);
-                                LivingEntity attackTarget = this.getAttackTarget();
-                                if (properties != null && !properties.isStone()) {
-                                    properties.setStone(true);
-                                    if (world.isRemote) {
-                                        IceAndFire.NETWORK_WRAPPER.sendToServer(new MessageStoneStatue(attackTarget.getEntityId(), true));
-                                    } else {
-                                        IceAndFire.sendMSGToAll(new MessageStoneStatue(attackTarget.getEntityId(), true));
-                                    }
-                                    this.playSound(IafSoundRegistry.GORGON_TURN_STONE, 1, 1);
-                                    this.setAttackTarget(null);
+                                statue.prevRotationYaw = this.getAttackTarget().rotationYaw;
+                                statue.rotationYaw = this.getAttackTarget().rotationYaw;
+                                statue.rotationYawHead = this.getAttackTarget().rotationYaw;
+                                statue.renderYawOffset = this.getAttackTarget().rotationYaw;
+                                statue.prevRenderYawOffset = this.getAttackTarget().rotationYaw;
+                                playerStatueCooldown = 40;
+                                if(this.getAttackTarget() instanceof PlayerEntity){
+                                    this.getAttackTarget().attackEntityFrom(IafDamageRegistry.GORGON_DMG, Integer.MAX_VALUE);
+                                }else{
+                                    this.getAttackTarget().remove();
                                 }
-
-                                if (attackTarget instanceof EntityDragonBase) {
-                                    EntityDragonBase dragon = (EntityDragonBase) attackTarget;
-                                    dragon.setFlying(false);
-                                    dragon.setHovering(false);
-                                }
-                                if (attackTarget instanceof EntityHippogryph) {
-                                    EntityHippogryph dragon = (EntityHippogryph) attackTarget;
-                                    dragon.setFlying(false);
-                                    dragon.setHovering(false);
-                                    dragon.airTarget = null;
-                                }
+                                this.setAttackTarget(null);
                             }
                         }
                     }
@@ -293,13 +273,13 @@ public class EntityGorgon extends MonsterEntity implements IAnimatedEntity, IVil
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, IafConfig.gorgonMaxHealth)
+                .createMutableAttribute(Attributes.MAX_HEALTH, IafConfig.gorgonMaxHealth)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.25D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.25D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, 3.0D)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, 3.0D)
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 1.0D);
+                .createMutableAttribute(Attributes.ARMOR, 1.0D);
     }
 
     @Override
@@ -333,7 +313,7 @@ public class EntityGorgon extends MonsterEntity implements IAnimatedEntity, IVil
     }
 
     @Nullable
-    protected SoundEvent getHurtSound(DamageSource p_184601_1_) {
+    protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
         return IafSoundRegistry.GORGON_HURT;
     }
 

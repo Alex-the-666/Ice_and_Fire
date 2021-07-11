@@ -1,35 +1,32 @@
 package com.github.alexthe666.iceandfire.entity.util;
 
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
 import com.google.common.collect.ImmutableMap;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.merchant.villager.VillagerTrades;
-import net.minecraft.entity.villager.IVillagerDataHolder;
-import net.minecraft.entity.villager.IVillagerType;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.MerchantOffer;
+import net.minecraft.item.SuspiciousStewItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionBrewing;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.IItemProvider;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
-import net.minecraftforge.registries.ForgeRegistries;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class MyrmexTrades {
     public static final Int2ObjectMap<VillagerTrades.ITrade[]> DESERT_WORKER;
@@ -210,115 +207,115 @@ public class MyrmexTrades {
     }
 
     static class ItemsForDesertResinAndItemsTrade implements VillagerTrades.ITrade {
-        private final ItemStack field_221200_a;
-        private final int field_221201_b;
-        private final int field_221202_c;
-        private final ItemStack field_221203_d;
-        private final int field_221204_e;
-        private final int field_221205_f;
-        private final int field_221206_g;
-        private final float field_221207_h;
+        private final ItemStack buyingItem;
+        private final int buyingItemCount;
+        private final int emeraldCount;
+        private final ItemStack sellingItem;
+        private final int sellingItemCount;
+        private final int maxUses;
+        private final int xpValue;
+        private final float priceMultiplier;
 
-        public ItemsForDesertResinAndItemsTrade(IItemProvider p_i50533_1_, int p_i50533_2_, Item p_i50533_3_, int p_i50533_4_, int p_i50533_5_, int p_i50533_6_) {
-            this(p_i50533_1_, p_i50533_2_, 1, p_i50533_3_, p_i50533_4_, p_i50533_5_, p_i50533_6_);
+        public ItemsForDesertResinAndItemsTrade(IItemProvider buyingItem, int buyingItemCount, Item sellingItem, int sellingItemCount, int maxUses, int xpValue) {
+            this(buyingItem, buyingItemCount, 1, sellingItem, sellingItemCount, maxUses, xpValue);
         }
 
-        public ItemsForDesertResinAndItemsTrade(IItemProvider p_i50534_1_, int p_i50534_2_, int p_i50534_3_, Item p_i50534_4_, int p_i50534_5_, int p_i50534_6_, int p_i50534_7_) {
-            this.field_221200_a = new ItemStack(p_i50534_1_);
-            this.field_221201_b = p_i50534_2_;
-            this.field_221202_c = p_i50534_3_;
-            this.field_221203_d = new ItemStack(p_i50534_4_);
-            this.field_221204_e = p_i50534_5_;
-            this.field_221205_f = p_i50534_6_;
-            this.field_221206_g = p_i50534_7_;
-            this.field_221207_h = 0.05F;
+        public ItemsForDesertResinAndItemsTrade(IItemProvider buyingItem, int buyingItemCount, int emeraldCount, Item sellingItem, int sellingItemCount, int maxUses, int xpValue) {
+            this.buyingItem = new ItemStack(buyingItem);
+            this.buyingItemCount = buyingItemCount;
+            this.emeraldCount = emeraldCount;
+            this.sellingItem = new ItemStack(sellingItem);
+            this.sellingItemCount = sellingItemCount;
+            this.maxUses = maxUses;
+            this.xpValue = xpValue;
+            this.priceMultiplier = 0.05F;
         }
 
         @Nullable
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, this.field_221202_c), new ItemStack(this.field_221200_a.getItem(), this.field_221201_b), new ItemStack(this.field_221203_d.getItem(), this.field_221204_e), this.field_221205_f, this.field_221206_g, this.field_221207_h);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, this.emeraldCount), new ItemStack(this.buyingItem.getItem(), this.buyingItemCount), new ItemStack(this.sellingItem.getItem(), this.sellingItemCount), this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
 
     static class ItemWithPotionForDesertResinAndItemsTrade implements VillagerTrades.ITrade {
-        private final ItemStack field_221219_a;
-        private final int field_221220_b;
-        private final int field_221221_c;
-        private final int field_221222_d;
-        private final int field_221223_e;
-        private final Item field_221224_f;
-        private final int field_221225_g;
-        private final float field_221226_h;
+        private final ItemStack potionStack;
+        private final int potionCount;
+        private final int emeraldCount;
+        private final int maxUses;
+        private final int xpValue;
+        private final Item buyingItem;
+        private final int buyingItemCount;
+        private final float priceMultiplier;
 
-        public ItemWithPotionForDesertResinAndItemsTrade(Item p_i50526_1_, int p_i50526_2_, Item p_i50526_3_, int p_i50526_4_, int p_i50526_5_, int p_i50526_6_, int p_i50526_7_) {
-            this.field_221219_a = new ItemStack(p_i50526_3_);
-            this.field_221221_c = p_i50526_5_;
-            this.field_221222_d = p_i50526_6_;
-            this.field_221223_e = p_i50526_7_;
-            this.field_221224_f = p_i50526_1_;
-            this.field_221225_g = p_i50526_2_;
-            this.field_221220_b = p_i50526_4_;
-            this.field_221226_h = 0.05F;
+        public ItemWithPotionForDesertResinAndItemsTrade(Item buyingItem, int buyingItemCount, Item p_i50526_3_, int p_i50526_4_, int emeralds, int maxUses, int xpValue) {
+            this.potionStack = new ItemStack(p_i50526_3_);
+            this.emeraldCount = emeralds;
+            this.maxUses = maxUses;
+            this.xpValue = xpValue;
+            this.buyingItem = buyingItem;
+            this.buyingItemCount = buyingItemCount;
+            this.potionCount = p_i50526_4_;
+            this.priceMultiplier = 0.05F;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            ItemStack lvt_3_1_ = new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, this.field_221221_c);
-            List<Potion> lvt_4_1_ = Registry.POTION.stream().filter((p_221218_0_) -> {
-                return !p_221218_0_.getEffects().isEmpty() && PotionBrewing.func_222124_a(p_221218_0_);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            ItemStack lvt_3_1_ = new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, this.emeraldCount);
+            List<Potion> lvt_4_1_ = Registry.POTION.stream().filter((potion) -> {
+                return !potion.getEffects().isEmpty() && PotionBrewing.isBrewablePotion(potion);
             }).collect(Collectors.toList());
-            Potion lvt_5_1_ = lvt_4_1_.get(p_221182_2_.nextInt(lvt_4_1_.size()));
-            ItemStack lvt_6_1_ = PotionUtils.addPotionToItemStack(new ItemStack(this.field_221219_a.getItem(), this.field_221220_b), lvt_5_1_);
-            return new MerchantOffer(lvt_3_1_, new ItemStack(this.field_221224_f, this.field_221225_g), lvt_6_1_, this.field_221222_d, this.field_221223_e, this.field_221226_h);
+            Potion lvt_5_1_ = lvt_4_1_.get(rand.nextInt(lvt_4_1_.size()));
+            ItemStack lvt_6_1_ = PotionUtils.addPotionToItemStack(new ItemStack(this.potionStack.getItem(), this.potionCount), lvt_5_1_);
+            return new MerchantOffer(lvt_3_1_, new ItemStack(this.buyingItem, this.buyingItemCount), lvt_6_1_, this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
     static class EnchantedItemForDesertResinTrade implements VillagerTrades.ITrade {
-        private final ItemStack field_221195_a;
-        private final int field_221196_b;
-        private final int field_221197_c;
-        private final int field_221198_d;
-        private final float field_221199_e;
+        private final ItemStack sellingStack;
+        private final int emeraldCount;
+        private final int maxUses;
+        private final int xpValue;
+        private final float priceMultiplier;
 
-        public EnchantedItemForDesertResinTrade(Item p_i50535_1_, int p_i50535_2_, int p_i50535_3_, int p_i50535_4_) {
-            this(p_i50535_1_, p_i50535_2_, p_i50535_3_, p_i50535_4_, 0.05F);
+        public EnchantedItemForDesertResinTrade(Item p_i50535_1_, int emeraldCount, int maxUses, int xpValue) {
+            this(p_i50535_1_, emeraldCount, maxUses, xpValue, 0.05F);
         }
 
-        public EnchantedItemForDesertResinTrade(Item p_i50536_1_, int p_i50536_2_, int p_i50536_3_, int p_i50536_4_, float p_i50536_5_) {
-            this.field_221195_a = new ItemStack(p_i50536_1_);
-            this.field_221196_b = p_i50536_2_;
-            this.field_221197_c = p_i50536_3_;
-            this.field_221198_d = p_i50536_4_;
-            this.field_221199_e = p_i50536_5_;
+        public EnchantedItemForDesertResinTrade(Item sellItem, int emeraldCount, int maxUses, int xpValue, float priceMultiplier) {
+            this.sellingStack = new ItemStack(sellItem);
+            this.emeraldCount = emeraldCount;
+            this.maxUses = maxUses;
+            this.xpValue = xpValue;
+            this.priceMultiplier = priceMultiplier;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            int lvt_3_1_ = 5 + p_221182_2_.nextInt(15);
-            ItemStack lvt_4_1_ = EnchantmentHelper.addRandomEnchantment(p_221182_2_, new ItemStack(this.field_221195_a.getItem()), lvt_3_1_, false);
-            int lvt_5_1_ = Math.min(this.field_221196_b + lvt_3_1_, 64);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            int lvt_3_1_ = 5 + rand.nextInt(15);
+            ItemStack lvt_4_1_ = EnchantmentHelper.addRandomEnchantment(rand, new ItemStack(this.sellingStack.getItem()), lvt_3_1_, false);
+            int lvt_5_1_ = Math.min(this.emeraldCount + lvt_3_1_, 64);
             ItemStack lvt_6_1_ = new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, lvt_5_1_);
-            return new MerchantOffer(lvt_6_1_, lvt_4_1_, this.field_221197_c, this.field_221198_d, this.field_221199_e);
+            return new MerchantOffer(lvt_6_1_, lvt_4_1_, this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
     static class SuspiciousStewForEmeraldTrade implements VillagerTrades.ITrade {
-        final Effect field_221214_a;
-        final int field_221215_b;
-        final int field_221216_c;
-        private final float field_221217_d;
+        final Effect effect;
+        final int duration;
+        final int xpValue;
+        private final float priceMultiplier;
 
-        public SuspiciousStewForEmeraldTrade(Effect p_i50527_1_, int p_i50527_2_, int p_i50527_3_) {
-            this.field_221214_a = p_i50527_1_;
-            this.field_221215_b = p_i50527_2_;
-            this.field_221216_c = p_i50527_3_;
-            this.field_221217_d = 0.05F;
+        public SuspiciousStewForEmeraldTrade(Effect effectIn, int durationIn, int xpValue) {
+            this.effect = effectIn;
+            this.duration = durationIn;
+            this.xpValue = xpValue;
+            this.priceMultiplier = 0.05F;
         }
 
         @Nullable
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
+        public MerchantOffer getOffer(Entity trader, Random rand) {
             ItemStack lvt_3_1_ = new ItemStack(Items.SUSPICIOUS_STEW, 1);
-            SuspiciousStewItem.addEffect(lvt_3_1_, this.field_221214_a, this.field_221215_b);
-            return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, 1), lvt_3_1_, 12, this.field_221216_c, this.field_221217_d);
+            SuspiciousStewItem.addEffect(lvt_3_1_, this.effect, this.duration);
+            return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, 1), lvt_3_1_, 12, this.xpValue, this.priceMultiplier);
         }
     }
 
@@ -330,12 +327,12 @@ public class MyrmexTrades {
         private final int exp;
         private final float multiplier;
 
-        public ItemsForDesertResinTrade(Block p_i50528_1_, int p_i50528_2_, int p_i50528_3_, int p_i50528_4_, int p_i50528_5_) {
-            this(new ItemStack(p_i50528_1_), p_i50528_2_, p_i50528_3_, p_i50528_4_, p_i50528_5_);
+        public ItemsForDesertResinTrade(Block sellingItem, int emeraldCount, int sellingItemCount, int maxUses, int xpValue) {
+            this(new ItemStack(sellingItem), emeraldCount, sellingItemCount, maxUses, xpValue);
         }
 
-        public ItemsForDesertResinTrade(Item p_i50529_1_, int p_i50529_2_, int p_i50529_3_, int p_i50529_4_) {
-            this(new ItemStack(p_i50529_1_), p_i50529_2_, p_i50529_3_, 12, p_i50529_4_);
+        public ItemsForDesertResinTrade(Item sellingItem, int emeraldCount, int sellingItemCount, int xpValue) {
+            this(new ItemStack(sellingItem), emeraldCount, sellingItemCount, 12, xpValue);
         }
 
         public ItemsForDesertResinTrade(Item item, int DesertResin, int items, int maxUses, int exp) {
@@ -355,152 +352,123 @@ public class MyrmexTrades {
             this.multiplier = multi;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
+        public MerchantOffer getOffer(Entity trader, Random rand) {
             ItemStack cloneStack =  new ItemStack(this.stack.getItem(), this.itemCount);
             cloneStack.setTag(this.stack.getTag());
             return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN, this.emeraldCount), cloneStack, this.maxUses, this.exp, this.multiplier);
         }
     }
 
-    static class DesertResinForVillageTypeItemTrade implements VillagerTrades.ITrade {
-        private final Map<IVillagerType, Item> field_221190_a;
-        private final int field_221191_b;
-        private final int field_221192_c;
-        private final int field_221193_d;
-
-        public DesertResinForVillageTypeItemTrade(int p_i50538_1_, int p_i50538_2_, int p_i50538_3_, Map<IVillagerType, Item> p_i50538_4_) {
-            Registry.VILLAGER_TYPE.stream().filter((p_221188_1_) -> {
-                return !p_i50538_4_.containsKey(p_221188_1_);
-            }).findAny().ifPresent((p_221189_0_) -> {
-                throw new IllegalStateException("Missing trade for villager type: " + Registry.VILLAGER_TYPE.getKey(p_221189_0_));
-            });
-            this.field_221190_a = p_i50538_4_;
-            this.field_221191_b = p_i50538_1_;
-            this.field_221192_c = p_i50538_2_;
-            this.field_221193_d = p_i50538_3_;
-        }
-
-        @Nullable
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            if (p_221182_1_ instanceof IVillagerDataHolder) {
-                ItemStack lvt_3_1_ = new ItemStack(this.field_221190_a.get(((IVillagerDataHolder) p_221182_1_).getVillagerData().getType()), this.field_221191_b);
-                return new MerchantOffer(lvt_3_1_, new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN), this.field_221192_c, this.field_221193_d, 0.05F);
-            } else {
-                return null;
-            }
-        }
-    }
-
     static class DesertResinForItemsTrade implements VillagerTrades.ITrade {
-        private final Item field_221183_a;
-        private final int field_221184_b;
-        private final int field_221185_c;
-        private final int field_221186_d;
-        private final float field_221187_e;
+        private final Item tradeItem;
+        private final int count;
+        private final int maxUses;
+        private final int xpValue;
+        private final float priceMultiplier;
 
-        public DesertResinForItemsTrade(IItemProvider p_i50539_1_, int p_i50539_2_, int p_i50539_3_, int p_i50539_4_) {
-            this.field_221183_a = p_i50539_1_.asItem();
-            this.field_221184_b = p_i50539_2_;
-            this.field_221185_c = p_i50539_3_;
-            this.field_221186_d = p_i50539_4_;
-            this.field_221187_e = 0.05F;
+        public DesertResinForItemsTrade(IItemProvider tradeItemIn, int countIn, int maxUsesIn, int xpValueIn) {
+            this.tradeItem = tradeItemIn.asItem();
+            this.count = countIn;
+            this.maxUses = maxUsesIn;
+            this.xpValue = xpValueIn;
+            this.priceMultiplier = 0.05F;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            ItemStack lvt_3_1_ = new ItemStack(this.field_221183_a, this.field_221184_b);
-            return new MerchantOffer(lvt_3_1_, new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN), this.field_221185_c, this.field_221186_d, this.field_221187_e);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            ItemStack lvt_3_1_ = new ItemStack(this.tradeItem, this.count);
+            return new MerchantOffer(lvt_3_1_, new ItemStack(IafItemRegistry.MYRMEX_DESERT_RESIN), this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
 
     static class ItemsForJungleResinAndItemsTrade implements VillagerTrades.ITrade {
-        private final ItemStack field_221200_a;
-        private final int field_221201_b;
-        private final int field_221202_c;
-        private final ItemStack field_221203_d;
-        private final int field_221204_e;
-        private final int field_221205_f;
-        private final int field_221206_g;
-        private final float field_221207_h;
+        private final ItemStack buyingItem;
+        private final int buyingItemCount;
+        private final int emeraldCount;
+        private final ItemStack sellingItem;
+        private final int sellingItemCount;
+        private final int maxUses;
+        private final int xpValue;
+        private final float priceMultiplier;
 
-        public ItemsForJungleResinAndItemsTrade(IItemProvider p_i50533_1_, int p_i50533_2_, Item p_i50533_3_, int p_i50533_4_, int p_i50533_5_, int p_i50533_6_) {
-            this(p_i50533_1_, p_i50533_2_, 1, p_i50533_3_, p_i50533_4_, p_i50533_5_, p_i50533_6_);
+        public ItemsForJungleResinAndItemsTrade(IItemProvider buyingItem, int buyingItemCount, Item sellingItem, int sellingItemCount, int maxUses, int xpValue) {
+            this(buyingItem, buyingItemCount, 1, sellingItem, sellingItemCount, maxUses, xpValue);
         }
 
-        public ItemsForJungleResinAndItemsTrade(IItemProvider p_i50534_1_, int p_i50534_2_, int p_i50534_3_, Item p_i50534_4_, int p_i50534_5_, int p_i50534_6_, int p_i50534_7_) {
-            this.field_221200_a = new ItemStack(p_i50534_1_);
-            this.field_221201_b = p_i50534_2_;
-            this.field_221202_c = p_i50534_3_;
-            this.field_221203_d = new ItemStack(p_i50534_4_);
-            this.field_221204_e = p_i50534_5_;
-            this.field_221205_f = p_i50534_6_;
-            this.field_221206_g = p_i50534_7_;
-            this.field_221207_h = 0.05F;
+        public ItemsForJungleResinAndItemsTrade(IItemProvider buyingItem, int buyingItemCount, int emeraldCount, Item sellingItem, int sellingItemCount, int maxUses, int xpValue) {
+            this.buyingItem = new ItemStack(buyingItem);
+            this.buyingItemCount = buyingItemCount;
+            this.emeraldCount = emeraldCount;
+            this.sellingItem = new ItemStack(sellingItem);
+            this.sellingItemCount = sellingItemCount;
+            this.maxUses = maxUses;
+            this.xpValue = xpValue;
+            this.priceMultiplier = 0.05F;
         }
 
         @Nullable
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN, this.field_221202_c), new ItemStack(this.field_221200_a.getItem(), this.field_221201_b), new ItemStack(this.field_221203_d.getItem(), this.field_221204_e), this.field_221205_f, this.field_221206_g, this.field_221207_h);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN, this.emeraldCount), new ItemStack(this.buyingItem.getItem(), this.buyingItemCount), new ItemStack(this.sellingItem.getItem(), this.sellingItemCount), this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
     static class ItemWithPotionForJungleResinAndItemsTrade implements VillagerTrades.ITrade {
-        private final ItemStack field_221219_a;
-        private final int field_221220_b;
-        private final int field_221221_c;
-        private final int field_221222_d;
-        private final int field_221223_e;
-        private final Item field_221224_f;
-        private final int field_221225_g;
-        private final float field_221226_h;
+        private final ItemStack potionStack;
+        private final int potionCount;
+        private final int emeraldCount;
+        private final int maxUses;
+        private final int xpValue;
+        private final Item buyingItem;
+        private final int buyingItemCount;
+        private final float priceMultiplier;
 
-        public ItemWithPotionForJungleResinAndItemsTrade(Item p_i50526_1_, int p_i50526_2_, Item p_i50526_3_, int p_i50526_4_, int p_i50526_5_, int p_i50526_6_, int p_i50526_7_) {
-            this.field_221219_a = new ItemStack(p_i50526_3_);
-            this.field_221221_c = p_i50526_5_;
-            this.field_221222_d = p_i50526_6_;
-            this.field_221223_e = p_i50526_7_;
-            this.field_221224_f = p_i50526_1_;
-            this.field_221225_g = p_i50526_2_;
-            this.field_221220_b = p_i50526_4_;
-            this.field_221226_h = 0.05F;
+        public ItemWithPotionForJungleResinAndItemsTrade(Item buyingItem, int buyingItemCount, Item p_i50526_3_, int p_i50526_4_, int emeralds, int maxUses, int xpValue) {
+            this.potionStack = new ItemStack(p_i50526_3_);
+            this.emeraldCount = emeralds;
+            this.maxUses = maxUses;
+            this.xpValue = xpValue;
+            this.buyingItem = buyingItem;
+            this.buyingItemCount = buyingItemCount;
+            this.potionCount = p_i50526_4_;
+            this.priceMultiplier = 0.05F;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            ItemStack lvt_3_1_ = new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN, this.field_221221_c);
-            List<Potion> lvt_4_1_ = Registry.POTION.stream().filter((p_221218_0_) -> {
-                return !p_221218_0_.getEffects().isEmpty() && PotionBrewing.func_222124_a(p_221218_0_);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            ItemStack lvt_3_1_ = new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN, this.emeraldCount);
+            List<Potion> lvt_4_1_ = Registry.POTION.stream().filter((potion) -> {
+                return !potion.getEffects().isEmpty() && PotionBrewing.isBrewablePotion(potion);
             }).collect(Collectors.toList());
-            Potion lvt_5_1_ = lvt_4_1_.get(p_221182_2_.nextInt(lvt_4_1_.size()));
-            ItemStack lvt_6_1_ = PotionUtils.addPotionToItemStack(new ItemStack(this.field_221219_a.getItem(), this.field_221220_b), lvt_5_1_);
-            return new MerchantOffer(lvt_3_1_, new ItemStack(this.field_221224_f, this.field_221225_g), lvt_6_1_, this.field_221222_d, this.field_221223_e, this.field_221226_h);
+            Potion lvt_5_1_ = lvt_4_1_.get(rand.nextInt(lvt_4_1_.size()));
+            ItemStack lvt_6_1_ = PotionUtils.addPotionToItemStack(new ItemStack(this.potionStack.getItem(), this.potionCount), lvt_5_1_);
+            return new MerchantOffer(lvt_3_1_, new ItemStack(this.buyingItem, this.buyingItemCount), lvt_6_1_, this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
     static class EnchantedItemForJungleResinTrade implements VillagerTrades.ITrade {
-        private final ItemStack field_221195_a;
-        private final int field_221196_b;
-        private final int field_221197_c;
-        private final int field_221198_d;
-        private final float field_221199_e;
+        private final ItemStack sellingStack;
+        private final int emeraldCount;
+        private final int maxUses;
+        private final int xpValue;
+        private final float priceMultiplier;
 
-        public EnchantedItemForJungleResinTrade(Item p_i50535_1_, int p_i50535_2_, int p_i50535_3_, int p_i50535_4_) {
-            this(p_i50535_1_, p_i50535_2_, p_i50535_3_, p_i50535_4_, 0.05F);
+        public EnchantedItemForJungleResinTrade(Item p_i50535_1_, int emeraldCount, int maxUses, int xpValue) {
+            this(p_i50535_1_, emeraldCount, maxUses, xpValue, 0.05F);
         }
 
-        public EnchantedItemForJungleResinTrade(Item p_i50536_1_, int p_i50536_2_, int p_i50536_3_, int p_i50536_4_, float p_i50536_5_) {
-            this.field_221195_a = new ItemStack(p_i50536_1_);
-            this.field_221196_b = p_i50536_2_;
-            this.field_221197_c = p_i50536_3_;
-            this.field_221198_d = p_i50536_4_;
-            this.field_221199_e = p_i50536_5_;
+        public EnchantedItemForJungleResinTrade(Item sellItem, int emeraldCount, int maxUses, int xpValue, float priceMultiplier) {
+            this.sellingStack = new ItemStack(sellItem);
+            this.emeraldCount = emeraldCount;
+            this.maxUses = maxUses;
+            this.xpValue = xpValue;
+            this.priceMultiplier = priceMultiplier;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            int lvt_3_1_ = 5 + p_221182_2_.nextInt(15);
-            ItemStack lvt_4_1_ = EnchantmentHelper.addRandomEnchantment(p_221182_2_, new ItemStack(this.field_221195_a.getItem()), lvt_3_1_, false);
-            int lvt_5_1_ = Math.min(this.field_221196_b + lvt_3_1_, 64);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            int lvt_3_1_ = 5 + rand.nextInt(15);
+            ItemStack lvt_4_1_ = EnchantmentHelper.addRandomEnchantment(rand, new ItemStack(this.sellingStack.getItem()), lvt_3_1_, false);
+            int lvt_5_1_ = Math.min(this.emeraldCount + lvt_3_1_, 64);
             ItemStack lvt_6_1_ = new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN, lvt_5_1_);
-            return new MerchantOffer(lvt_6_1_, lvt_4_1_, this.field_221197_c, this.field_221198_d, this.field_221199_e);
+            return new MerchantOffer(lvt_6_1_, lvt_4_1_, this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 
@@ -512,12 +480,12 @@ public class MyrmexTrades {
         private final int exp;
         private final float multiplier;
 
-        public ItemsForJungleResinTrade(Block p_i50528_1_, int p_i50528_2_, int p_i50528_3_, int p_i50528_4_, int p_i50528_5_) {
-            this(new ItemStack(p_i50528_1_), p_i50528_2_, p_i50528_3_, p_i50528_4_, p_i50528_5_);
+        public ItemsForJungleResinTrade(Block sellingItem, int emeraldCount, int sellingItemCount, int maxUses, int xpValue) {
+            this(new ItemStack(sellingItem), emeraldCount, sellingItemCount, maxUses, xpValue);
         }
 
-        public ItemsForJungleResinTrade(Item p_i50529_1_, int p_i50529_2_, int p_i50529_3_, int p_i50529_4_) {
-            this(new ItemStack(p_i50529_1_), p_i50529_2_, p_i50529_3_, 12, p_i50529_4_);
+        public ItemsForJungleResinTrade(Item sellingItem, int emeraldCount, int sellingItemCount, int xpValue) {
+            this(new ItemStack(sellingItem), emeraldCount, sellingItemCount, 12, xpValue);
         }
 
         public ItemsForJungleResinTrade(Item item, int JungleResin, int items, int maxUses, int exp) {
@@ -537,60 +505,31 @@ public class MyrmexTrades {
             this.multiplier = multi;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
+        public MerchantOffer getOffer(Entity trader, Random rand) {
             ItemStack cloneStack = new ItemStack(this.stack.getItem(), this.itemCount);
             cloneStack.setTag(this.stack.getTag());
             return new MerchantOffer(new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN, this.emeraldCount), cloneStack, this.maxUses, this.exp, this.multiplier);
         }
     }
 
-    static class JungleResinForVillageTypeItemTrade implements VillagerTrades.ITrade {
-        private final Map<IVillagerType, Item> field_221190_a;
-        private final int field_221191_b;
-        private final int field_221192_c;
-        private final int field_221193_d;
-
-        public JungleResinForVillageTypeItemTrade(int p_i50538_1_, int p_i50538_2_, int p_i50538_3_, Map<IVillagerType, Item> p_i50538_4_) {
-            Registry.VILLAGER_TYPE.stream().filter((p_221188_1_) -> {
-                return !p_i50538_4_.containsKey(p_221188_1_);
-            }).findAny().ifPresent((p_221189_0_) -> {
-                throw new IllegalStateException("Missing trade for villager type: " + Registry.VILLAGER_TYPE.getKey(p_221189_0_));
-            });
-            this.field_221190_a = p_i50538_4_;
-            this.field_221191_b = p_i50538_1_;
-            this.field_221192_c = p_i50538_2_;
-            this.field_221193_d = p_i50538_3_;
-        }
-
-        @Nullable
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            if (p_221182_1_ instanceof IVillagerDataHolder) {
-                ItemStack lvt_3_1_ = new ItemStack(this.field_221190_a.get(((IVillagerDataHolder) p_221182_1_).getVillagerData().getType()), this.field_221191_b);
-                return new MerchantOffer(lvt_3_1_, new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN), this.field_221192_c, this.field_221193_d, 0.05F);
-            } else {
-                return null;
-            }
-        }
-    }
-
     static class JungleResinForItemsTrade implements VillagerTrades.ITrade {
-        private final Item field_221183_a;
-        private final int field_221184_b;
-        private final int field_221185_c;
-        private final int field_221186_d;
-        private final float field_221187_e;
+        private final Item tradeItem;
+        private final int count;
+        private final int maxUses;
+        private final int xpValue;
+        private final float priceMultiplier;
 
-        public JungleResinForItemsTrade(IItemProvider p_i50539_1_, int p_i50539_2_, int p_i50539_3_, int p_i50539_4_) {
-            this.field_221183_a = p_i50539_1_.asItem();
-            this.field_221184_b = p_i50539_2_;
-            this.field_221185_c = p_i50539_3_;
-            this.field_221186_d = p_i50539_4_;
-            this.field_221187_e = 0.05F;
+        public JungleResinForItemsTrade(IItemProvider tradeItemIn, int countIn, int maxUsesIn, int xpValueIn) {
+            this.tradeItem = tradeItemIn.asItem();
+            this.count = countIn;
+            this.maxUses = maxUsesIn;
+            this.xpValue = xpValueIn;
+            this.priceMultiplier = 0.05F;
         }
 
-        public MerchantOffer getOffer(Entity p_221182_1_, Random p_221182_2_) {
-            ItemStack lvt_3_1_ = new ItemStack(this.field_221183_a, this.field_221184_b);
-            return new MerchantOffer(lvt_3_1_, new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN), this.field_221185_c, this.field_221186_d, this.field_221187_e);
+        public MerchantOffer getOffer(Entity trader, Random rand) {
+            ItemStack lvt_3_1_ = new ItemStack(this.tradeItem, this.count);
+            return new MerchantOffer(lvt_3_1_, new ItemStack(IafItemRegistry.MYRMEX_JUNGLE_RESIN), this.maxUses, this.xpValue, this.priceMultiplier);
         }
     }
 }

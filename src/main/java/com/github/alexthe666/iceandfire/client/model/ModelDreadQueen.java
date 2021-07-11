@@ -9,6 +9,7 @@ import com.github.alexthe666.iceandfire.entity.EntityDreadQueen;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -253,10 +254,7 @@ public class ModelDreadQueen extends ModelDragonBase<EntityDreadQueen> {
 
     @Override
     public void renderStatue(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, Entity living) {
-        this.resetToDefaultPose();
         this.render(matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-
-        this.resetToDefaultPose();
     }
 
     @Override

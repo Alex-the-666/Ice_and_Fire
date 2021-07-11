@@ -1,11 +1,14 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.entity.EntityDreadKnight;
+
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.passive.horse.AbstractHorseEntity;
 
-import java.util.EnumSet;
-import java.util.List;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class DreadAIRideHorse extends Goal {
     private final EntityDreadKnight knight;

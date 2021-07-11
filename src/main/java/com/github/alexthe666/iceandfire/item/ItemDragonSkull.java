@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityDragonSkull;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,9 +23,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemDragonSkull extends Item implements ICustomRendered {
     private int dragonType;
@@ -57,9 +59,9 @@ public class ItemDragonSkull extends Item implements ICustomRendered {
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         String iceorfire = "dragon." + getType(dragonType);
-        tooltip.add(new TranslationTextComponent(iceorfire).func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent(iceorfire).mergeStyle(TextFormatting.GRAY));
         if (stack.getTag() != null) {
-            tooltip.add(new TranslationTextComponent("dragon.stage").func_240699_a_(TextFormatting.GRAY).func_230529_a_(new StringTextComponent( " " + stack.getTag().getInt("Stage"))));
+            tooltip.add(new TranslationTextComponent("dragon.stage").mergeStyle(TextFormatting.GRAY).appendSibling(new StringTextComponent( " " + stack.getTag().getInt("Stage"))));
         }
     }
 
@@ -83,7 +85,9 @@ public class ItemDragonSkull extends Item implements ICustomRendered {
                 yaw = context.getPlayer().getHorizontalFacing().getHorizontalAngle();
             }
             skull.setYaw(yaw);
-
+            if (stack.hasDisplayName()) {
+                skull.setCustomName(stack.getDisplayName());
+            }
             if (!context.getWorld().isRemote) {
                 context.getWorld().addEntity(skull);
             }

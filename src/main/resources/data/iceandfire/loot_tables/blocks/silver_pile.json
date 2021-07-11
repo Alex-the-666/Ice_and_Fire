@@ -140,6 +140,15 @@
         },
         {
           "type": "minecraft:item",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "iceandfire:silver_pile",
+              "properties": {
+                "layers": "8"
+              }
+            }
+          ],
           "functions": [
             {
               "function": "minecraft:set_count",

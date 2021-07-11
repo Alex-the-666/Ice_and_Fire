@@ -1,17 +1,19 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.entity.EntityPixie;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.Hand;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Random;
+import net.minecraft.util.math.AxisAlignedBB;
 
 public class PixieAISteal extends Goal {
     private final EntityPixie temptedEntity;
@@ -22,7 +24,7 @@ public class PixieAISteal extends Goal {
     private double pitch;
     private double yaw;
     private PlayerEntity temptingPlayer;
-    private int delayTemptCounter;
+    private int delayTemptCounter = 0;
     private boolean isRunning;
 
     public PixieAISteal(EntityPixie temptedEntityIn, double speedIn) {
@@ -31,10 +33,10 @@ public class PixieAISteal extends Goal {
     }
 
     public boolean shouldExecute() {
-        if (!IafConfig.pixiesStealItems || !temptedEntity.getHeldItemMainhand().isEmpty()) {
+        if (!IafConfig.pixiesStealItems || !temptedEntity.getHeldItemMainhand().isEmpty() || temptedEntity.stealCooldown > 0) {
             return false;
         }
-        if (temptedEntity.getRNG().nextInt(3) == 0) {
+        if (temptedEntity.getRNG().nextInt(200) == 0) {
             return false;
         }
         if (temptedEntity.isTamed()) {
@@ -50,7 +52,7 @@ public class PixieAISteal extends Goal {
     }
 
     public boolean shouldContinueExecuting() {
-        return !temptedEntity.isTamed() && temptedEntity.getHeldItemMainhand().isEmpty();
+        return !temptedEntity.isTamed() && temptedEntity.getHeldItemMainhand().isEmpty() && this.delayTemptCounter == 0 && temptedEntity.stealCooldown == 0;
     }
 
     public void startExecuting() {
@@ -62,29 +64,47 @@ public class PixieAISteal extends Goal {
 
     public void resetTask() {
         this.temptingPlayer = null;
-        this.delayTemptCounter = 10;
+        if (this.delayTemptCounter < 10)
+            this.delayTemptCounter += 10;
         this.isRunning = false;
     }
 
     public void tick() {
         this.temptedEntity.getLookController().setLookPositionWithEntity(this.temptingPlayer, (float) (this.temptedEntity.getHorizontalFaceSpeed() + 20), (float) this.temptedEntity.getVerticalFaceSpeed());
         ArrayList<Integer> slotlist = new ArrayList<Integer>();
-        if (this.temptedEntity.getDistanceSq(this.temptingPlayer) < 6.25D && !this.temptingPlayer.inventory.isEmpty()) {
+        if (this.temptedEntity.getDistanceSq(this.temptingPlayer) < 3D && !this.temptingPlayer.inventory.isEmpty()) {
+
             for (int i = 0; i < this.temptingPlayer.inventory.getSizeInventory(); i++) {
-                if (this.temptingPlayer.inventory.getStackInSlot(i) != ItemStack.EMPTY) {
+                ItemStack targetStack = this.temptingPlayer.inventory.getStackInSlot(i);
+                if (!PlayerInventory.isHotbar(i) && !targetStack.isEmpty() && targetStack.isStackable()) {
                     slotlist.add(i);
                 }
             }
-            int slot = slotlist.get(new Random().nextInt(slotlist.size()));
-            ItemStack randomItem = this.temptingPlayer.inventory.getStackInSlot(slot);
-            this.temptedEntity.setHeldItem(Hand.MAIN_HAND, randomItem);
-            this.temptingPlayer.inventory.removeStackFromSlot(slot);
-            this.temptedEntity.flipAI(true);
-            this.temptedEntity.playSound(IafSoundRegistry.PIXIE_TAUNT, 1F, 1F);
-            if (temptingPlayer != null) {
-                this.temptingPlayer.addPotionEffect(new EffectInstance(this.temptedEntity.negativePotions[this.temptedEntity.getColor()], 100));
-            }
+            if(slotlist.size() >= 1) {
+                int slot;
+                if(slotlist.size() == 1) {
+                    slot = slotlist.get(0);
+                } else {
+                     slot = slotlist.get(new Random().nextInt(slotlist.size()));
+                }
+                ItemStack randomItem = this.temptingPlayer.inventory.getStackInSlot(slot);
+                this.temptedEntity.setHeldItem(Hand.MAIN_HAND, randomItem);
+                this.temptingPlayer.inventory.removeStackFromSlot(slot);
+                this.temptedEntity.flipAI(true);
+                this.temptedEntity.playSound(IafSoundRegistry.PIXIE_TAUNT, 1F, 1F);
 
+                for (EntityPixie pixie : this.temptingPlayer.world.getEntitiesWithinAABB(EntityPixie.class, temptedEntity.getBoundingBox().grow(40))) {
+                    pixie.stealCooldown = 1000 + pixie.getRNG().nextInt(3000);
+                }
+                if (temptingPlayer != null) {
+                    this.temptingPlayer.addPotionEffect(new EffectInstance(this.temptedEntity.negativePotions[this.temptedEntity.getColor()], 100));
+                }
+            }
+            //If the pixie couldn't steal anything
+            else{
+                this.temptedEntity.flipAI(true);
+                this.delayTemptCounter = 10 *20;
+            }
         } else {
             this.temptedEntity.getMoveHelper().setMoveTo(this.temptingPlayer.getPosX(), this.temptingPlayer.getPosY() + 1.5F, this.temptingPlayer.getPosZ(), 1D);
         }

@@ -1,12 +1,12 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
+
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
-
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class WorldGenRoostSpire {
 

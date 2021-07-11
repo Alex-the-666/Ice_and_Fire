@@ -1,6 +1,9 @@
 package com.github.alexthe666.iceandfire.block;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -26,7 +29,7 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
+import net.minecraft.block.AbstractBlock.Properties;
 
 public class BlockGoldPile extends Block {
     public static final IntegerProperty LAYERS = IntegerProperty.create("layers", 1, 8);
@@ -34,7 +37,14 @@ public class BlockGoldPile extends Block {
     public Item itemBlock;
 
     public BlockGoldPile(String name) {
-        super(Properties.create(Material.EARTH).hardnessAndResistance(0.3F, 1).tickRandomly().sound(IafBlockRegistry.SOUND_TYPE_GOLD));
+        super(
+    		Properties
+    			.create(Material.EARTH)
+    			.hardnessAndResistance(0.3F, 1)
+    			.tickRandomly()
+    			.sound(IafBlockRegistry.SOUND_TYPE_GOLD)
+		);
+
         this.setDefaultState(this.stateContainer.getBaseState().with(LAYERS, Integer.valueOf(1)));
         setRegistryName(IceAndFire.MODID, name);
     }
@@ -69,7 +79,7 @@ public class BlockGoldPile extends Block {
         Block block = blockstate.getBlock();
         if (block != Blocks.ICE && block != Blocks.PACKED_ICE && block != Blocks.BARRIER) {
             if (block != Blocks.HONEY_BLOCK && block != Blocks.SOUL_SAND) {
-                return Block.doesSideFillSquare(blockstate.getCollisionShape(worldIn, pos.down()), Direction.UP) || block instanceof BlockGoldPile && blockstate.get(LAYERS) == 8;
+                return Block.doesSideFillSquare(blockstate.getCollisionShapeUncached(worldIn, pos.down()), Direction.UP) || block instanceof BlockGoldPile && blockstate.get(LAYERS) == 8;
             } else {
                 return true;
             }

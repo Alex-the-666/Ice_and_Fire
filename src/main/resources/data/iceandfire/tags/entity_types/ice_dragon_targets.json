@@ -1,0 +1,13 @@
+{
+  "__comment": "all animal (non villager, non player) mobs that dragons will target.",
+  "replace": false,
+  "values": [
+    "#iceandfire:dragon_targets",
+    "minecraft:turtle",
+    "minecraft:dolphin",
+    "minecraft:cod",
+    "minecraft:pufferfish",
+    "minecraft:salmon",
+    "minecraft:tropical_fish"
+  ]
+}

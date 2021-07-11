@@ -7,6 +7,7 @@ import com.github.alexthe666.iceandfire.entity.EntityStymphalianBird;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.Entity;
@@ -309,11 +310,11 @@ public class ModelStymphalianBird extends ModelDragonBase<EntityStymphalianBird>
         this.BackLegL2.addChild(this.ToeL4);
         this.HeadFront.setScale(1.01F, 1.01F, 1.01F);
         this.updateDefaultPose();
-        animator = ModelAnimator.create();
     }
 
     public void animate(IAnimatedEntity entity, float f, float f1, float f2, float f3, float f4, float f5) {
         this.resetToDefaultPose();
+        animator = ModelAnimator.create();
         animator.update(entity);
         animator.setAnimation(EntityStymphalianBird.ANIMATION_PECK);
         animator.startKeyframe(5);
@@ -341,6 +342,7 @@ public class ModelStymphalianBird extends ModelDragonBase<EntityStymphalianBird>
         shootPosture();
         animator.endKeyframe();
         animator.resetKeyframe(10);
+
     }
 
     private void shootPosture() {
@@ -485,9 +487,6 @@ public class ModelStymphalianBird extends ModelDragonBase<EntityStymphalianBird>
 
     @Override
     public void renderStatue(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, Entity living) {
-        this.resetToDefaultPose();
         this.render(matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-
-        this.resetToDefaultPose();
     }
 }

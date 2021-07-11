@@ -1,12 +1,14 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.function.Predicate;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 
-import java.util.EnumSet;
-import java.util.function.Predicate;
 
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class CyclopsAITargetSheepPlayers<T extends LivingEntity> extends NearestAttackableTargetGoal {
 

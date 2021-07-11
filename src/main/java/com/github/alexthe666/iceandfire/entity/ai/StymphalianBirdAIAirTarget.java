@@ -1,9 +1,9 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.entity.EntityStymphalianBird;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
 import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
@@ -31,7 +31,7 @@ public class StymphalianBirdAIAirTarget extends Goal {
         } else {
             return new BlockPos((int) bird.getAttackTarget().getPosX(), (int) bird.getAttackTarget().getPosY() + bird.getAttackTarget().getEyeHeight(), (int) bird.getAttackTarget().getPosZ());
         }
-        return bird.func_233580_cy_();
+        return bird.getPosition();
     }
 
     public boolean shouldExecute() {
@@ -45,7 +45,7 @@ public class StymphalianBirdAIAirTarget extends Goal {
             if (bird.doesWantToLand()) {
                 return false;
             }
-            if (bird.airTarget != null && (bird.isTargetBlocked(Vector3d.func_237489_a_(bird.airTarget)))) {
+            if (bird.airTarget != null && (bird.isTargetBlocked(Vector3d.copyCentered(bird.airTarget)))) {
                 bird.airTarget = null;
             }
 
@@ -65,21 +65,17 @@ public class StymphalianBirdAIAirTarget extends Goal {
         return false;
     }
 
-    public boolean continueExecuting() {
-        StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(bird, StoneEntityProperties.class);
+    public boolean shouldContinueExecuting() {
         if (!bird.isFlying()) {
             return false;
         }
         if (bird.isChild()) {
             return false;
         }
-        if (properties != null && properties.isStone()) {
-            return false;
-        }
         return bird.airTarget != null;
     }
 
     public Vector3d findAirTarget() {
-        return Vector3d.func_237489_a_(getNearbyAirTarget(bird));
+        return Vector3d.copyCentered(getNearbyAirTarget(bird));
     }
 }

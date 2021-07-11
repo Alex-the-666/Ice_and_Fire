@@ -1,6 +1,9 @@
 package com.github.alexthe666.iceandfire.message;
 
+import java.util.function.Supplier;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -9,8 +12,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class MessageMultipartInteract {
 

@@ -7,7 +7,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 
 public class ItemDragonFlesh extends ItemGenericFood {
 
@@ -39,7 +38,7 @@ public class ItemDragonFlesh extends ItemGenericFood {
             }else{
                 if(!livingEntity.world.isRemote){
                     LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(livingEntity.world);
-                    lightningboltentity.func_233576_c_(livingEntity.getPositionVec());
+                    lightningboltentity.moveForced(livingEntity.getPositionVec());
                     if(!livingEntity.world.isRemote){
                         livingEntity.world.addEntity(lightningboltentity);
                     }

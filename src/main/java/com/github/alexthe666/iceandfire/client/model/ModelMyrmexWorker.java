@@ -8,6 +8,7 @@ import com.github.alexthe666.iceandfire.entity.EntityMyrmexWorker;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.Entity;
@@ -234,7 +235,6 @@ public class ModelMyrmexWorker extends ModelMyrmexBase {
     }
 
     public void animate(IAnimatedEntity entity, float f, float f1, float f2, float f3, float f4, float f5) {
-        this.resetToDefaultPose();
         animator.update(entity);
         animator.setAnimation(EntityMyrmexWorker.ANIMATION_BITE);
         animator.startKeyframe(5);
@@ -269,12 +269,12 @@ public class ModelMyrmexWorker extends ModelMyrmexBase {
         ModelUtils.rotateFrom(animator, legMidR1_1, 0, 0, -45);
         animator.endKeyframe();
         animator.resetKeyframe(10);
-
     }
 
 
     @Override
     public void setRotationAngles(Entity entity, float f, float f1, float f2, float f3, float f4) {
+        this.resetToDefaultPose();
         animate((IAnimatedEntity) entity, f, f1, f2, f3, f4, 1);
         AdvancedModelBox[] GASTER = new AdvancedModelBox[]{Body4, Body5, Tail1, Tail2, Stinger};
         AdvancedModelBox[] NECK = new AdvancedModelBox[]{Neck1, HeadBase};
@@ -319,9 +319,6 @@ public class ModelMyrmexWorker extends ModelMyrmexBase {
 
     @Override
     public void renderStatue(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, Entity living) {
-        this.resetToDefaultPose();
         this.render(matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-
-        this.resetToDefaultPose();
     }
 }

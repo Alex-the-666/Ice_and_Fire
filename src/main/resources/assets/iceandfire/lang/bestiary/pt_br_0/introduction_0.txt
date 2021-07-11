@@ -1,8 +1,8 @@
-    Uma nota pequena e desgastada 
+Uma nota pequena e desgastada 
 permanece fixada no bestiário. Ela
 diz:
 
-
+<item><iceandfire:manuscript 0 38 20 1>
 
 "Este manuscrito é um guia dedicado
 para aquelas pessoas que buscam
@@ -11,22 +11,36 @@ do reino sobrenatural. Esse livro
 abrangerá conceitos básicos da
 projeção de ferramentas, armaduras 
 e armas para rastrear, caçar e 
-aprender um pouco mais sobre essas 
-misteriosas criaturas."
+aprender um pouco mais sobre 
+essas misteriosas criaturas."
 
-   O bestiário então continua 
+O bestiário então continua 
 descrevendo mudanças sobrenaturais
 na formação do mundo, começando
-com minérios estranhos.
-Um mineral com propiedades místicas,
+com minérios estranhos. Um mineral
+com propiedades místicas,
 O minério de Prata é geralmente
 encontrado nas mesmas camadas do Ouro.
+<item><iceandfire:silver_ore 0 115 22 1>
+<item><iceandfire:silver_ingot 0 135 22 1>
+<item><iceandfire:silver_nugget 0 155 22 1>
+
 
 
 
 
 Pode ser transformado em barras
 que têm uma variedade de usos.
+<item><iceandfire:silver_sword 0 104 50 1>
+<item><iceandfire:silver_pickaxe 0 120 50 1>
+<item><iceandfire:silver_axe 0 136 50 1>
+<item><iceandfire:silver_shovel 0 152 50 1>
+<item><iceandfire:silver_hoe 0 168 50 1>
+<item><iceandfire:armor_silver_metal_helmet 0 110 70 1>
+<item><iceandfire:armor_silver_metal_chestplate 0 125 70 1>
+<item><iceandfire:armor_silver_metal_leggings 0 140 70 1>
+<item><iceandfire:armor_silver_metal_boots 0 155 70 1>
+
 
 
 

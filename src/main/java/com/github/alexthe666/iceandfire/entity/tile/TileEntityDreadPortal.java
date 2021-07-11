@@ -35,8 +35,8 @@ public class TileEntityDreadPortal extends TileEntity implements ITickableTileEn
         return compound;
     }
 
-    public void func_230337_a_(BlockState state, CompoundNBT compound) {
-        super.func_230337_a_(state, compound);
+    public void read(BlockState state, CompoundNBT compound) {
+        super.read(state, compound);
         this.age = compound.getLong("Age");
 
         if (compound.contains("ExitPortal", 10)) {
@@ -62,7 +62,7 @@ public class TileEntityDreadPortal extends TileEntity implements ITickableTileEn
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
-        func_230337_a_(this.getBlockState(), packet.getNbtCompound());
+        read(this.getBlockState(), packet.getNbtCompound());
     }
 
     public CompoundNBT getUpdateTag() {
@@ -70,7 +70,7 @@ public class TileEntityDreadPortal extends TileEntity implements ITickableTileEn
     }
 
     @OnlyIn(Dist.CLIENT)
-    public boolean shouldRenderFace(Direction p_184313_1_) {
+    public boolean shouldRenderFace(Direction face) {
         return true;
     }
 }

@@ -4,6 +4,7 @@ import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.util.IDragonProjectile;
 import com.github.alexthe666.iceandfire.misc.IafDamageRegistry;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -13,7 +14,9 @@ import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.network.IPacket;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -60,17 +63,17 @@ public class EntityDragonIceCharge extends AbstractFireballEntity implements IDr
     }
 
     public void tick() {
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         if (this.world.isRemote) {
             for (int i = 0; i < 14; ++i) {
                 IceAndFire.PROXY.spawnParticle("dragonice", this.getPosX() + this.rand.nextDouble() * 1 * (this.rand.nextBoolean() ? -1 : 1), this.getPosY() + this.rand.nextDouble() * 1 * (this.rand.nextBoolean() ? -1 : 1), this.getPosZ() + this.rand.nextDouble() * 1 * (this.rand.nextBoolean() ? -1 : 1), 0.0D, 0.0D, 0.0D);
             }
         }
-        if (this.world.isRemote || (shootingEntity == null || shootingEntity.isAlive()) && this.world.isBlockLoaded(this.func_233580_cy_())) {
+        if (this.world.isRemote || (shootingEntity == null || shootingEntity.isAlive()) && this.world.isBlockLoaded(this.getPosition())) {
             super.tick();
             ++this.ticksInAir;
             Vector3d Vector3d = this.getMotion();
-            RayTraceResult raytraceresult = ProjectileHelper.func_234618_a_(this, this::func_230298_a_, RayTraceContext.BlockMode.COLLIDER);
+            RayTraceResult raytraceresult = ProjectileHelper.func_234618_a_(this, this::canHitMob);
 
             if (!world.isRemote && raytraceresult != null) {
                 this.onImpact(raytraceresult);
@@ -116,9 +119,14 @@ public class EntityDragonIceCharge extends AbstractFireballEntity implements IDr
         }
     }
 
+    protected boolean canHitMob(Entity hitMob) {
+        Entity shooter = getShooter();
+        return hitMob != this && super.func_230298_a_(hitMob) && !(shooter == null || hitMob.isOnSameTeam(shooter)) && !(hitMob instanceof EntityDragonPart);
+    }
+
     @Override
     protected void onImpact(RayTraceResult movingObject) {
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         boolean flag = this.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING);
         if (!this.world.isRemote) {
             if (movingObject.getType() == RayTraceResult.Type.ENTITY) {
@@ -148,7 +156,8 @@ public class EntityDragonIceCharge extends AbstractFireballEntity implements IDr
                         return;
                     }
                     if (shootingEntity != null && shootingEntity instanceof EntityDragonBase) {
-                        entity.attackEntityFrom(IafDamageRegistry.DRAGON_ICE, 10.0F);
+                        float damageAmount = (float) IafConfig.dragonAttackDamageIce * ((EntityDragonBase) shootingEntity).getDragonStage();
+                        entity.attackEntityFrom(IafDamageRegistry.DRAGON_ICE, damageAmount);
                         if (entity instanceof LivingEntity && ((LivingEntity) entity).getHealth() == 0) {
                             ((EntityDragonBase) shootingEntity).randomizeAttacks();
                         }
@@ -161,8 +170,8 @@ public class EntityDragonIceCharge extends AbstractFireballEntity implements IDr
             }
         }
         if(movingObject.getType() != RayTraceResult.Type.MISS) {
-            if (shootingEntity instanceof EntityDragonBase && IafConfig.dragonGriefing != 2) {
-                IafDragonDestructionManager.destroyAreaIceCharge(world, this.func_233580_cy_(), ((EntityDragonBase) shootingEntity));
+            if (shootingEntity instanceof EntityDragonBase && IafConfig.dragonGriefing != 2 && !this.isInWater()) {
+                IafDragonDestructionManager.destroyAreaIceCharge(world, this.getPosition(), ((EntityDragonBase) shootingEntity));
             }
             this.remove();
         }

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "iceandfire:silver_ore",
+    "iceandfire:sapphire_ore",
+    "iceandfire:copper_ore",
+    "iceandfire:amythest_ore"
+  ]
+}

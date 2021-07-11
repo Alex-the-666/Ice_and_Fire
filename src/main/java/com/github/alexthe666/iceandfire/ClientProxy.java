@@ -1,5 +1,11 @@
 package com.github.alexthe666.iceandfire;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
 import com.github.alexthe666.citadel.client.model.TabulaModel;
 import com.github.alexthe666.citadel.client.model.TabulaModelHandler;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
@@ -8,17 +14,91 @@ import com.github.alexthe666.iceandfire.client.gui.GuiMyrmexAddRoom;
 import com.github.alexthe666.iceandfire.client.gui.GuiMyrmexStaff;
 import com.github.alexthe666.iceandfire.client.gui.IafGuiRegistry;
 import com.github.alexthe666.iceandfire.client.gui.bestiary.GuiBestiary;
-import com.github.alexthe666.iceandfire.client.model.*;
+import com.github.alexthe666.iceandfire.client.model.ModelCopperArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelDeathWormArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelDragonsteelFireArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelDragonsteelIceArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelDragonsteelLightningArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelFireDragonArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelIceDragonArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelLightningDragonArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelMyrmexQueen;
+import com.github.alexthe666.iceandfire.client.model.ModelMyrmexRoyal;
+import com.github.alexthe666.iceandfire.client.model.ModelMyrmexSentinel;
+import com.github.alexthe666.iceandfire.client.model.ModelMyrmexSoldier;
+import com.github.alexthe666.iceandfire.client.model.ModelMyrmexWorker;
+import com.github.alexthe666.iceandfire.client.model.ModelSeaSerpentArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelSilverArmor;
+import com.github.alexthe666.iceandfire.client.model.ModelTrollArmor;
 import com.github.alexthe666.iceandfire.client.model.animator.FireDragonTabulaModelAnimator;
 import com.github.alexthe666.iceandfire.client.model.animator.IceDragonTabulaModelAnimator;
 import com.github.alexthe666.iceandfire.client.model.animator.LightningTabulaDragonAnimator;
 import com.github.alexthe666.iceandfire.client.model.animator.SeaSerpentTabulaModelAnimator;
 import com.github.alexthe666.iceandfire.client.model.util.EnumDragonAnimations;
 import com.github.alexthe666.iceandfire.client.model.util.EnumSeaSerpentAnimations;
-import com.github.alexthe666.iceandfire.client.particle.*;
-import com.github.alexthe666.iceandfire.client.render.entity.*;
+import com.github.alexthe666.iceandfire.client.particle.ParticleBlood;
+import com.github.alexthe666.iceandfire.client.particle.ParticleDragonFlame;
+import com.github.alexthe666.iceandfire.client.particle.ParticleDragonFrost;
+import com.github.alexthe666.iceandfire.client.particle.ParticleDreadPortal;
+import com.github.alexthe666.iceandfire.client.particle.ParticleDreadTorch;
+import com.github.alexthe666.iceandfire.client.particle.ParticleGhostAppearance;
+import com.github.alexthe666.iceandfire.client.particle.ParticleHydraBreath;
+import com.github.alexthe666.iceandfire.client.particle.ParticlePixieDust;
+import com.github.alexthe666.iceandfire.client.particle.ParticleSerpentBubble;
+import com.github.alexthe666.iceandfire.client.particle.ParticleSirenAppearance;
+import com.github.alexthe666.iceandfire.client.particle.ParticleSirenMusic;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderAmphithere;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderAmphithereArrow;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderChainTie;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderCockatrice;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderCyclops;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDeathWorm;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDragonArrow;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDragonBase;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDragonEgg;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDragonFireCharge;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDragonLightningCharge;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDragonSkull;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadBeast;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadGhoul;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadHorse;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadKnight;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadLich;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadLichSkull;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadScuttler;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderDreadThrall;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderGhost;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderGhostSword;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderGorgon;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderHippocampus;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderHippogryph;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderHydra;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderHydraArrow;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderLightningDragon;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderMobSkull;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderMyrmexBase;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderMyrmexEgg;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderNothing;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderPixie;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderSeaSerpent;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderSeaSerpentArrow;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderSiren;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderStoneStatue;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderStymphalianArrow;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderStymphalianBird;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderStymphalianFeather;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderTideTrident;
+import com.github.alexthe666.iceandfire.client.render.entity.RenderTroll;
 import com.github.alexthe666.iceandfire.client.render.entity.layer.LayerDragonArmor;
-import com.github.alexthe666.iceandfire.client.render.tile.*;
+import com.github.alexthe666.iceandfire.client.render.tile.IceAndFireTEISR;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderDreadPortal;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderDreadSpawner;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderEggInIce;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderGhostChest;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderJar;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderLectern;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderPixieHouse;
+import com.github.alexthe666.iceandfire.client.render.tile.RenderPodium;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
 import com.github.alexthe666.iceandfire.entity.tile.IafTileEntityRegistry;
@@ -26,11 +106,12 @@ import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.github.alexthe666.iceandfire.event.ClientEvents;
 import com.github.alexthe666.iceandfire.event.PlayerRenderEvents;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+import com.github.alexthe666.iceandfire.item.ItemDragonBow;
 import com.github.alexthe666.iceandfire.item.ItemDragonHorn;
 import com.github.alexthe666.iceandfire.item.ItemSummoningCrystal;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.fonts.Font;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.entity.SpriteRenderer;
@@ -39,26 +120,17 @@ import net.minecraft.client.util.InputMappings;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemModelsProperties;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Callable;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = IceAndFire.MODID, value = Dist.CLIENT)
@@ -128,7 +200,6 @@ public class ClientProxy extends CommonProxy {
 
     @OnlyIn(Dist.CLIENT)
     public void postInit() {
-        ClientEvents.initializeStoneLayer();
 
     }
 
@@ -203,10 +274,12 @@ public class ClientProxy extends CommonProxy {
         RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.HYDRA, manager -> new RenderHydra(manager));
         RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.HYDRA_BREATH, manager -> new RenderNothing(manager));
         RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.HYDRA_ARROW, manager -> new RenderHydraArrow(manager));
-        RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.DEATHWORM_MULTIPART, manager -> new RenderNothing(manager));
+        RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.SLOW_MULTIPART, manager -> new RenderNothing(manager));
         RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.DRAGON_MULTIPART, manager -> new RenderNothing(manager));
         RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.CYCLOPS_MULTIPART, manager -> new RenderNothing(manager));
         RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.HYDRA_MULTIPART, manager -> new RenderNothing(manager));
+        RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.GHOST, manager -> new RenderGhost(manager));
+        RenderingRegistry.registerEntityRenderingHandler(IafEntityRegistry.GHOST_SWORD, manager -> new RenderGhostSword(manager));
         ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.PODIUM, manager -> new RenderPodium(manager));
         ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.IAF_LECTERN, manager -> new RenderLectern(manager));
         ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.EGG_IN_ICE, manager -> new RenderEggInIce(manager));
@@ -214,6 +287,7 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.PIXIE_JAR, manager -> new RenderJar(manager));
         ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.DREAD_PORTAL, manager -> new RenderDreadPortal(manager));
         ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.DREAD_SPAWNER, manager -> new RenderDreadSpawner(manager));
+        ClientRegistry.bindTileEntityRenderer(IafTileEntityRegistry.GHOST_CHEST, manager -> new RenderGhostChest(manager));
         RenderTypeLookup.setRenderLayer(IafBlockRegistry.GOLD_PILE, RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(IafBlockRegistry.SILVER_PILE, RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(IafBlockRegistry.LECTERN, RenderType.getCutout());
@@ -252,16 +326,27 @@ public class ClientProxy extends CommonProxy {
         RenderTypeLookup.setRenderLayer(IafBlockRegistry.DREAD_SPAWNER, RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(IafBlockRegistry.DREAD_TORCH_WALL, RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(IafBlockRegistry.BURNT_TORCH_WALL, RenderType.getCutout());
-        ItemModelsProperties.func_239418_a_(IafItemRegistry.DRAGON_HORN, new ResourceLocation("iceorfire"), (p_239428_0_, p_239428_1_, p_239428_2_) -> {
+        IItemPropertyGetter pulling = ItemModelsProperties.func_239417_a_(Items.BOW, new ResourceLocation("pulling"));
+        IItemPropertyGetter pull = (stack, worldIn, entity) -> {
+            if (entity == null) {
+                return 0.0F;
+            } else {
+                ItemDragonBow item = ((ItemDragonBow) stack.getItem());
+                return entity.getActiveItemStack() != stack ? 0.0F : (stack.getUseDuration() - entity.getItemInUseCount()) / 20.0F;
+            }
+        };
+        ItemModelsProperties.registerProperty(IafItemRegistry.DRAGON_BOW.asItem(), new ResourceLocation("pulling"), pulling);
+        ItemModelsProperties.registerProperty(IafItemRegistry.DRAGON_BOW.asItem(), new ResourceLocation("pull"), pull);
+        ItemModelsProperties.registerProperty(IafItemRegistry.DRAGON_HORN, new ResourceLocation("iceorfire"), (p_239428_0_, p_239428_1_, p_239428_2_) -> {
             return ItemDragonHorn.getDragonType(p_239428_0_) * 0.25F;
         });
-        ItemModelsProperties.func_239418_a_(IafItemRegistry.SUMMONING_CRYSTAL_FIRE, new ResourceLocation("has_dragon"), (stack, p_239428_1_, p_239428_2_) -> {
+        ItemModelsProperties.registerProperty(IafItemRegistry.SUMMONING_CRYSTAL_FIRE, new ResourceLocation("has_dragon"), (stack, p_239428_1_, p_239428_2_) -> {
             return ItemSummoningCrystal.hasDragon(stack) ? 1.0F : 0.0F;
         });
-        ItemModelsProperties.func_239418_a_(IafItemRegistry.SUMMONING_CRYSTAL_ICE, new ResourceLocation("has_dragon"), (stack, p_239428_1_, p_239428_2_) -> {
+        ItemModelsProperties.registerProperty(IafItemRegistry.SUMMONING_CRYSTAL_ICE, new ResourceLocation("has_dragon"), (stack, p_239428_1_, p_239428_2_) -> {
             return ItemSummoningCrystal.hasDragon(stack) ? 1.0F : 0.0F;
         });
-        ItemModelsProperties.func_239418_a_(IafItemRegistry.SUMMONING_CRYSTAL_LIGHTNING, new ResourceLocation("has_dragon"), (stack, p_239428_1_, p_239428_2_) -> {
+        ItemModelsProperties.registerProperty(IafItemRegistry.SUMMONING_CRYSTAL_LIGHTNING, new ResourceLocation("has_dragon"), (stack, p_239428_1_, p_239428_2_) -> {
             return ItemSummoningCrystal.hasDragon(stack) ? 1.0F : 0.0F;
         });
     }
@@ -310,7 +395,10 @@ public class ClientProxy extends CommonProxy {
             particle = new ParticlePixieDust(world, x, y, z, (float) motX, (float) motY, (float) motZ);
         }
         if (name.equals("siren_appearance")) {
-            particle = new ParticleSirenAppearance(world, x, y, z, (int)motX);
+            particle = new ParticleSirenAppearance(world, x, y, z, (int) motX);
+        }
+        if (name.equals("ghost_appearance")) {
+            particle = new ParticleGhostAppearance(world, x, y, z, (int) motX);
         }
         if (name.equals("siren_music")) {
             particle = new ParticleSirenMusic(world, x, y, z, motX, motY, motZ, 1);
@@ -447,7 +535,7 @@ public class ClientProxy extends CommonProxy {
         return group.setISTER(ClientProxy::getTEISR);
     }
 
-    public PlayerEntity getClientSidePlayer(){
+    public PlayerEntity getClientSidePlayer() {
         return Minecraft.getInstance().player;
     }
 }

@@ -1,17 +1,16 @@
 package com.github.alexthe666.iceandfire.message;
 
-import com.github.alexthe666.citadel.server.message.PacketBufferUtils;
+import java.util.function.Supplier;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.github.alexthe666.iceandfire.world.MyrmexWorldData;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
-
-import java.util.UUID;
-import java.util.function.Supplier;
 
 public class MessageGetMyrmexHive {
 

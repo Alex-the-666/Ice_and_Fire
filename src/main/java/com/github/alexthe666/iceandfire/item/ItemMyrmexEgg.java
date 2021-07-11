@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityMyrmexEgg;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -16,9 +21,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemMyrmexEgg extends Item implements ICustomRendered {
 
@@ -68,9 +70,9 @@ public class ItemMyrmexEgg extends Item implements ICustomRendered {
                 caste = "queen";
         }
         if (eggOrdinal == 4) {
-            tooltip.add(new TranslationTextComponent("myrmex.caste_" + caste + ".name").func_240699_a_(TextFormatting.LIGHT_PURPLE));
+            tooltip.add(new TranslationTextComponent("myrmex.caste_" + caste + ".name").mergeStyle(TextFormatting.LIGHT_PURPLE));
         } else {
-            tooltip.add(new TranslationTextComponent("myrmex.caste_" + caste + ".name").func_240699_a_(TextFormatting.GRAY));
+            tooltip.add(new TranslationTextComponent("myrmex.caste_" + caste + ".name").mergeStyle(TextFormatting.GRAY));
         }
     }
 
@@ -87,6 +89,9 @@ public class ItemMyrmexEgg extends Item implements ICustomRendered {
         egg.setMyrmexCaste(eggOrdinal);
         egg.setLocationAndAngles(offset.getX() + 0.5, offset.getY(), offset.getZ() + 0.5, 0, 0);
         egg.onPlayerPlace(context.getPlayer());
+        if (itemstack.hasDisplayName()) {
+            egg.setCustomName(itemstack.getDisplayName());
+        }
         if (!context.getWorld().isRemote) {
             context.getWorld().addEntity(egg);
         }

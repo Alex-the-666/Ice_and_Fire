@@ -1,13 +1,14 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntityCockatrice;
 import com.github.alexthe666.iceandfire.entity.EntityGorgon;
+
 import net.minecraft.entity.EntityPredicate;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.player.PlayerEntity;
-
-import javax.annotation.Nullable;
 
 public class CockatriceAIAggroLook extends NearestAttackableTargetGoal<PlayerEntity> {
     private final EntityCockatrice cockatrice;
@@ -15,9 +16,9 @@ public class CockatriceAIAggroLook extends NearestAttackableTargetGoal<PlayerEnt
     private int aggroTime;
     private int teleportTime;
 
-    public CockatriceAIAggroLook(EntityCockatrice p_i45842_1_) {
-        super(p_i45842_1_, PlayerEntity.class, false);
-        this.cockatrice = p_i45842_1_;
+    public CockatriceAIAggroLook(EntityCockatrice endermanIn) {
+        super(endermanIn, PlayerEntity.class, false);
+        this.cockatrice = endermanIn;
     }
 
     /**

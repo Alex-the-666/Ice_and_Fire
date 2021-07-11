@@ -2,16 +2,16 @@ Cada estágio na vida de um dragão
 significa que haverá mudanças 
 diferentes no seu comportamento e 
 em seus ataques. No primeiro estágio, 
-o dragão não consegue lançar rajadas
-de gelo e está limitado a mordidas. 
-Uma vez que ele está no segundo 
-estágio, ele pode lançar pequenas 
-rajadas de gelo que dão pouco dano.
-O desenvolvimento mais notável no 
-terceiro estágio é o ganho do ataque 
-de gelo concentrado, que vão te 
-proporcionar grandes quantidades 
-de dano.
+o dragão não consegue lançar 
+rajadas de gelo e está limitado a 
+mordidas. Uma vez que ele está no 
+segundo estágio, ele pode lançar 
+pequenas rajadas de gelo que dão 
+pouco dano. O desenvolvimento mais 
+notável no terceiro estágio é o 
+ganho do ataque de gelo concentrado, 
+que vão te proporcionar grandes 
+quantidades de dano.
 
 Os dragões da fase 3 são os tipos
 mais comuns de dragões encontrados 

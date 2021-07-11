@@ -1,0 +1,45 @@
+<recipe><iceandfire:graveyard_soil 0 minecraft:air 0 iceandfire:ectoplasm 0 minecraft:air 0 iceandfire:ectoplasm 0 minecraft:coarse_dirt 0 iceandfire:ectoplasm 0 minecraft:air 0 iceandfire:ectoplasm 0 minecraft:air 0 5 60 1>
+Fantasmas também surgem
+no mundo quando um humano 
+é morto de uma forma 
+terrível por outra pessoa.
+
+
+
+
+
+
+
+
+
+
+
+Baús amaldiçoados invocam um
+fantasma para assombrar o ser
+que abriu o baú. A Terra de
+Cemitério irá gerar fantasmas
+à noite num local totalmente escuro.
+
+<item><iceandfire:ghost_ingot 10 110 4 1.25>
+
+
+
+
+
+Fantasmas também podem liberar
+uma Barra Fantasmagórica, que
+pode ser usada para melhorar uma
+espada de ossos de dragão em uma
+Espada Fantasma, usando a Bancada
+de Ferraria.
+<item><iceandfire:ghost_sword 10 110 55 1.25>
+
+
+
+
+
+
+A Espada Fantasma já é forte por 
+si só, além disso, elas também podem 
+lançar projéteis de aparência 
+fantasmagórica através dos blocos.

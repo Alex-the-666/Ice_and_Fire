@@ -1,6 +1,9 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -23,8 +26,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.FMLPlayMessages;
 import net.minecraftforge.fml.network.NetworkHooks;
-
-import java.util.List;
 
 public class EntityDreadLichSkull extends AbstractArrowEntity {
 
@@ -66,7 +67,7 @@ public class EntityDreadLichSkull extends AbstractArrowEntity {
     public void tick() {
         float sqrt = MathHelper.sqrt(this.getMotion().x * this.getMotion().x + this.getMotion().z * this.getMotion().z);
         boolean flag = true;
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         if (shootingEntity != null && shootingEntity instanceof MobEntity && ((MobEntity) shootingEntity).getAttackTarget() != null) {
             LivingEntity target = ((MobEntity) shootingEntity).getAttackTarget();
             double minusX = target.getPosX() - this.getPosX();
@@ -131,7 +132,7 @@ public class EntityDreadLichSkull extends AbstractArrowEntity {
     protected void onEntityHit(EntityRayTraceResult raytraceResultIn) {
         if (raytraceResultIn.getType() == RayTraceResult.Type.ENTITY) {
             Entity entity = ((EntityRayTraceResult) raytraceResultIn).getEntity();
-            Entity shootingEntity = this.func_234616_v_();
+            Entity shootingEntity = this.getShooter();
             if (entity != null) {
                 if (shootingEntity != null && entity.isOnSameTeam(shootingEntity)) {
                     return;
@@ -143,7 +144,7 @@ public class EntityDreadLichSkull extends AbstractArrowEntity {
 
     protected void arrowHit(LivingEntity living) {
         super.arrowHit(living);
-        Entity shootingEntity = this.func_234616_v_();
+        Entity shootingEntity = this.getShooter();
         if (living != null && (shootingEntity == null || !living.isEntityEqual(shootingEntity))) {
             if (living instanceof PlayerEntity) {
                 this.damageShield((PlayerEntity) living, (float) this.getDamage());
@@ -155,8 +156,8 @@ public class EntityDreadLichSkull extends AbstractArrowEntity {
         if (damage >= 3.0F && player.getActiveItemStack().getItem().isShield(player.getActiveItemStack(), player)) {
             ItemStack copyBeforeUse = player.getActiveItemStack().copy();
             int i = 1 + MathHelper.floor(damage);
-            player.getActiveItemStack().damageItem(i, player, (p_220009_1_) -> {
-                p_220009_1_.sendBreakAnimation(player.getActiveHand());
+            player.getActiveItemStack().damageItem(i, player, (playerSheild) -> {
+                playerSheild.sendBreakAnimation(playerSheild.getActiveHand());
             });
 
             if (player.getActiveItemStack().isEmpty()) {

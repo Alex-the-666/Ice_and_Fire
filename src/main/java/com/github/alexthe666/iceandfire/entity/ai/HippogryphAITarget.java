@@ -1,14 +1,16 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntityHippogryph;
 import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
-
-import javax.annotation.Nullable;
-import java.util.function.Predicate;
 
 public class HippogryphAITarget<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
     private EntityHippogryph hippogryph;

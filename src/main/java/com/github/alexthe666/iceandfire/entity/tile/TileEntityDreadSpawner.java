@@ -2,11 +2,11 @@ package com.github.alexthe666.iceandfire.entity.tile;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.renderer.texture.ITickable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
+import net.minecraft.tileentity.MobSpawnerTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.WeightedSpawnerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -27,8 +27,8 @@ public class TileEntityDreadSpawner extends TileEntity implements ITickableTileE
             return TileEntityDreadSpawner.this.pos;
         }
 
-        public void setNextSpawnData(WeightedSpawnerEntity p_184993_1_) {
-            super.setNextSpawnData(p_184993_1_);
+        public void setNextSpawnData(WeightedSpawnerEntity nextSpawnData) {
+            super.setNextSpawnData(nextSpawnData);
 
             if (this.getWorld() != null) {
                 BlockState BlockState = this.getWorld().getBlockState(this.getSpawnerPosition());
@@ -41,8 +41,8 @@ public class TileEntityDreadSpawner extends TileEntity implements ITickableTileE
         super(IafTileEntityRegistry.DREAD_SPAWNER);
     }
 
-    public void func_230337_a_(BlockState blockstate, CompoundNBT compound) {
-        super.func_230337_a_(blockstate, compound);
+    public void read(BlockState blockstate, CompoundNBT compound) {
+        super.read(blockstate, compound);
         this.spawnerLogic.read(compound);
     }
 
@@ -70,7 +70,7 @@ public class TileEntityDreadSpawner extends TileEntity implements ITickableTileE
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
-        func_230337_a_(this.getBlockState(), packet.getNbtCompound());
+        read(this.getBlockState(), packet.getNbtCompound());
     }
 
     public CompoundNBT getUpdateTag() {

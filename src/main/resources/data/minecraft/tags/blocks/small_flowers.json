@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "iceandfire:fire_lily",
-    "iceandfire:frost_lily"
+    "iceandfire:frost_lily",
+    "iceandfire:lightning_lily"
   ]
 }

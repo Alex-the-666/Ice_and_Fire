@@ -3,7 +3,7 @@ Cuspir gelo não é simplesmente a
 fazem para acabar com suas presas. 
 Eles também possuem ataques 
 diferentes.
-
+<image><drawings_icedragon_attacks.png 20 110 0 91 264 90 0.65>
 
 
 
@@ -20,6 +20,7 @@ infligirem quantidades massivas de
 dano.
 
 
+<image><drawings_icedragon_attacks.png 280 10 0 0 210 81 0.75>
 
 
 
@@ -34,6 +35,8 @@ dragões experientes são capazes de
 fazer este ataque.
 
 
+
+<image><drawings_icedragon_attacks.png 360 242 262 211 213 78 0.6>
 
 
 

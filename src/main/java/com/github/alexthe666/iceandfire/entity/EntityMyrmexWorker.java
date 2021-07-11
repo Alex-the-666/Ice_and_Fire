@@ -1,21 +1,21 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IafConfig;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.ai.*;
-import com.github.alexthe666.iceandfire.entity.props.StoneEntityProperties;
 import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexTrades;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
 import com.github.alexthe666.iceandfire.item.ItemMyrmexEgg;
 import com.google.common.base.Predicate;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.*;
@@ -36,7 +36,8 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class EntityMyrmexWorker extends EntityMyrmexBase {
 
@@ -57,16 +58,22 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
         return isJungle() ? JUNGLE_LOOT : DESERT_LOOT;
     }
 
+
+
     protected int getExperiencePoints(PlayerEntity player) {
         return 3;
     }
 
+    public boolean isSmallerThanBlock(){
+        return true;
+    }
+
     public void livingTick() {
         super.livingTick();
-        if (this.getAnimation() == ANIMATION_BITE && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
+        /*if (this.getAnimation() == ANIMATION_BITE && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
             this.playBiteSound();
             if (this.getAttackBounds().intersects(this.getAttackTarget().getBoundingBox())) {
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue()));
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue()));
             }
         }
         if (this.getAnimation() == ANIMATION_STING && this.getAnimationTick() == 0) {
@@ -74,10 +81,10 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
         }
         if (this.getAnimation() == ANIMATION_STING && this.getAttackTarget() != null && this.getAnimationTick() == 6) {
             if (this.getAttackBounds().intersects(this.getAttackTarget().getBoundingBox())) {
-                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.field_233823_f_).getValue() * 2));
+                this.getAttackTarget().attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue() * 2));
                 this.getAttackTarget().addPotionEffect(new EffectInstance(Effects.POISON, 60, 1));
             }
-        }
+        }*/
         if (!this.getHeldItem(Hand.MAIN_HAND).isEmpty()) {
             if (this.getHeldItem(Hand.MAIN_HAND).getItem() instanceof ItemMyrmexEgg) {
                 boolean isJungle = this.getHeldItem(Hand.MAIN_HAND).getItem() == IafItemRegistry.MYRMEX_JUNGLE_EGG;
@@ -110,12 +117,12 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
         this.goalSelector.addGoal(0, new SwimGoal(this));
         this.goalSelector.addGoal(0, new MyrmexAITradePlayer(this));
         this.goalSelector.addGoal(0, new MyrmexAILookAtTradePlayer(this));
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(1, new MyrmexAIAttackMelee(this, 1.0D, true));
         this.goalSelector.addGoal(2, new MyrmexAIStoreBabies(this, 1.0D));
         this.goalSelector.addGoal(3, new MyrmexAIStoreItems(this, 1.0D));
         this.goalSelector.addGoal(4, new MyrmexAIReEnterHive(this, 1.0D));
         this.goalSelector.addGoal(4, new MyrmexAILeaveHive(this, 1.0D));
-        this.goalSelector.addGoal(6, new MyrmexAIForage(this));
+        this.goalSelector.addGoal(6, new MyrmexAIForage(this,2));
         this.goalSelector.addGoal(7, new MyrmexAIMoveThroughHive(this, 1.0D));
         this.goalSelector.addGoal(8, new MyrmexAIWander(this, 1D));
         this.goalSelector.addGoal(9, new LookAtGoal(this, PlayerEntity.class, 6.0F));
@@ -130,6 +137,7 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
                 return EntityMyrmexWorker.this.getHeldItemMainhand().isEmpty() && entity != null && !EntityMyrmexBase.haveSameHive(EntityMyrmexWorker.this, entity) && DragonUtils.isAlive(entity) && !(entity instanceof IMob);
             }
         }));
+
 
     }
 
@@ -150,15 +158,15 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
     public static AttributeModifierMap.MutableAttribute bakeAttributes() {
         return MobEntity.func_233666_p_()
                 //HEALTH
-                .func_233815_a_(Attributes.field_233818_a_, 20)
+                .createMutableAttribute(Attributes.MAX_HEALTH, 20)
                 //SPEED
-                .func_233815_a_(Attributes.field_233821_d_, 0.3D)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.3D)
                 //ATTACK
-                .func_233815_a_(Attributes.field_233823_f_, IafConfig.myrmexBaseAttackStrength)
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, IafConfig.myrmexBaseAttackStrength)
                 //FOLLOW RANGE
-                .func_233815_a_(Attributes.field_233819_b_, 32.0D)
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 32D)
                 //ARMOR
-                .func_233815_a_(Attributes.field_233826_i_, 4D);
+                .createMutableAttribute(Attributes.ARMOR, 4D);
     }
 
     @Override
@@ -176,11 +184,11 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
     }
 
     public boolean shouldEnterHive() {
-        return holdingSomething();
+        return holdingSomething() || !world.isDaytime();
     }
 
     public boolean shouldMoveThroughHive() {
-        return !holdingSomething();
+        return !shouldLeaveHive() && !holdingSomething();
     }
 
     @Override
@@ -188,8 +196,22 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
         if (this.getGrowthStage() < 2) {
             return false;
         }
+
         if (this.getAnimation() != ANIMATION_STING && this.getAnimation() != ANIMATION_BITE) {
             this.setAnimation(this.getRNG().nextBoolean() ? ANIMATION_STING : ANIMATION_BITE);
+            float f = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            this.setLastAttackedEntity(entityIn);
+            boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), f);
+            if (this.getAnimation() == ANIMATION_STING && flag){
+                this.playStingSound();
+                if(entityIn instanceof LivingEntity) {
+                    ((LivingEntity)entityIn).addPotionEffect(new EffectInstance(Effects.POISON, 200, 2));
+                    this.setAttackTarget((LivingEntity)entityIn);
+                }
+            }
+            else{
+                this.playBiteSound();
+            }
             if (!this.world.isRemote && this.getRNG().nextInt(3) == 0 && this.getHeldItem(Hand.MAIN_HAND) != ItemStack.EMPTY) {
                 this.entityDropItem(this.getHeldItem(Hand.MAIN_HAND), 0);
                 this.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
@@ -217,7 +239,6 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
     public int getCasteImportance() {
         return 0;
     }
-
     @Override
     public Animation[] getAnimations() {
         return new Animation[]{ANIMATION_PUPA_WIGGLE, ANIMATION_BITE, ANIMATION_STING};
@@ -236,8 +257,7 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
     }
 
     public boolean attackEntityFrom(DamageSource source, float amount) {
-        StoneEntityProperties properties = EntityPropertiesHandler.INSTANCE.getProperties(this, StoneEntityProperties.class);
-        if (amount >= 1.0D && !this.world.isRemote && this.getRNG().nextInt(3) == 0 && this.getHeldItem(Hand.MAIN_HAND) != ItemStack.EMPTY && !properties.isStone()) {
+        if (amount >= 1.0D && !this.world.isRemote && this.getRNG().nextInt(3) == 0 && this.getHeldItem(Hand.MAIN_HAND) != ItemStack.EMPTY) {
             this.entityDropItem(this.getHeldItem(Hand.MAIN_HAND), 0);
             this.setHeldItem(Hand.MAIN_HAND, ItemStack.EMPTY);
         }
@@ -281,7 +301,7 @@ public class EntityMyrmexWorker extends EntityMyrmexBase {
     }
 
     @Override
-    public boolean func_213705_dZ() {
+    public boolean hasXPBar() {
         return false;
     }
 }

@@ -1,6 +1,11 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.entity.EntityDeathWorm;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -8,9 +13,7 @@ import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class DeathWormAIFindSandTarget extends Goal {
     private EntityDeathWorm mob;
@@ -20,7 +23,6 @@ public class DeathWormAIFindSandTarget extends Goal {
     public DeathWormAIFindSandTarget(EntityDeathWorm mob, int range) {
         this.mob = mob;
         this.range = range;
-        this.setMutexFlags(EnumSet.of(Flag.MOVE));
     }
 
     @Override
@@ -80,7 +82,7 @@ public class DeathWormAIFindSandTarget extends Goal {
                 return sand.get(this.mob.getRNG().nextInt(sand.size()));
             }
         } else {
-            BlockPos blockpos1 = this.mob.getAttackTarget().func_233580_cy_();
+            BlockPos blockpos1 = this.mob.getAttackTarget().getPosition();
             return new BlockPos(blockpos1.getX(), (double) blockpos1.getY() - 1, blockpos1.getZ());
         }
         return null;

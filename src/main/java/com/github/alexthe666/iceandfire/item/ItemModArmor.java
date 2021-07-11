@@ -1,6 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -12,11 +19,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 public class ItemModArmor extends ArmorItem {
 
@@ -59,7 +61,7 @@ public class ItemModArmor extends ArmorItem {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             if (calendar.get(2) + 1 == 4 && calendar.get(5) == 1) {
-                tooltip.add(new TranslationTextComponent("item.iceandfire.air_pods.desc").func_240699_a_(TextFormatting.GREEN));
+                tooltip.add(new TranslationTextComponent("item.iceandfire.air_pods.desc").mergeStyle(TextFormatting.GREEN));
             }
         }
         super.addInformation(stack, worldIn, tooltip, flagIn);

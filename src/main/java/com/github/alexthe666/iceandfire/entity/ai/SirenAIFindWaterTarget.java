@@ -1,14 +1,15 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.entity.EntitySiren;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SirenAIFindWaterTarget extends Goal {
     private EntitySiren mob;
@@ -70,7 +71,7 @@ public class SirenAIFindWaterTarget extends Goal {
                 return water.get(this.mob.getRNG().nextInt(water.size()));
             }
         } else {
-            BlockPos blockpos1 = this.mob.getAttackTarget().func_233580_cy_();
+            BlockPos blockpos1 = this.mob.getAttackTarget().getPosition();
             return new Vector3d(blockpos1.getX(), blockpos1.getY(), blockpos1.getZ());
         }
         return null;

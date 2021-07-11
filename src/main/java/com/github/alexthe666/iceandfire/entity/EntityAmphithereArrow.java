@@ -2,6 +2,7 @@ package com.github.alexthe666.iceandfire.entity;
 
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -111,8 +112,8 @@ public class EntityAmphithereArrow extends AbstractArrowEntity {
         if (damage >= 3.0F && player.getActiveItemStack().getItem().isShield(player.getActiveItemStack(), player)) {
             ItemStack copyBeforeUse = player.getActiveItemStack().copy();
             int i = 1 + MathHelper.floor(damage);
-            player.getActiveItemStack().damageItem(i, player, (p_220040_1_) -> {
-                p_220040_1_.sendBreakAnimation(player.getActiveHand());
+            player.getActiveItemStack().damageItem(i, player, (playerSheild) -> {
+                playerSheild.sendBreakAnimation(playerSheild.getActiveHand());
             });
 
             if (player.getActiveItemStack().isEmpty()) {

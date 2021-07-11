@@ -1,15 +1,19 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.Random;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntitySiren;
+
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.EnumSet;
-import java.util.Random;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class AquaticAIGetOutOfWater extends Goal {
     private final MobEntity creature;

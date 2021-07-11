@@ -1,8 +1,13 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
 import com.github.alexthe666.iceandfire.entity.EntityDragonBase;
 import com.github.alexthe666.iceandfire.entity.EntityDragonEgg;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
@@ -14,9 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class DragonAIMate extends Goal {
     private static final BlockState NEST = IafBlockRegistry.NEST.getDefaultState();

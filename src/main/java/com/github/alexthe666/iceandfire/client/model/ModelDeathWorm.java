@@ -8,9 +8,11 @@ import com.github.alexthe666.iceandfire.entity.EntityDeathWorm;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
 
 public class ModelDeathWorm extends ModelDragonBase<EntityDeathWorm> {
     public AdvancedModelBox Body;
@@ -275,10 +277,26 @@ public class ModelDeathWorm extends ModelDragonBase<EntityDeathWorm> {
         this.chainSwing(WORM, speed_walk, degree_walk * 0.1F, -3, f2, 1);
         this.chainSwing(WORM, speed_walk, degree_walk, -3, f, f1);
         this.chainFlap(WORM, speed_walk, degree_walk * 0.75F, -3, f, f1);
-        worm.tail_buffer.applyChainSwingBuffer(WORM);
-        float pitchAmount = f4 / (180.0F / (float) Math.PI);
-        this.Body.rotationPointX += pitchAmount;
+        float jumpProgress = worm.prevJumpProgress + (worm.jumpProgress - worm.prevJumpProgress) * (f2 - worm.ticksExisted);
+        this.progressRotation(Head, jumpProgress, (float) Math.toRadians(25), 0.0F, 0.0F);
+        this.progressRotation(Body, jumpProgress, (float) Math.toRadians(65), 0.0F, 0.0F);
+        this.progressRotation(Body2, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Body3, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Body4, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Body5, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Body6, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Body8, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Body9, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Tail1, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Tail2, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Tail3, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        this.progressRotation(Tail4, jumpProgress, (float) Math.toRadians(-21), 0.0F, 0.0F);
+        if(worm.tail_buffer != null)
+            worm.tail_buffer.applyChainSwingBuffer(WORM);
 
+        if(worm.getWormJumping() > 0){
+            this.Body.rotateAngleX += f4 * ((float)Math.PI / 180F);
+        }
     }
 
     @Override
@@ -293,9 +311,6 @@ public class ModelDeathWorm extends ModelDragonBase<EntityDeathWorm> {
 
     @Override
     public void renderStatue(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, Entity living) {
-        this.resetToDefaultPose();
         this.render(matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-
-        this.resetToDefaultPose();
     }
 }

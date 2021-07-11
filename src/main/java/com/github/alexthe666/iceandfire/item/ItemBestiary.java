@@ -1,7 +1,12 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.enums.EnumBestiaryPages;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,9 +23,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemBestiary extends Item {
 
@@ -72,13 +74,13 @@ public class ItemBestiary extends Item {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         if (stack.getTag() != null) {
             if (IceAndFire.PROXY.shouldSeeBestiaryContents()) {
-                tooltip.add(new TranslationTextComponent("bestiary.contains").func_240699_a_(TextFormatting.GRAY));
+                tooltip.add(new TranslationTextComponent("bestiary.contains").mergeStyle(TextFormatting.GRAY));
                 List<EnumBestiaryPages> pages = EnumBestiaryPages.containedPages(EnumBestiaryPages.toList(stack.getTag().getIntArray("Pages")));
                 for (EnumBestiaryPages page : pages) {
-                    tooltip.add(new StringTextComponent(TextFormatting.WHITE + "-").func_230529_a_(new TranslationTextComponent("bestiary." + EnumBestiaryPages.values()[page.ordinal()].toString().toLowerCase())).func_240699_a_(TextFormatting.GRAY));
+                    tooltip.add(new StringTextComponent(TextFormatting.WHITE + "-").appendSibling(new TranslationTextComponent("bestiary." + EnumBestiaryPages.values()[page.ordinal()].toString().toLowerCase())).mergeStyle(TextFormatting.GRAY));
                 }
             } else {
-                tooltip.add(new TranslationTextComponent("bestiary.hold_shift").func_240699_a_(TextFormatting.GRAY));
+                tooltip.add(new TranslationTextComponent("bestiary.hold_shift").mergeStyle(TextFormatting.GRAY));
             }
 
         }

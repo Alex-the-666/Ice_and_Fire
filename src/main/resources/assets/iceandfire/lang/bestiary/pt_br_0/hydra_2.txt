@@ -1,0 +1,43 @@
+<item><iceandfire:hydra_fang 0 35 4 1.25>
+<item><iceandfire:hydra_heart 0 110 4 1.25>
+
+
+
+A presa da hidra é um item valioso
+que pode ser usado para criar 
+flechas especiais que envenenam 
+seus alvos.
+<recipe><iceandfire:hydra_arrow 0 minecraft:air 0 iceandfire:hydra_fang 0 minecraft:air 0 minecraft:air 0 minecraft:stick 0 minecraft:air 0 minecraft:air 0 minecraft:waterlily 0 minecraft:air 0 0 75 1>
+
+
+
+
+
+
+
+
+Essas flechas também têm uma segunda
+propiedade importante: quando atingem
+suas vítimas, elas sugarão a vida do 
+alvo e irão curar o atirador.
+
+
+
+
+
+
+O coração da hidra é um item raro
+amplamente procurado pelos seus
+efeitos. Enquanto estiver equipado
+na barra de itens, o coração da hidra
+fornecerá níveis crescentes de 
+regeneração tendo como base a 
+quantidade de vida perdida pelo 
+usuário.
+
+O coração poderoso deste
+monstro faz com que a
+difícil batalha valha à
+pena, isso explica o 
+motivo do covil da Hidra
+conter tantos ossos.

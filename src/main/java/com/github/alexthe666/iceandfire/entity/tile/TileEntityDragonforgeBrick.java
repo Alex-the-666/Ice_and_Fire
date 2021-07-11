@@ -1,10 +1,10 @@
 package com.github.alexthe666.iceandfire.entity.tile;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-
-import javax.annotation.Nullable;
 
 public class TileEntityDragonforgeBrick extends TileEntity {
 

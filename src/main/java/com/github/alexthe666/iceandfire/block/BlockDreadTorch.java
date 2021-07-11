@@ -1,6 +1,9 @@
 package com.github.alexthe666.iceandfire.block;
 
+import java.util.Random;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -12,13 +15,22 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.util.Random;
+import net.minecraft.block.AbstractBlock.Properties;
 
 public class BlockDreadTorch extends TorchBlock implements IDreadBlock, IWallBlock {
 
     public BlockDreadTorch() {
-        super(Properties.create(Material.WOOD).func_235838_a_((p_235454_0_) -> {  return 5;
-        }).sound(SoundType.STONE).notSolid().variableOpacity(), RedstoneParticleData.REDSTONE_DUST);
+        super(
+    		Properties
+    			.create(Material.WOOD)
+    			.setLightLevel((state) -> { return 5; })
+    			.sound(SoundType.STONE)
+    			.notSolid()
+    			.variableOpacity()
+                    .doesNotBlockMovement(),
+    		RedstoneParticleData.REDSTONE_DUST
+		);
+
         setRegistryName(IceAndFire.MODID, "dread_torch");
     }
 

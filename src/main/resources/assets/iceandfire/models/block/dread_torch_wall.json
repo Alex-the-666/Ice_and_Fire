@@ -1,5 +1,5 @@
 {
-  "parent": "block/torch_wall",
+  "parent": "block/wall_torch",
   "textures": {
     "torch": "iceandfire:block/dread_torch"
   }

@@ -1,12 +1,11 @@
 package com.github.alexthe666.iceandfire;
 
+import java.util.List;
+
 import com.github.alexthe666.iceandfire.config.ConfigHolder;
 import com.google.common.collect.Lists;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraftforge.fml.config.ModConfig;
 
 public class IafConfig {
     public static boolean customMainMenu = true;
@@ -25,10 +24,12 @@ public class IafConfig {
     public static int generateDragonRoostChance = 360;
     public static int dragonDenGoldAmount = 4;
     public static boolean useDimensionBlackList = true;
-    public static List<? extends String> whitelistedDimensions = Lists.newArrayList("minecraft:overworld");
-    public static List<? extends String> blacklistedDimensions = Lists.newArrayList("minecraft:nether", "minecraft:the_end");
+    public static List<? extends String> featureWhitelistedDimensions = Lists.newArrayList("minecraft:overworld");
+    public static List<? extends String> featureBlacklistedDimensions = Lists.newArrayList("minecraft:nether", "minecraft:the_end");
     public static List<? extends String> dragonWhitelistedDimensions = Lists.newArrayList("minecraft:overworld");
     public static List<? extends String> dragonBlacklistedDimensions = Lists.newArrayList("minecraft:the_nether", "minecraft:the_end");
+    public static List<? extends String> mobWhitelistedDimensions = Lists.newArrayList("minecraft:overworld");
+    public static List<? extends String> mobBlacklistedDimensions = Lists.newArrayList("minecraft:the_nether", "minecraft:the_end");
     public static List<? extends String> blacklistedBreakBlocks = Lists.newArrayList();
     public static List<? extends String> noDropBreakBlocks = Lists.newArrayList("minecraft:stone", "minecraft:dirt", "minecraft:grass_block");
     public static boolean blacklistBreakBlocksIsWhiteList = false;
@@ -108,7 +109,7 @@ public class IafConfig {
     public static int stymphalianBirdSpawnChance = 80;
     public static boolean spawnTrolls = true;
     public static int trollSpawnRate = 60;
-    public static int trollSpawnCheckChance = 40;
+    public static int trollSpawnCheckChance = 10;
     public static boolean trollsDropWeapon = true;
     public static double trollMaxHealth = 50;
     public static double trollAttackStrength = 10;
@@ -120,8 +121,8 @@ public class IafConfig {
     public static int myrmexLarvaTicks = 35000;
     public static int myrmexColonyGenChance = 150;
     public static int myrmexColonySize = 80;
+    public static int myrmexMaximumWanderRadius = 50;
     public static double myrmexBaseAttackStrength = 3.0D;
-    public static boolean experimentalPathFinder;
     public static boolean spawnAmphitheres = true;
     public static int amphithereSpawnRate = 50;
     public static float amphithereVillagerSearchLength = 64;
@@ -137,18 +138,18 @@ public class IafConfig {
     public static double dragonsteelBaseDamage = 25F;
     public static int dragonsteelBaseArmor = 12;
     public static int dragonsteelBaseDurability = 8000;
+    public static int dragonsteelBaseDurabilityEquipment = 8000;
     public static boolean spawnStructuresOnSuperflat = true;
     public static boolean dragonMovedWronglyFix = false;
     public static int dreadlandsDimensionId = -12;
     public static boolean weezerTinkers = true;
     public static double dragonBlockBreakingDropChance = 0.1D;
-    public static boolean completeDragonPathfinding = false;
     public static boolean dragonAuto3rdPerson = true;
     public static double dreadQueenMaxHealth = 750;
     public static boolean generateMausoleums = true;
     public static int generateMausoleumChance = 30;
     public static boolean spawnLiches = true;
-    public static int lichSpawnRate = 1;
+    public static int lichSpawnRate = 4;
     public static double hydraMaxHealth = 250D;
     public static boolean generateHydraCaves = true;
     public static int generateHydraChance = 120;
@@ -158,6 +159,20 @@ public class IafConfig {
     public static double dangerousWorldGenDistanceLimit = 1000;
     public static double dangerousWorldGenSeparationLimit = 300;
     public static double dragonFlightSpeedMod = 1F;
+    public static double hippogryphFlightSpeedMod = 1F;
+    public static double hippocampusSwimSpeedMod = 1F;
+    public static boolean generateGraveyards = true;
+    public static int generateGraveyardChance = 16;
+    public static double ghostMaxHealth = 30;
+    public static double ghostAttackStrength = 3;
+    public static boolean ghostsFromPlayerDeaths = true;
+
+    public static int dragonPathfindingThreads = 3;
+    public static int maxDragonPathingNodes = 5000;
+    public static boolean dragonWeaponFireAbility = true;
+    public static boolean dragonWeaponIceAbility = true;
+    public static boolean dragonWeaponLightningAbility = true;
+    public static int villagerHouseWeight = 30;
 
     public static void bakeClient(final ModConfig config) {
         try {
@@ -272,7 +287,7 @@ public class IafConfig {
             myrmexColonyGenChance = ConfigHolder.SERVER.myrmexColonyGenChance.get();
             myrmexColonySize = ConfigHolder.SERVER.myrmexColonySize.get();
             myrmexBaseAttackStrength = ConfigHolder.SERVER.myrmexBaseAttackStrength.get();
-            experimentalPathFinder = ConfigHolder.SERVER.experimentalPathFinder.get();
+            myrmexMaximumWanderRadius = ConfigHolder.SERVER.myrmexMaximumWanderRadius.get();
             spawnAmphitheres = ConfigHolder.SERVER.spawnAmphitheres.get();
             amphithereSpawnRate = ConfigHolder.SERVER.amphithereSpawnRate.get();
             amphithereVillagerSearchLength = ConfigHolder.SERVER.amphithereVillagerSearchLength.get();
@@ -288,6 +303,7 @@ public class IafConfig {
             dragonsteelBaseDamage = ConfigHolder.SERVER.dragonsteelBaseDamage.get();
             dragonsteelBaseArmor = ConfigHolder.SERVER.dragonsteelBaseArmor.get();
             dragonsteelBaseDurability = ConfigHolder.SERVER.dragonsteelBaseDurability.get();
+            dragonsteelBaseDurabilityEquipment = ConfigHolder.SERVER.dragonsteelBaseDurabilityEquipment.get();
             dragonMovedWronglyFix = ConfigHolder.SERVER.dragonMovedWronglyFix.get();
             weezerTinkers = ConfigHolder.SERVER.weezerTinkers.get();
             dragonBlockBreakingDropChance = ConfigHolder.SERVER.dragonBlockBreakingDropChance.get();
@@ -308,9 +324,25 @@ public class IafConfig {
             useDimensionBlackList = ConfigHolder.SERVER.useDimensionBlackList.get();
             dragonWhitelistedDimensions = ConfigHolder.SERVER.dragonWhitelistDimensions.get();
             dragonBlacklistedDimensions = ConfigHolder.SERVER.dragonBlacklistDimensions.get();
-            whitelistedDimensions = ConfigHolder.SERVER.whitelistDimensions.get();
-            blacklistedDimensions = ConfigHolder.SERVER.blacklistDimensions.get();
+            featureWhitelistedDimensions = ConfigHolder.SERVER.featureWhitelistDimensions.get();
+            featureBlacklistedDimensions = ConfigHolder.SERVER.featureBlacklistDimensions.get();
+            mobWhitelistedDimensions = ConfigHolder.SERVER.mobWhitelistDimensions.get();
+            mobBlacklistedDimensions = ConfigHolder.SERVER.mobBlacklistDimensions.get();
             dragonFlightSpeedMod = ConfigHolder.SERVER.dragonFlightSpeedMod.get();
+            hippogryphFlightSpeedMod = ConfigHolder.SERVER.hippogryphFlightSpeedMod.get();
+            hippocampusSwimSpeedMod = ConfigHolder.SERVER.hippocampusSwimSpeedMod.get();
+            generateGraveyards = ConfigHolder.SERVER.generateGraveyards.get();
+            generateGraveyardChance = ConfigHolder.SERVER.generateGraveyardChance.get();
+            ghostMaxHealth = ConfigHolder.SERVER.ghostMaxHealth.get();
+            ghostAttackStrength = ConfigHolder.SERVER.ghostAttackStrength.get();
+            ghostsFromPlayerDeaths = ConfigHolder.SERVER.ghostSpawnFromPlayerDeaths.get();
+            dragonPathfindingThreads = ConfigHolder.SERVER.dragonPathfindingThreads.get();
+            maxDragonPathingNodes = ConfigHolder.SERVER.maxDragonPathingNodes.get();
+            dragonWeaponFireAbility = ConfigHolder.SERVER.dragonWeaponFireAbility.get();
+            dragonWeaponIceAbility = ConfigHolder.SERVER.dragonWeaponIceAbility.get();
+            dragonWeaponLightningAbility = ConfigHolder.SERVER.dragonWeaponLightningAbility.get();
+            villagerHouseWeight = ConfigHolder.SERVER.villagerHouseWeight.get();
+
         } catch (Exception e) {
             IceAndFire.LOGGER.warn("An exception was caused trying to load the common config for Ice and Fire.");
             e.printStackTrace();

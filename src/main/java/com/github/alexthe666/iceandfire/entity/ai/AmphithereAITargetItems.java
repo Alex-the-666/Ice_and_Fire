@@ -1,7 +1,15 @@
 package com.github.alexthe666.iceandfire.entity.ai;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.iceandfire.entity.EntityAmphithere;
 import com.google.common.base.Predicate;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.TargetGoal;
@@ -10,11 +18,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
+import net.minecraft.entity.ai.goal.Goal.Flag;
 
 public class AmphithereAITargetItems<T extends ItemEntity> extends TargetGoal {
     protected final DragonAITargetItems.Sorter theNearestAttackableTargetSorter;
@@ -48,6 +52,10 @@ public class AmphithereAITargetItems<T extends ItemEntity> extends TargetGoal {
         if (!((EntityAmphithere) this.goalOwner).canMove()) {
             return false;
         }
+        //If the target entity already is what we want skip AABB
+        if (targetEntitySelector.apply(this.targetEntity)){
+            return true;
+        }
         List<ItemEntity> list = this.goalOwner.world.getEntitiesWithinAABB(ItemEntity.class, this.getTargetableArea(this.getTargetDistance()), this.targetEntitySelector);
 
         if (list.isEmpty()) {
@@ -67,6 +75,12 @@ public class AmphithereAITargetItems<T extends ItemEntity> extends TargetGoal {
     public void startExecuting() {
         this.goalOwner.getNavigator().tryMoveToXYZ(this.targetEntity.getPosX(), this.targetEntity.getPosY(), this.targetEntity.getPosZ(), 1);
         super.startExecuting();
+    }
+
+    @Override
+    public void resetTask() {
+        this.targetEntity = null;
+        super.resetTask();
     }
 
     @Override

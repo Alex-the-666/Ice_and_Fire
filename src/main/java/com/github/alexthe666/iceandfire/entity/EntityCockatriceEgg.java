@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -40,8 +41,6 @@ public class EntityCockatriceEgg extends ProjectileItemEntity {
     @OnlyIn(Dist.CLIENT)
     public void handleStatusUpdate(byte id) {
         if (id == 3) {
-            double d0 = 0.08D;
-
             for (int i = 0; i < 8; ++i) {
                 this.world.addParticle(new ItemParticleData(ParticleTypes.ITEM, this.getItem()), this.getPosX(), this.getPosY(), this.getPosZ(), ((double) this.rand.nextFloat() - 0.5D) * 0.08D, ((double) this.rand.nextFloat() - 0.5D) * 0.08D, ((double) this.rand.nextFloat() - 0.5D) * 0.08D);
             }
@@ -53,9 +52,9 @@ public class EntityCockatriceEgg extends ProjectileItemEntity {
      * Called when this EntityThrowable hits a block or entity.
      */
     protected void onImpact(RayTraceResult result) {
+        Entity thrower = getShooter();
         if (result.getType() == RayTraceResult.Type.ENTITY) {
-
-            ((EntityRayTraceResult) result).getEntity().attackEntityFrom(DamageSource.causeThrownDamage(this, this.func_234616_v_()), 0.0F);
+            ((EntityRayTraceResult) result).getEntity().attackEntityFrom(DamageSource.causeThrownDamage(this, thrower), 0.0F);
         }
 
         if (!this.world.isRemote) {
@@ -71,8 +70,7 @@ public class EntityCockatriceEgg extends ProjectileItemEntity {
                     cockatrice.setGrowingAge(-24000);
                     cockatrice.setHen(this.rand.nextBoolean());
                     cockatrice.setLocationAndAngles(this.getPosX(), this.getPosY(), this.getPosZ(), this.rotationYaw, 0.0F);
-                    Entity thrower = func_234616_v_();
-                    if (thrower != null && thrower instanceof PlayerEntity) {
+                    if (thrower instanceof PlayerEntity) {
                         cockatrice.setTamedBy((PlayerEntity) thrower);
                     }
                     this.world.addEntity(cockatrice);

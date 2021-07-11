@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -23,19 +24,15 @@ public class BlockDreadBase extends BlockGeneric implements IDragonProof, IDread
         this.setDefaultState(this.stateContainer.getBaseState().with(PLAYER_PLACED, Boolean.valueOf(false)));
     }
 
-
-    /*@Override
-    public float getBlockHardness(BlockState blockState, IBlockReader worldIn, BlockPos pos) {
-        return blockState.get(PLAYER_PLACED) ? super.getHarvestLevel(blockState, worldIn, pos) : -1;
-    }*/
-    //TODO ^^^^
-
-    public BlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().with(PLAYER_PLACED, Boolean.valueOf(meta > 0));
-    }
-
-    public int getMetaFromState(BlockState state) {
-        return state.get(PLAYER_PLACED) ? 1 : 0;
+    @SuppressWarnings("deprecation")
+    @Override
+    public float getPlayerRelativeBlockHardness(BlockState state, PlayerEntity player, IBlockReader worldIn, BlockPos pos) {
+        if (state.get(PLAYER_PLACED)) {
+            float f = 8f;
+            //Code from super method
+            return player.getDigSpeed(state, pos) / f / (float) 30;
+        }
+        return super.getPlayerRelativeBlockHardness(state,player,worldIn,pos);
     }
 
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {

@@ -1,9 +1,10 @@
 modLoader="javafml" #mandatory
 loaderVersion="[31,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 issueTrackerURL="https://github.com/Alex-the-666/ice-and-fire/issues" #optional
+license="GNU LESSER GENERAL PUBLIC LICENSE"
 [[mods]] #mandatory
 modId="iceandfire" #mandatory
-version="2.0.3-1.16.1" #mandatory
+version="2.1.8-1.16.5" #mandatory
 displayName="Ice and Fire" #mandatory
 displayURL="https://www.curseforge.com/minecraft/mc-mods/ice-and-fire-dragons" #optional
 authors="Alexthe666" #optional
@@ -14,7 +15,7 @@ description='''Dragons and other mythological creatures in minecraft.'''
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[1.1.20,)" #mandatory
+    versionRange="[1.7.1,)" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="AFTER"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER

@@ -14,15 +14,17 @@ public interface IFlyingMount {
 
     boolean isFlying();
 
-    default boolean up() {
+    default boolean isGoingUp() {
         return false;
     }
 
-    default boolean down() {
+    default boolean isGoingDown() {
         return false;
     }
 
     default boolean isHovering() {
         return false;
     }
+
+    default double getYSpeedMod(){ return 10; }
 }

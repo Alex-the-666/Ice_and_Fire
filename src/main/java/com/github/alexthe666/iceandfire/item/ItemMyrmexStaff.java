@@ -1,10 +1,13 @@
 package com.github.alexthe666.iceandfire.item;
 
+import java.util.UUID;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.util.MyrmexHive;
 import com.github.alexthe666.iceandfire.message.MessageGetMyrmexHive;
 import com.github.alexthe666.iceandfire.message.MessageSetMyrmexHiveNull;
 import com.github.alexthe666.iceandfire.world.MyrmexWorldData;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -15,8 +18,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
-
-import java.util.UUID;
 
 public class ItemMyrmexStaff extends Item {
 
@@ -48,17 +49,19 @@ public class ItemMyrmexStaff extends Item {
         if (playerIn.isSneaking()) {
             return super.onItemRightClick(worldIn, playerIn, hand);
         }
-        UUID id = itemStackIn.getTag().getUniqueId("HiveUUID");
-        if (!worldIn.isRemote) {
-            MyrmexHive hive = MyrmexWorldData.get(worldIn).getHiveFromUUID(id);
-            MyrmexWorldData.get(worldIn).addHive(worldIn, new MyrmexHive());
-            if (hive != null) {
-                IceAndFire.sendMSGToAll(new MessageGetMyrmexHive(hive.toNBT()));
-            } else {
-                IceAndFire.sendMSGToAll(new MessageSetMyrmexHiveNull());
+        if (itemStackIn.getTag() != null) {
+            UUID id = itemStackIn.getTag().getUniqueId("HiveUUID");
+            if (!worldIn.isRemote) {
+                MyrmexHive hive = MyrmexWorldData.get(worldIn).getHiveFromUUID(id);
+                MyrmexWorldData.get(worldIn).addHive(worldIn, new MyrmexHive());
+                if (hive != null) {
+                    IceAndFire.sendMSGToAll(new MessageGetMyrmexHive(hive.toNBT()));
+                } else {
+                    IceAndFire.sendMSGToAll(new MessageSetMyrmexHiveNull());
+                }
+            } else if (id != null && !id.equals(new UUID(0, 0))) {
+                IceAndFire.PROXY.openMyrmexStaffGui(itemStackIn);
             }
-        } else if (id != null && !id.equals(new UUID(0, 0))) {
-            IceAndFire.PROXY.openMyrmexStaffGui(itemStackIn);
         }
         playerIn.swingArm(hand);
         return new ActionResult<ItemStack>(ActionResultType.PASS, itemStackIn);

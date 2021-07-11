@@ -1,3 +1,8 @@
 Outra coisa que se deve notar
-sobre dragıes de gelo s„o seus
-diferentes est·gios de vida.
+sobre drag√µes de gelo s√£o seus
+diferentes est√°gios de vida.
+<image><drawings_icedragon.png 10 50 198 253 184 93 1>
+<image><drawings_icedragon.png 10 130 198 380 184 93 1>
+<image><drawings_icedragon.png 200 5 8 429 184 78 1>
+<image><drawings_icedragon.png 200 75 8 342 184 78 1>
+<image><drawings_icedragon.png 200 150 8 263 184 78 1>

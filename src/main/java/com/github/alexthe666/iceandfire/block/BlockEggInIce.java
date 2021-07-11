@@ -2,7 +2,12 @@ package com.github.alexthe666.iceandfire.block;
 
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.tile.TileEntityEggInIce;
-import net.minecraft.block.*;
+
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ContainerBlock;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -13,12 +18,23 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class BlockEggInIce extends ContainerBlock {
     public Item itemBlock;
 
     @SuppressWarnings("deprecation")
     public BlockEggInIce() {
-        super(Properties.create(Material.ICE).notSolid().variableOpacity().hardnessAndResistance(0.5F).variableOpacity().sound(SoundType.GLASS));
+        super(
+    		Properties
+    			.create(Material.ICE)
+    			.notSolid()
+    			.variableOpacity()
+    			.hardnessAndResistance(0.5F)
+    			.variableOpacity()
+    			.sound(SoundType.GLASS)
+		);
+
         setRegistryName(IceAndFire.MODID, "egginice");
     }
 

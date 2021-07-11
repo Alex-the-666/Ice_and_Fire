@@ -1,0 +1,43 @@
+Ghosts are the manifestation of
+the undead on the spiritual plane.
+Ethereal by nature, they cannot be
+destroyed using any projectile,
+such as arrows or fire.
+<image><drawings_2.png 20 45 115 210 20 31 2>
+<image><drawings_2.png 40 35 136 210 20 31 2>
+<image><drawings_2.png 60 45 157 210 20 31 2>
+
+
+
+
+
+
+
+
+
+
+Ghosts are known to haunt the
+graveyards that dot the overworld,
+waiting until the veil of night
+uncovers them. Ghosts can move
+through any block due to their
+
+
+
+
+phantasmal abilities, and have
+little patience for those who
+have stumbled upon their graves.
+
+The best way to dispatch a ghost
+would be a silver sword, due to
+the ghosts' natural invulnerability
+to fire, arrows and other earthly
+weapons. Being undead, they also
+take extra damage.
+<item><iceandfire:ectoplasm 20 110 4 1.25>
+
+Ghosts may leave behind some
+Ectoplasm when they die. This
+can be used to craft Cursed
+Chests and Graveyard Soil.

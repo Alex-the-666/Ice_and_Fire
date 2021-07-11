@@ -1,12 +1,13 @@
 package com.github.alexthe666.iceandfire.inventory;
 
+import java.lang.reflect.Field;
+
 import com.github.alexthe666.iceandfire.IceAndFire;
+
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.lang.reflect.Field;
 
 @Mod.EventBusSubscriber(modid = IceAndFire.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class IafContainerRegistry {

@@ -1,13 +1,18 @@
 package com.github.alexthe666.iceandfire.world.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import com.github.alexthe666.iceandfire.IafConfig;
-import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.block.BlockGoldPile;
 import com.github.alexthe666.iceandfire.block.IafBlockRegistry;
 import com.github.alexthe666.iceandfire.entity.EntityFireDragon;
 import com.github.alexthe666.iceandfire.entity.IafEntityRegistry;
 import com.github.alexthe666.iceandfire.world.IafWorldRegistry;
 import com.mojang.serialization.Codec;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.ContainerBlock;
@@ -23,13 +28,6 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
     public static final ResourceLocation FIREDRAGON_CHEST = new ResourceLocation("iceandfire", "chest/fire_dragon_female_cave");
@@ -62,7 +60,7 @@ public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
     }
 
     @Override
-    public boolean func_230362_a_(ISeedReader worldIn, StructureManager structureManager, ChunkGenerator generator, Random rand, BlockPos position, NoFeatureConfig config) {
+    public boolean generate(ISeedReader worldIn, ChunkGenerator p_230362_3_, Random rand, BlockPos position, NoFeatureConfig p_230362_6_) {
         if(!IafWorldRegistry.isDimensionListedForDragons(worldIn)){
             return false;
         }
@@ -71,7 +69,7 @@ public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
         }
         List<SphereInfo> sphereList = new ArrayList<SphereInfo>();
         position = new BlockPos(position.getX(), 20 + rand.nextInt(20), position.getZ());
-        isMale = rand.nextBoolean();
+        isMale = new Random().nextBoolean();
         int dragonAge = 75 + rand.nextInt(50);
         int radius = (int) (dragonAge * 0.2F) + rand.nextInt(8);
         createShell(worldIn, rand, position, radius, sphereList);
@@ -91,7 +89,7 @@ public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
         dragon.setHealth(dragon.getMaxHealth());
         dragon.setVariant(rand.nextInt(4));
         dragon.setPositionAndRotation(position.getX() + 0.5, position.getY() + 0.5, position.getZ() + 0.5, rand.nextFloat() * 360, 0);
-        dragon.setSleeping(true);
+        dragon.setQueuedToSit(true);
         dragon.homePos = position;
         dragon.setHunger(50);
         worldIn.addEntity(dragon);
@@ -107,11 +105,11 @@ public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
         int k = radius / 2;
         int l = radius;
         float f = (float) (j + k + l) * 0.333F + 0.5F;
-        for (BlockPos blockpos : BlockPos.getAllInBox(pos.add(-j, -k, -l), pos.add(j, k / 2, l)).map(BlockPos::toImmutable).collect(Collectors.toSet())) {
-            if (blockpos.distanceSq(pos) <= (double) (f * f) && worldIn.getBlockState(blockpos.down()).getMaterial() == Material.ROCK && worldIn.getBlockState(blockpos).getMaterial() != Material.ROCK) {
-                setGoldPile(worldIn, blockpos, rand);
+        BlockPos.getAllInBox(pos.add(-j, -k, -l), pos.add(j, k / 2, l)).map(BlockPos::toImmutable).forEach(blockPos -> {
+            if (blockPos.distanceSq(pos) <= (double) (f * f) && worldIn.getBlockState(blockPos.down()).getMaterial() == Material.ROCK && worldIn.getBlockState(blockPos).getMaterial() != Material.ROCK) {
+                setGoldPile(worldIn, blockPos, rand);
             }
-        }
+        });
 
     }
 
@@ -128,45 +126,45 @@ public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
         int k = radius / 2;
         int l = radius;
         float f = (float) (j + k + l) * 0.333F + 0.5F;
-        for (BlockPos blockpos : BlockPos.getAllInBox(position.add(-j, -k, -l), position.add(j, k, l)).map(BlockPos::toImmutable).collect(Collectors.toSet())) {
-            if (blockpos.distanceSq(position) <= (double) (f * f)) {
+        BlockPos.getAllInBox(position.add(-j, -k, -l), position.add(j, k, l)).map(BlockPos::toImmutable).forEach(blockPos ->  {
+            if (blockPos.distanceSq(position) <= (double) (f * f)) {
                 if (!(worldIn.getBlockState(position).getBlock() instanceof ContainerBlock) && worldIn.getBlockState(position).getBlockHardness(worldIn, position) >= 0) {
                     boolean doOres = rand.nextInt(IafConfig.oreToStoneRatioForDragonCaves + 1) == 0;
                     if (doOres) {
                         int chance = rand.nextInt(199) + 1;
                         if (chance < 30) {
-                            worldIn.setBlockState(blockpos, Blocks.IRON_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.IRON_ORE.getDefaultState(), 3);
                         }
                         if (chance > 30 && chance < 40) {
-                            worldIn.setBlockState(blockpos, Blocks.GOLD_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.GOLD_ORE.getDefaultState(), 3);
                         }
                         if (chance > 40 && chance < 45) {
-                            worldIn.setBlockState(blockpos, IafConfig.generateCopperOre ? IafBlockRegistry.COPPER_ORE.getDefaultState() : IafBlockRegistry.CHARRED_STONE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, IafConfig.generateCopperOre ? IafBlockRegistry.COPPER_ORE.getDefaultState() : IafBlockRegistry.CHARRED_STONE.getDefaultState(), 3);
                         }
                         if (chance > 45 && chance < 50) {
-                            worldIn.setBlockState(blockpos, IafConfig.generateSilverOre ? IafBlockRegistry.SILVER_ORE.getDefaultState() : IafBlockRegistry.CHARRED_STONE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, IafConfig.generateSilverOre ? IafBlockRegistry.SILVER_ORE.getDefaultState() : IafBlockRegistry.CHARRED_STONE.getDefaultState(), 3);
                         }
                         if (chance > 50 && chance < 60) {
-                            worldIn.setBlockState(blockpos, Blocks.COAL_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.COAL_ORE.getDefaultState(), 3);
                         }
                         if (chance > 60 && chance < 70) {
-                            worldIn.setBlockState(blockpos, Blocks.REDSTONE_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.REDSTONE_ORE.getDefaultState(), 3);
                         }
                         if (chance > 70 && chance < 80) {
-                            worldIn.setBlockState(blockpos, Blocks.LAPIS_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.LAPIS_ORE.getDefaultState(), 3);
                         }
                         if (chance > 80 && chance < 90) {
-                            worldIn.setBlockState(blockpos, Blocks.DIAMOND_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.DIAMOND_ORE.getDefaultState(), 3);
                         }
                         if (chance > 90 && chance < 1000) {
-                            worldIn.setBlockState(blockpos, Blocks.EMERALD_ORE.getDefaultState(), 3);
+                            worldIn.setBlockState(blockPos, Blocks.EMERALD_ORE.getDefaultState(), 3);
                         }
                     } else {
-                        worldIn.setBlockState(blockpos, rand.nextBoolean() ? IafBlockRegistry.CHARRED_COBBLESTONE.getDefaultState() : IafBlockRegistry.CHARRED_STONE.getDefaultState(), 2);
+                        worldIn.setBlockState(blockPos, rand.nextBoolean() ? IafBlockRegistry.CHARRED_COBBLESTONE.getDefaultState() : IafBlockRegistry.CHARRED_STONE.getDefaultState(), 2);
                     }
                 }
             }
-        }
+        });
         sphereList.add(new SphereInfo(radius, position));
     }
 
@@ -175,13 +173,13 @@ public class WorldGenFireDragonCave extends Feature<NoFeatureConfig> {
         int k = radius / 2;
         int l = radius;
         float f = (float) (j + k + l) * 0.333F + 0.5F;
-        for (BlockPos blockpos : BlockPos.getAllInBox(position.add(-j, -k, -l), position.add(j, k, l)).map(BlockPos::toImmutable).collect(Collectors.toSet())) {
-            if (blockpos.distanceSq(position) <= (double) (f * f * MathHelper.clamp(rand.nextFloat(), 0.75F, 1.0F))) {
+        BlockPos.getAllInBox(position.add(-j, -k, -l), position.add(j, k, l)).map(BlockPos::toImmutable).forEach(blockPos ->  {
+            if (blockPos.distanceSq(position) <= (double) (f * f * MathHelper.clamp(rand.nextFloat(), 0.75F, 1.0F))) {
                 if (!(worldIn.getBlockState(position).getBlock() instanceof ContainerBlock)) {
-                    worldIn.setBlockState(blockpos, Blocks.AIR.getDefaultState(), 2);
+                    worldIn.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 2);
                 }
             }
-        }
+        });
     }
 
 

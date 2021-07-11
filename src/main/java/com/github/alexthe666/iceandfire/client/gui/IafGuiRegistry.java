@@ -1,6 +1,7 @@
 package com.github.alexthe666.iceandfire.client.gui;
 
 import com.github.alexthe666.iceandfire.inventory.IafContainerRegistry;
+
 import net.minecraft.client.gui.ScreenManager;
 
 public class IafGuiRegistry {

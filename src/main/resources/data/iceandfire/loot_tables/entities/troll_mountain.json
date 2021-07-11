@@ -71,7 +71,7 @@
       ]
     },
     {
-      "name": "troll_mountain_skull",
+      "name": "troll_skull",
       "conditions": [
         {
           "condition": "killed_by_player"

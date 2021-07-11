@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import java.util.Random;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
 import com.github.alexthe666.iceandfire.IafConfig;
@@ -9,6 +11,8 @@ import com.github.alexthe666.iceandfire.entity.util.DragonUtils;
 import com.github.alexthe666.iceandfire.item.IafItemRegistry;
 import com.github.alexthe666.iceandfire.message.MessageDragonSyncFire;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
+
+import com.github.alexthe666.iceandfire.misc.IafTagRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -22,16 +26,19 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.pathfinding.PathNodeType;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-
-import java.util.Random;
 
 public class EntityLightningDragon extends EntityDragonBase {
 
@@ -92,7 +99,7 @@ public class EntityLightningDragon extends EntityDragonBase {
         if(entity instanceof EntityDragonBase && !this.isTamed()){
             return entity.getType() != this.getType() && this.getWidth() >= entity.getWidth() && !((EntityDragonBase) entity).isMobDead();
         }
-        return entity instanceof PlayerEntity || DragonUtils.isDragonTargetable(entity) || !this.isTamed() && DragonUtils.isVillager(entity);
+        return entity instanceof PlayerEntity || DragonUtils.isDragonTargetable(entity, IafTagRegistry.LIGHTNING_DRAGON_TARGETS) || !this.isTamed() && DragonUtils.isVillager(entity);
     }
 
     public boolean isTimeToWake() {
@@ -117,7 +124,15 @@ public class EntityLightningDragon extends EntityDragonBase {
                 return "black_";
         }
     }
-
+    @Override
+    public boolean isInvulnerableTo(DamageSource i) {
+        if(i.damageType.equals(DamageSource.LIGHTNING_BOLT.damageType)) {
+            this.heal(15F);
+            this.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, 20, 1));
+            return true;
+        }
+        return super.isInvulnerableTo(i);
+    }
     public Item getVariantScale(int variant) {
         switch (variant) {
             default:
@@ -451,7 +466,7 @@ public class EntityLightningDragon extends EntityDragonBase {
     }
 
     @Override
-    protected SoundEvent getHurtSound(DamageSource p_184601_1_) {
+    protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
         return this.isTeen() ? IafSoundRegistry.LIGHTNINGDRAGON_TEEN_HURT : this.isAdult() ? IafSoundRegistry.LIGHTNINGDRAGON_ADULT_HURT : IafSoundRegistry.LIGHTNINGDRAGON_CHILD_HURT;
     }
 
@@ -514,7 +529,7 @@ public class EntityLightningDragon extends EntityDragonBase {
         } else {
             tick = 10;
         }
-        float epicRoarProg = this.getAnimation() == ANIMATION_EPIC_ROAR && !this.isSitting() ? tick * 0.1F : 0;
+        float epicRoarProg = this.getAnimation() == ANIMATION_EPIC_ROAR && !this.isQueuedToSit() ? tick * 0.1F : 0;
         float sleepProg = this.sleepProgress * 0.025F;
         float pitchY = 0;
         float pitchAdjustment = 0;

@@ -1,1 +1,1 @@
-{  "type": "minecraft:block",  "pools": [    {      "name": "dread_spawner",      "rolls": 1,      "entries": [        {          "type": "minecraft:item",          "name": "iceandfire:dread_spawner"        }      ],      "conditions": [        {          "condition": "minecraft:survives_explosion"        }      ]    }  ]}
+{}

@@ -1,0 +1,45 @@
+<recipe><iceandfire:graveyard_soil 0 minecraft:air 0 iceandfire:ectoplasm 0 minecraft:air 0 iceandfire:ectoplasm 0 minecraft:coarse_dirt 0 iceandfire:ectoplasm 0 minecraft:air 0 iceandfire:ectoplasm 0 minecraft:air 0 5 60 1>
+Ghosts can also spawn into
+the world when a human is
+killed in a horrible manner
+by another person.
+
+
+
+
+
+
+
+
+
+
+
+Cursed chests summon a ghost
+that can haunt during the
+day when opened. Graveyard
+soil spawns ghosts at night,
+when all is dark.
+
+<item><iceandfire:ghost_ingot 10 110 4 1.25>
+
+
+
+
+
+Ghosts also have a chance
+to drop a Phantasmal Ingot,
+which can be used to upgrade
+a dragonbone sword in the
+smithing table into a
+Phantasmal Blade.
+<item><iceandfire:ghost_sword 10 110 55 1.25>
+
+
+
+
+
+
+The Phantasmal blade is a strong
+sword in its own right, but
+can also fire ghostly apparitions
+that pass through blocks.

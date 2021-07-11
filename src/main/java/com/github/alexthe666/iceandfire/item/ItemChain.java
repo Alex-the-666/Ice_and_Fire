@@ -1,9 +1,14 @@
 package com.github.alexthe666.iceandfire.item;
 
-import com.github.alexthe666.citadel.server.entity.EntityPropertiesHandler;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import com.github.alexthe666.citadel.server.entity.datatracker.EntityPropertiesHandler;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.entity.EntityChainTie;
 import com.github.alexthe666.iceandfire.entity.props.ChainEntityProperties;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.WallBlock;
 import net.minecraft.client.util.ITooltipFlag;
@@ -20,9 +25,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class ItemChain extends Item {
 
@@ -59,11 +61,11 @@ public class ItemChain extends Item {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        tooltip.add(new TranslationTextComponent("item.iceandfire.chain.desc_0").func_240699_a_(TextFormatting.GRAY));
-        tooltip.add(new TranslationTextComponent("item.iceandfire.chain.desc_1").func_240699_a_(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.chain.desc_0").mergeStyle(TextFormatting.GRAY));
+        tooltip.add(new TranslationTextComponent("item.iceandfire.chain.desc_1").mergeStyle(TextFormatting.GRAY));
         if (sticky) {
-            tooltip.add(new TranslationTextComponent("item.iceandfire.chain_sticky.desc_2").func_240699_a_(TextFormatting.GREEN));
-            tooltip.add(new TranslationTextComponent("item.iceandfire.chain_sticky.desc_3").func_240699_a_(TextFormatting.GREEN));
+            tooltip.add(new TranslationTextComponent("item.iceandfire.chain_sticky.desc_2").mergeStyle(TextFormatting.GREEN));
+            tooltip.add(new TranslationTextComponent("item.iceandfire.chain_sticky.desc_3").mergeStyle(TextFormatting.GREEN));
         }
     }
 
@@ -74,7 +76,7 @@ public class ItemChain extends Item {
                 chainProperties.wasJustDisconnected = false;
                 return ActionResultType.SUCCESS;
             } else {
-                if (!sticky) {//for some reason, this is false for sticky ones
+                if (sticky) {//Old comment: for some reason, this is false for sticky ones
                     double d0 = 60.0D;
                     double i = playerIn.getPosX();
                     double j = playerIn.getPosY();

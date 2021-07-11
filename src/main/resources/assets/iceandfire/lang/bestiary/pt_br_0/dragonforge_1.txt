@@ -1,0 +1,67 @@
+dragão e 17 tijolos de forja
+dracônica, você finalmente
+poderá construir sua forja.
+
+<block><iceandfire:dragon_bone_block 0 40 30 1>
+<block><iceandfire:dragonforge_fire_brick 0 48 34 1>
+<block><iceandfire:dragon_bone_block 0 56 38 1>
+<block><iceandfire:dragonforge_fire_brick 0 32 34 1>
+<block><iceandfire:dragonforge_fire_brick 0 40 38 1>
+<block><iceandfire:dragonforge_fire_brick 0 48 42 1>
+<block><iceandfire:dragon_bone_block 0 24 38 1>
+<block><iceandfire:dragonforge_fire_brick 0 32 42 1>
+<block><iceandfire:dragon_bone_block 0 40 46 1>
+1° Camada
+
+
+
+
+
+
+
+<block><iceandfire:dragonforge_fire_brick 0 40 70 1>
+<block><iceandfire:dragonforge_fire_brick 0 48 74 1>
+<block><iceandfire:dragonforge_fire_brick 0 56 78 1>
+<block><iceandfire:dragonforge_fire_brick 0 32 74 1>
+<block><iceandfire:dragonforge_fire_core 0 40 78 1>
+<block><iceandfire:dragonforge_fire_brick 0 48 82 1>
+<block><iceandfire:dragonforge_fire_brick 0 24 78 1>
+<block><iceandfire:dragonforge_fire_input 0 32 82 1>
+<block><iceandfire:dragonforge_fire_brick 0 40 86 1>
+2° Camada
+
+
+
+
+
+
+
+
+<block><iceandfire:dragon_bone_block 0 140 10 1>
+<block><iceandfire:dragonforge_fire_brick 0 148 14 1>
+<block><iceandfire:dragon_bone_block 0 156 18 1>
+<block><iceandfire:dragonforge_fire_brick 0 132 14 1>
+<block><iceandfire:dragonforge_fire_brick 0 140 18 1>
+<block><iceandfire:dragonforge_fire_brick 0 148 22 1>
+<block><iceandfire:dragon_bone_block 0 124 18 1>
+<block><iceandfire:dragonforge_fire_brick 0 132 22 1>
+<block><iceandfire:dragon_bone_block 0 140 26 1>
+3° Camada
+
+
+
+
+
+
+Construa a forja ao colocar a
+primeira camada, a segunda
+camada e por fim a terceira 
+camada no topo. Uma vez completada 
+ela irá precisar de energia.
+
+Para energizar a forja é necessário,
+sopros de dragões. Isso pode ser
+feito construindo à estrutura
+próxima a um dragão domesticado
+ou capturando um dragão selvagem
+com o auxílio de correntes.
